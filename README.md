@@ -91,4 +91,4 @@ All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, ther ar
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE.md)
