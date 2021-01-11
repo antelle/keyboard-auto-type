@@ -1,0 +1,30 @@
+#pragma once
+
+#include <CoreFoundation/CoreFoundation.h>
+
+namespace keyboard_auto_type {
+
+template <typename T> class auto_release {
+  private:
+    T resource_ = nullptr;
+    auto_release(const auto_release &) = delete;
+
+  public:
+    // cppcheck-suppress noExplicitConstructor
+    auto_release(T resource) : resource_(resource) {}
+
+    auto_release(auto_release &&other) noexcept : resource_(other.resource_) { other.resource_ = nullptr; }
+
+    ~auto_release() {
+        if (resource_) {
+            CFRelease(resource_);
+            resource_ = nullptr;
+        }
+    }
+
+    operator T() const { return resource_; }
+
+    T *operator&() { return &resource_; }
+};
+
+} // namespace keyboard_auto_type
