@@ -36,7 +36,7 @@ You can also use [modifiers](Modifiers) to perform different actions, for exampl
 typer.key_press(L'a', KeyCode::ANSI_A, typer.shortcut_modifier());
 ```
 
-Another example of a word using <kbd>⌥</kbd><kbd>⌫</kbd>, in this case you pass `code`, but not `character`:
+Another example of a word deletion using <kbd>⌥</kbd><kbd>⌫</kbd>, in this case you pass `code`, but not `character` (also see more about [shortcuts](#shortcuts)):
 ```cpp
 typer.key_press(0, KeyCode::BackwardDelete, Modifier::Option);
 ```
@@ -81,6 +81,10 @@ KeyCode::ANSI_A
 ```
 
 Key codes are mapped depending on operating system. If the key doesn't exist, an error is returned.
+
+## Shortcuts
+
+There are a lot of keyboard shortcuts available in operating systems and applications. While you can trigger them using this library, please keep in mind that the library doesn't provide a standard way of triggering them. For example, <kbd>⌘</kbd><kbd>A</kbd> will select text on macOS, but not on Windows. It's not a goal of this library to standartize this.
 
 ## Errors
 

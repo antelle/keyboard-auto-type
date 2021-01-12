@@ -10,10 +10,10 @@ namespace keyboard_auto_type {
 class AutoType::AutoTypeImpl {
   private:
     auto_release<CGEventSourceRef> event_source_ = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
-    
+
     static constexpr int KEYBOARD_LAYOUT_LENGTH = 128;
-    CGKeyCode keyboard_layout_[KEYBOARD_LAYOUT_LENGTH];
-    bool keyboard_layout_read_ = false;
+    CGKeyCode keyboard_layout_[KEYBOARD_LAYOUT_LENGTH] = {0};
+    CFDataRef keyboard_layout_data_ = nullptr;
 
   public:
     AutoTypeResult validate_system_state() {
@@ -85,18 +85,20 @@ class AutoType::AutoTypeImpl {
 
         return AutoTypeResult::Ok;
     }
-    
+
     void read_keyboard_layout() {
         // https://stackoverflow.com/questions/1918841/how-to-convert-ascii-character-to-cgkeycode
         // https://stackoverflow.com/questions/8263618/convert-virtual-key-code-to-unicode-string
-        
-        if (keyboard_layout_read_) {
+
+        auto_release keyboard = TISCopyCurrentKeyboardInputSource();
+        auto layout_data =
+            static_cast<CFDataRef>(TISGetInputSourceProperty(keyboard, kTISPropertyUnicodeKeyLayoutData));
+
+        if (layout_data == keyboard_layout_data_) {
             return;
         }
 
-        auto_release keyboard = TISCopyCurrentKeyboardInputSource();
-        auto_release layout_data = (CFDataRef)TISGetInputSourceProperty(keyboard, kTISPropertyUnicodeKeyLayoutData);
-        auto layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+        auto layout = reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(layout_data));
         auto kbd_type = LMGetKbdType();
 
         uint32_t keys_down = 0;
@@ -107,22 +109,19 @@ class AutoType::AutoTypeImpl {
             keyboard_layout_[i] = 0;
         }
         for (int code = 0; code < 128; code++) {
-            auto trans = UCKeyTranslate(layout, code, kUCKeyActionDisplay, 0, kbd_type, kUCKeyTranslateNoDeadKeysBit, &keys_down, 4,
-                           &length, chars);
+            auto trans = UCKeyTranslate(layout, code, kUCKeyActionDisplay, 0, kbd_type, kUCKeyTranslateNoDeadKeysBit,
+                                        &keys_down, 4, &length, chars);
+            auto ch = chars[0];
 
-            auto_release str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 10);
-            auto ch = CFStringGetCharacterAtIndex(str, 0);
-
-            if (length && (ch >= '!' && ch <= '~') && !keyboard_layout_[ch]) {
+            if (length && (ch >= ' ' && ch <= '~' || ch == '\t' || ch == ' ') && !keyboard_layout_[ch]) {
                 keyboard_layout_[ch] = code;
             }
         }
-        
-        keyboard_layout_read_ = true;
+
+        keyboard_layout_data_ = layout_data;
     }
 
     CGKeyCode char_to_key_code(wchar_t character) {
-        read_keyboard_layout();
         if (character < 0 || character >= KEYBOARD_LAYOUT_LENGTH) {
             return 0;
         }
@@ -170,7 +169,13 @@ AutoTypeResult AutoType::key_press(wchar_t character, KeyCode code, Modifier mod
         return AutoTypeResult::BadArg;
     }
 
-    auto native_key_code = code == KeyCode::Undefined ? impl_->char_to_key_code(character) : map_key_code(code);
+    CGKeyCode native_key_code;
+    if (code == KeyCode::Undefined) {
+        impl_->read_keyboard_layout();
+        native_key_code = impl_->char_to_key_code(character);
+    } else {
+        native_key_code = map_key_code(code);
+    }
 
     CGEventFlags flags = 0;
     AutoTypeResult result;
@@ -210,6 +215,8 @@ AutoTypeResult AutoType::text(std::wstring text, Modifier modifier) {
         }
         flags = modifier_to_flags(modifier);
     }
+
+    impl_->read_keyboard_layout();
 
     for (auto character : text) {
         auto native_key_code = impl_->char_to_key_code(character);
