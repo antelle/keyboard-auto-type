@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+killall TextEdit 2>/dev/null || true
+
 mkdir -p build/test
 :>build/test/file.txt
 
