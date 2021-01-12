@@ -39,6 +39,7 @@ enum class KeyCode : uint8_t {
     ANSI_P,
     ANSI_Q,
     ANSI_R,
+    ANSI_S,
     ANSI_T,
     ANSI_U,
     ANSI_V,
