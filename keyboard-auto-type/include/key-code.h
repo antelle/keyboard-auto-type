@@ -1,5 +1,5 @@
-#ifndef __KEY_CODE_H__
-#define __KEY_CODE_H__
+#ifndef __KEYBOARD_AUTO_TYPE__KEY_CODE_H__
+#define __KEYBOARD_AUTO_TYPE__KEY_CODE_H__
 
 #include <cstdint>
 
@@ -159,6 +159,9 @@ enum class KeyCode : uint8_t {
     VolumeUp,
     ControlBreak,
     Sleep,
+
+    // number of key codes
+    KeyCodeCount
 };
 
 }

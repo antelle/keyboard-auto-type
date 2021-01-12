@@ -4,6 +4,8 @@
 
 #include "keyboard-auto-type.h"
 
+constexpr int KEY_EVENT_SUBMIT_SLEEP_TIME_USEC = 100000;
+
 int main(int argc, char *argv[]) {
     std::cout << "keyboard-auto-type example" << std::endl;
 
@@ -14,5 +16,5 @@ int main(int argc, char *argv[]) {
     typer.key_press(L'!');
     typer.key_press(0, keyboard_auto_type::KeyCode::BackwardDelete, keyboard_auto_type::Modifier::Option);
 
-    usleep(100000);
+    usleep(KEY_EVENT_SUBMIT_SLEEP_TIME_USEC);
 }

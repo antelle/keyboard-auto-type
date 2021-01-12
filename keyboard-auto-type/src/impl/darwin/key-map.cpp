@@ -1,8 +1,10 @@
 #include "key-map.h"
 
+#include <array>
+
 namespace keyboard_auto_type {
 
-constexpr CGKeyCode key_map[] = {
+constexpr std::array<CGKeyCode, static_cast<size_t>(KeyCode::KeyCodeCount)> key_map{
     0,
 
     // numbers
@@ -55,14 +57,12 @@ constexpr CGKeyCode key_map[] = {
     0, // Sleep
 };
 
-constexpr auto key_map_size = sizeof(key_map) / sizeof(CGKeyCode);
-
 CGKeyCode map_key_code(KeyCode code) {
     auto code_byte = static_cast<uint8_t>(code);
-    if (code_byte >= key_map_size) {
+    if (code_byte >= key_map.size()) {
         return 0;
     }
-    return key_map[code_byte];
+    return key_map.at(code_byte);
 }
 
 } // namespace keyboard_auto_type

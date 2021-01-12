@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
+#include <string_view>
 
 #include "key-code.h"
 
@@ -58,7 +58,7 @@ class AutoType {
     AutoTypeResult key_press(wchar_t character, Modifier modifier = Modifier::None);
     AutoTypeResult key_press(wchar_t character, KeyCode code, Modifier modifier = Modifier::None);
 
-    AutoTypeResult text(std::wstring text, Modifier modifier = Modifier::None);
+    AutoTypeResult text(std::wstring_view text, Modifier modifier = Modifier::None);
 
     AutoTypeResult press_copy();
     AutoTypeResult press_paste();
