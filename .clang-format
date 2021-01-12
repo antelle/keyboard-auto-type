@@ -1,7 +1,7 @@
 ---
 BasedOnStyle: LLVM
 IndentWidth: 4
-ColumnLimit: 120
+ColumnLimit: 100
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^<ext/.*\.h>'

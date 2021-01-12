@@ -51,8 +51,10 @@ class AutoType {
     AutoType();
     ~AutoType();
 
-    AutoTypeResult key_move(Direction direction, wchar_t character, Modifier modifier = Modifier::None);
-    AutoTypeResult key_move(Direction direction, wchar_t character, KeyCode code, Modifier modifier = Modifier::None);
+    AutoTypeResult key_move(Direction direction, wchar_t character,
+                            Modifier modifier = Modifier::None);
+    AutoTypeResult key_move(Direction direction, wchar_t character, KeyCode code,
+                            Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);
 
     AutoTypeResult key_press(wchar_t character, Modifier modifier = Modifier::None);

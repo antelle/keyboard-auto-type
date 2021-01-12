@@ -12,7 +12,8 @@ namespace keyboard_auto_type {
 
 class AutoType::AutoTypeImpl {
   private:
-    auto_release<CGEventSourceRef> event_source_ = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
+    auto_release<CGEventSourceRef> event_source_ =
+        CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
 
     static constexpr int KEYBOARD_LAYOUT_LENGTH = 128;
     std::array<CGKeyCode, KEYBOARD_LAYOUT_LENGTH> keyboard_layout_ = {{}};
@@ -28,8 +29,8 @@ class AutoType::AutoTypeImpl {
         int loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
         while (total_wait_time > 0) {
             auto flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
-            if ((flags & (kCGEventFlagMaskCommand | kCGEventFlagMaskShift | kCGEventFlagMaskAlternate |
-                          kCGEventFlagMaskControl)) == 0) {
+            if ((flags & (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
+                          kCGEventFlagMaskAlternate | kCGEventFlagMaskControl)) == 0) {
                 return AutoTypeResult::Ok;
             }
             usleep(loop_wait_time);
@@ -76,7 +77,8 @@ class AutoType::AutoTypeImpl {
             return AutoTypeResult::Ok;
         }
 
-        constexpr std::array modifiers{Modifier::Command, Modifier::Option, Modifier::Control, Modifier::Shift};
+        constexpr std::array modifiers{Modifier::Command, Modifier::Option, Modifier::Control,
+                                       Modifier::Shift};
         constexpr std::array codes{kVK_Command, kVK_Option, kVK_Control, kVK_Shift};
 
         for (auto i = 0; i < modifiers.size(); i++) {
@@ -98,14 +100,15 @@ class AutoType::AutoTypeImpl {
         // https://stackoverflow.com/questions/8263618/convert-virtual-key-code-to-unicode-string
 
         auto_release keyboard = TISCopyCurrentKeyboardInputSource();
-        const auto *layout_data =
-            static_cast<CFDataRef>(TISGetInputSourceProperty(keyboard, kTISPropertyUnicodeKeyLayoutData));
+        const auto *layout_data = static_cast<CFDataRef>(
+            TISGetInputSourceProperty(keyboard, kTISPropertyUnicodeKeyLayoutData));
 
         if (layout_data == keyboard_layout_data_) {
             return;
         }
 
-        const auto *layout = reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(layout_data));
+        const auto *layout =
+            reinterpret_cast<const UCKeyboardLayout *>(CFDataGetBytePtr(layout_data));
         auto kbd_type = LMGetKbdType();
 
         uint32_t keys_down = 0;
@@ -116,11 +119,12 @@ class AutoType::AutoTypeImpl {
             keyboard_layout_.at(i) = 0;
         }
         for (int code = 0; code < MAX_KEYBOARD_LAYOUT_CHAR_CODE; code++) {
-            UCKeyTranslate(layout, code, kUCKeyActionDisplay, 0, kbd_type, kUCKeyTranslateNoDeadKeysBit, &keys_down, 4,
-                           &length, chars.data());
+            UCKeyTranslate(layout, code, kUCKeyActionDisplay, 0, kbd_type,
+                           kUCKeyTranslateNoDeadKeysBit, &keys_down, 4, &length, chars.data());
             auto ch = chars[0];
 
-            if (length && (ch >= ' ' && ch <= '~' || ch == '\t' || ch == ' ') && !keyboard_layout_.at(ch)) {
+            if (length && (ch >= ' ' && ch <= '~' || ch == '\t' || ch == ' ') &&
+                !keyboard_layout_.at(ch)) {
                 keyboard_layout_.at(ch) = code;
             }
         }
@@ -162,7 +166,8 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
 AutoType::~AutoType() = default;
 
-AutoTypeResult AutoType::key_move(Direction direction, wchar_t character, KeyCode code, Modifier modifier) {
+AutoTypeResult AutoType::key_move(Direction direction, wchar_t character, KeyCode code,
+                                  Modifier modifier) {
     auto flags = modifier_to_flags(modifier);
     return impl_->key_up_down(character, map_key_code(code), flags, direction == Direction::Down);
 }

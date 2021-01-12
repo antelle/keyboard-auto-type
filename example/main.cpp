@@ -15,10 +15,13 @@ int main() {
     typer.text(L"Hello");
     typer.key_press(L'!');
     typer.key_press(L'\n');
-    // typer.key_press(0, keyboard_auto_type::KeyCode::BackwardDelete, keyboard_auto_type::Modifier::Option);
+    // typer.key_press(0, keyboard_auto_type::KeyCode::BackwardDelete,
+    // keyboard_auto_type::Modifier::Option);
 
-    typer.key_press(0, keyboard_auto_type::KeyCode::ANSI_S, keyboard_auto_type::AutoType::shortcut_modifier());
-    typer.key_press(0, keyboard_auto_type::KeyCode::ANSI_Q, keyboard_auto_type::AutoType::shortcut_modifier());
+    typer.key_press(0, keyboard_auto_type::KeyCode::ANSI_S,
+                    keyboard_auto_type::AutoType::shortcut_modifier());
+    typer.key_press(0, keyboard_auto_type::KeyCode::ANSI_Q,
+                    keyboard_auto_type::AutoType::shortcut_modifier());
 
     usleep(KEY_EVENT_SUBMIT_SLEEP_TIME_USEC);
 }
