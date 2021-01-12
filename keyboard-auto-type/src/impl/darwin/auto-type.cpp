@@ -52,8 +52,8 @@ class AutoType::AutoTypeImpl {
 
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
         if (character) {
-            auto uniChar = static_cast<UniChar>(character);
-            CGEventKeyboardSetUnicodeString(event, 1, &uniChar);
+            auto uni_char = static_cast<UniChar>(static_cast<uint16_t>(character));
+            CGEventKeyboardSetUnicodeString(event, 1, &uni_char);
         }
         if (flags) {
             CGEventSetFlags(event, flags);

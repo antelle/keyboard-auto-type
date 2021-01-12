@@ -6,7 +6,7 @@
 
 constexpr int KEY_EVENT_SUBMIT_SLEEP_TIME_USEC = 100000;
 
-int main(int argc, char *argv[]) {
+int main() {
     std::cout << "keyboard-auto-type example" << std::endl;
 
     keyboard_auto_type::AutoType typer;
