@@ -1,6 +1,7 @@
 project(keyboard-auto-type)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(RUN_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY
