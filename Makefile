@@ -10,7 +10,7 @@ clean:
 	rm -rf build xcode
 
 format:
-	find example keyboard-auto-type -name '*.cpp' -o -name '*.h' | \
+	find keyboard-auto-type example -name '*.cpp' -o -name '*.h' | \
 		xargs clang-format -i --verbose
 
 check:
@@ -25,3 +25,6 @@ xcode-project:
 		-D CMAKE_C_COMPILER="$$(xcrun -find c++)" \
 		-D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" \
 		.
+
+run-example: build
+	build/output/example
