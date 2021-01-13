@@ -2,6 +2,14 @@ project(keyboard-auto-type)
 
 set(CMAKE_CXX_STANDARD 17)
 
+if(RUN_CLANG_TIDY)
+    set(CMAKE_CXX_CLANG_TIDY
+        clang-tidy;
+        -checks=*,-modernize-use-trailing-return-type,-fuchsia-*,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-reinterpret-cast;
+        -warnings-as-errors=*;
+    )
+endif()
+
 set(SOURCES
     include/keyboard-auto-type.h
     include/key-code.h
@@ -26,3 +34,5 @@ list(APPEND SOURCES ${PLATFORM_SOURCES})
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+
+unset(CMAKE_CXX_CLANG_TIDY)
