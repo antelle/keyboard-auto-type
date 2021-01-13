@@ -1,7 +1,9 @@
-.PHONY: build
+.PHONY: configure build
+
+configure:
+	cmake -B build .
 
 build:
-	cmake -B build .
 	cmake --build build -j4
 
 rebuild: clean build
@@ -26,8 +28,12 @@ xcode-project:
 		-D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" \
 		.
 
-run-example: build
+run-example:
+	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	$(MAKE) build
 	build/output/example
 
-test: build
+test:
+	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 .
+	$(MAKE) build
 	build/output/tests
