@@ -52,8 +52,10 @@ class AutoType::AutoTypeImpl {
             usleep(loop_wait_time);
             total_wait_time -= loop_wait_time;
         }
-        if (error_mode_ == ErrorMode::Throw) {
+        if (throw_exceptions_) {
+#if __cpp_exceptions
             throw std::runtime_error("Modifier key not released");
+#endif
         }
         return AutoTypeResult::ModifierNotReleased;
     }
@@ -204,8 +206,10 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
 
 AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier modifier) {
     if (!character && code == KeyCode::Undefined) {
-        if (error_mode_ == ErrorMode::Throw) {
+        if (throw_exceptions_) {
+#if __cpp_exceptions
             throw std::invalid_argument("Either character or code must be set");
+#endif
         }
         return AutoTypeResult::BadArg;
     }

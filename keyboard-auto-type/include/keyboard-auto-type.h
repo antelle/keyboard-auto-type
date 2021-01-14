@@ -46,11 +46,9 @@ struct AppWindowInfo {
     std::string url;
 };
 
-enum class ErrorMode : uint8_t { Throw, Return };
-
 class AutoType {
   private:
-    static ErrorMode error_mode_;
+    static bool throw_exceptions_;
     class AutoTypeImpl;
     std::unique_ptr<AutoTypeImpl> impl_;
 
@@ -63,7 +61,7 @@ class AutoType {
     AutoType(AutoType &&) = delete;
     AutoType &operator=(AutoType &&) = delete;
 
-    static void set_error_mode(ErrorMode error_mode);
+    static void set_throw_exceptions(bool throw_exceptions);
 
     AutoTypeResult key_move(Direction direction, char32_t character,
                             Modifier modifier = Modifier::None);

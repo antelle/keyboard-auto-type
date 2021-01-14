@@ -87,6 +87,11 @@ There are a lot of keyboard shortcuts available in operating systems and applica
 
 ## Errors
 
+By default, if exception support is enabled, auto-type methods can throw an exception. If exception support is disabled, they will just return an error code described below. You can also programmatically disable exceptions if you don't need them using `set_throw_exceptions` method:
+```
+kbd::AutoType::set_throw_exceptions(false);
+```
+
 All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, ther are following errors possible:
 
 - `AutoTypeResult::BadArg`: bad argument

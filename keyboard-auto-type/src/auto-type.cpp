@@ -2,9 +2,13 @@
 
 namespace keyboard_auto_type {
 
-ErrorMode AutoType::error_mode_ = ErrorMode::Throw;
+#if __cpp_exceptions
+bool AutoType::throw_exceptions_ = true;
+#else
+bool AutoType::throw_exceptions_ = false;
+#endif
 
-void AutoType::set_error_mode(ErrorMode error_mode) { error_mode_ = error_mode; }
+void AutoType::set_throw_exceptions(bool throw_exceptions) { throw_exceptions_ = throw_exceptions; }
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character, Modifier modifier) {
     return key_move(direction, character, KeyCode::Undefined, modifier);

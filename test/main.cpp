@@ -31,7 +31,11 @@ class AutoTypeTest : public testing::Test {
     static void TearDownTestSuite() { kill_text_editor(); }
 
     // cppcheck-suppress unusedFunction
-    virtual void SetUp() { open_text_editor(); }
+    virtual void SetUp() {
+        expected_text = U"";
+        configure_auto_type();
+        open_text_editor();
+    }
 
     // cppcheck-suppress unusedFunction
     virtual void TearDown() {
@@ -42,12 +46,13 @@ class AutoTypeTest : public testing::Test {
     }
 
   private:
-    static void kill_text_editor() {
-#if __APPLE__
-        system("killall TextEdit >/dev/null 2>/dev/null");
-#else
-        FAIL() << "kill_text_editor is not implemented";
-#endif
+    void configure_auto_type() { kbd::AutoType::set_throw_exceptions(true); }
+
+    void open_text_editor() {
+        create_file();
+        kill_text_editor();
+        launch_text_editor();
+        wait_text_editor_window();
     }
 
     void launch_text_editor() {
@@ -68,13 +73,6 @@ class AutoTypeTest : public testing::Test {
         // FAIL() << "Text editor didn't appear";
     }
 
-    void open_text_editor() {
-        create_file();
-        kill_text_editor();
-        launch_text_editor();
-        wait_text_editor_window();
-    }
-
     void create_file() {
         std::filesystem::remove(file_name);
         std::fstream fstream(file_name, std::ios::out);
@@ -89,6 +87,14 @@ class AutoTypeTest : public testing::Test {
         kbd::AutoType typer;
         typer.key_press(0, kbd::KeyCode::ANSI_S, typer.shortcut_modifier());
         typer.key_press(0, kbd::KeyCode::ANSI_Q, typer.shortcut_modifier());
+    }
+
+    static void kill_text_editor() {
+#if __APPLE__
+        system("killall TextEdit >/dev/null 2>/dev/null");
+#else
+        FAIL() << "kill_text_editor is not implemented";
+#endif
     }
 
     void wait_for_file_save() {
@@ -175,6 +181,21 @@ TEST_F(AutoTypeTest, key_press_key_code_modifier_with_char) {
     typer.key_press('c', kbd::KeyCode::ANSI_C);
     typer.key_press('C', kbd::KeyCode::ANSI_C, kbd::Modifier::Shift);
     expected_text = U"1!cC";
+}
+
+TEST_F(AutoTypeTest, key_press_bad_arg) {
+    kbd::AutoType typer;
+    typer.key_press('a');
+    ASSERT_THROW(typer.key_press(0), std::invalid_argument);
+    expected_text = U"a";
+}
+
+TEST_F(AutoTypeTest, key_press_bad_arg_no_throw) {
+    kbd::AutoType typer;
+    typer.key_press('a');
+    typer.set_throw_exceptions(false);
+    typer.key_press(0);
+    expected_text = U"a";
 }
 
 TEST_F(AutoTypeTest, text_unicode_basic) {
