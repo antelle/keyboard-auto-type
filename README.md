@@ -72,6 +72,11 @@ Since the "command" shortcut is a very common one, the library provides a conven
 AutoType::shortcut_modifier()
 ```
 
+which is also exposed as `shortcut` method:
+```cpp
+typer.shortcut(kbd::KeyCode::ANSI_A); // select all
+```
+
 ## Key codes
 
 Where applicable, you can pass different key codes, for example:
