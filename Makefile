@@ -1,4 +1,8 @@
-.PHONY: configure build
+.DEFAULT_GOAL := default
+
+.PHONY: build test example
+
+default: configure build
 
 configure:
 	cmake -B build .
@@ -12,13 +16,21 @@ clean:
 	rm -rf build xcode
 
 format:
-	find keyboard-auto-type tests example -name '*.cpp' -o -name '*.h' | \
+	find keyboard-auto-type test example -name '*.cpp' -o -name '*.h' | \
 		xargs clang-format -i --verbose
 
 check:
-	cmake -B build/check -D RUN_CLANG_TIDY=1 .
-	cmake --build build/check
-	cppcheck --enable=all --inline-suppr keyboard-auto-type
+	cmake -B build \
+		-D CMAKE_EXPORT_COMPILE_COMMANDS=1 \
+		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
+		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
+		.
+	find keyboard-auto-type -name '*.cpp' -o -name '*.h' | \
+		xargs clang-tidy -p build \
+			-checks=*,-modernize-use-trailing-return-type,-fuchsia-*,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-reinterpret-cast,-llvm-header-guard \
+			-warnings-as-errors=* \
+			--quiet
+	cppcheck --enable=all --inline-suppr keyboard-auto-type test example
 
 xcode-project:
 	cmake \
@@ -28,12 +40,14 @@ xcode-project:
 		-D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" \
 		.
 
-run-example:
+example:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 	$(MAKE) build
+
+run-example: example
 	build/output/example
 
 test:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 .
 	$(MAKE) build
-	build/output/tests
+	build/output/test # --gtest_filter=AutoTypeTest.

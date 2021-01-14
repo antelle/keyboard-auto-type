@@ -165,6 +165,6 @@ enum class KeyCode : uint8_t {
     KeyCodeCount
 };
 
-}
+} // namespace keyboard_auto_type
 
 #endif

@@ -2,6 +2,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include <array>
+#include <codecvt>
+#include <exception>
+#include <iostream>
 #include <string>
 
 #include "auto-release.h"
@@ -24,26 +27,38 @@ class AutoType::AutoTypeImpl {
     static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 128;
 
   public:
-    static AutoTypeResult validate_system_state() {
-        int total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
-        int loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
+    AutoTypeResult validate_system_state() {
+        auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
+        auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
+        constexpr auto all_flags_mask = (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
+                                         kCGEventFlagMaskAlternate | kCGEventFlagMaskControl);
         while (total_wait_time > 0) {
             auto flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
-            if ((flags & (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
-                          kCGEventFlagMaskAlternate | kCGEventFlagMaskControl)) == 0) {
+            if ((flags & all_flags_mask) == 0) {
                 return AutoTypeResult::Ok;
+            }
+            if (flags & kCGEventFlagMaskCommand) {
+                modifier_up_down(Modifier::Command, false);
+            }
+            if (flags & kCGEventFlagMaskShift) {
+                modifier_up_down(Modifier::Shift, false);
+            }
+            if (flags & kCGEventFlagMaskAlternate) {
+                modifier_up_down(Modifier::Alt, false);
+            }
+            if (flags & kCGEventFlagMaskControl) {
+                modifier_up_down(Modifier::Control, false);
             }
             usleep(loop_wait_time);
             total_wait_time -= loop_wait_time;
         }
+        if (error_mode_ == ErrorMode::Throw) {
+            throw std::runtime_error("Modifier key not released");
+        }
         return AutoTypeResult::ModifierNotReleased;
     }
 
-    AutoTypeResult key_up_down(wchar_t character, CGKeyCode code, CGEventFlags flags, bool down) {
-        if (!character && !code) {
-            return AutoTypeResult::BadArg;
-        }
-
+    AutoTypeResult key_up_down(char32_t character, CGKeyCode code, CGEventFlags flags, bool down) {
         if (down) {
             auto result = validate_system_state();
             if (result != AutoTypeResult::Ok) {
@@ -53,8 +68,7 @@ class AutoType::AutoTypeImpl {
 
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
         if (character) {
-            auto uni_char = static_cast<UniChar>(static_cast<uint16_t>(character));
-            CGEventKeyboardSetUnicodeString(event, 1, &uni_char);
+            set_event_char(event, character);
         }
         if (flags) {
             CGEventSetFlags(event, flags);
@@ -64,7 +78,17 @@ class AutoType::AutoTypeImpl {
         return AutoTypeResult::Ok;
     }
 
-    AutoTypeResult key_up_and_down(wchar_t character, CGKeyCode code, CGEventFlags flags) {
+    static void set_event_char(CGEventRef event, char32_t character) {
+        std::u32string char_str(1, character);
+        std::wstring_convert<std::codecvt_utf16<char32_t, UINT32_MAX, std::little_endian>, char32_t>
+            converter;
+        auto utf16 = converter.to_bytes(char_str.c_str());
+        const auto *utf16_cstr = reinterpret_cast<const UniChar *>(utf16.c_str());
+        auto utf16_length = utf16.length() / sizeof(UniChar);
+        CGEventKeyboardSetUnicodeString(event, utf16_length, utf16_cstr);
+    }
+
+    AutoTypeResult key_up_and_down(char32_t character, CGKeyCode code, CGEventFlags flags) {
         auto result = key_up_down(character, code, flags, true);
         if (result != AutoTypeResult::Ok) {
             return result;
@@ -118,26 +142,28 @@ class AutoType::AutoTypeImpl {
         for (int i = 0; i < KEYBOARD_LAYOUT_LENGTH; i++) {
             keyboard_layout_.at(i) = 0;
         }
+        constexpr std::array mod_states{0U, static_cast<UInt32>(NX_DEVICELSHIFTKEYMASK)};
         for (int code = 0; code < MAX_KEYBOARD_LAYOUT_CHAR_CODE; code++) {
-            UCKeyTranslate(layout, code, kUCKeyActionDisplay, 0, kbd_type,
-                           kUCKeyTranslateNoDeadKeysBit, &keys_down, 4, &length, chars.data());
-            auto ch = chars[0];
+            for (auto mod_state : mod_states) {
+                UCKeyTranslate(layout, code, kUCKeyActionDown, mod_state, kbd_type,
+                               kUCKeyTranslateNoDeadKeysBit, &keys_down, 4, &length, chars.data());
+                auto ch = chars[0];
 
-            if (length && (ch >= ' ' && ch <= '~' || ch == '\t' || ch == ' ') &&
-                !keyboard_layout_.at(ch)) {
-                keyboard_layout_.at(ch) = code;
+                if (length && (ch >= ' ' && ch <= '~' || ch == '\t' || ch == ' ') &&
+                    !keyboard_layout_.at(ch)) {
+                    keyboard_layout_.at(ch) = code;
+                }
             }
         }
 
         keyboard_layout_data_ = layout_data;
     }
 
-    CGKeyCode char_to_key_code(wchar_t character) {
-        if (character < 0 || character >= keyboard_layout_.size()) {
+    CGKeyCode char_to_key_code(char32_t character) {
+        if (character >= keyboard_layout_.size()) {
             return 0;
         }
-        auto index = std::tolower(character);
-        return keyboard_layout_.at(index);
+        return keyboard_layout_.at(character);
     }
 };
 
@@ -166,7 +192,7 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
 AutoType::~AutoType() = default;
 
-AutoTypeResult AutoType::key_move(Direction direction, wchar_t character, KeyCode code,
+AutoTypeResult AutoType::key_move(Direction direction, char32_t character, KeyCode code,
                                   Modifier modifier) {
     auto flags = modifier_to_flags(modifier);
     return impl_->key_up_down(character, map_key_code(code), flags, direction == Direction::Down);
@@ -176,8 +202,11 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
     return impl_->modifier_up_down(modifier, direction == Direction::Down);
 }
 
-AutoTypeResult AutoType::key_press(wchar_t character, KeyCode code, Modifier modifier) {
+AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier modifier) {
     if (!character && code == KeyCode::Undefined) {
+        if (error_mode_ == ErrorMode::Throw) {
+            throw std::invalid_argument("Either character or code must be set");
+        }
         return AutoTypeResult::BadArg;
     }
 
@@ -212,7 +241,7 @@ AutoTypeResult AutoType::key_press(wchar_t character, KeyCode code, Modifier mod
     return result;
 }
 
-AutoTypeResult AutoType::text(std::wstring_view text, Modifier modifier) {
+AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
     if (text.length() == 0) {
         return AutoTypeResult::Ok;
     }

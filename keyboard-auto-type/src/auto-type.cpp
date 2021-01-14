@@ -2,11 +2,15 @@
 
 namespace keyboard_auto_type {
 
-AutoTypeResult AutoType::key_move(Direction direction, wchar_t character, Modifier modifier) {
+ErrorMode AutoType::error_mode_ = ErrorMode::Throw;
+
+void AutoType::set_error_mode(ErrorMode error_mode) { error_mode_ = error_mode; }
+
+AutoTypeResult AutoType::key_move(Direction direction, char32_t character, Modifier modifier) {
     return key_move(direction, character, KeyCode::Undefined, modifier);
 }
 
-AutoTypeResult AutoType::key_press(wchar_t character, Modifier modifier) {
+AutoTypeResult AutoType::key_press(char32_t character, Modifier modifier) {
     return key_press(character, KeyCode::Undefined, modifier);
 }
 
