@@ -23,6 +23,7 @@ if(APPLE)
     set(SYSTEM_LIBRARIES
         "-framework CoreFoundation"
         "-framework Carbon"
+        "-framework AppKit"
     )
 endif()
 

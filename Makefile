@@ -16,7 +16,7 @@ clean:
 	rm -rf build xcode
 
 format:
-	find keyboard-auto-type test example -name '*.cpp' -o -name '*.h' | \
+	find keyboard-auto-type test example -name '*.cpp' -o -name '*.h' -o -name '*.mm' | \
 		xargs clang-format -i --verbose
 
 check:
@@ -38,6 +38,8 @@ xcode-project:
 		-B xcode \
 		-D CMAKE_C_COMPILER="$$(xcrun -find c++)" \
 		-D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" \
+		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
+		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
 		.
 
 example:

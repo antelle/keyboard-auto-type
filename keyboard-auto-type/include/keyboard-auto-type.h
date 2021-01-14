@@ -39,9 +39,9 @@ enum class AutoTypeResult : uint8_t {
 };
 
 struct AppWindowInfo {
-    uint64_t pid = 0;
+    intptr_t pid = 0;
     intptr_t window_id = 0;
-    std::string process_name;
+    std::string app_name;
     std::string title;
     std::string url;
 };

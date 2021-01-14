@@ -10,6 +10,7 @@
 #include "auto-release.h"
 #include "key-map.h"
 #include "keyboard-auto-type.h"
+#include "native-methods.h"
 
 namespace keyboard_auto_type {
 
@@ -279,5 +280,107 @@ AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
 }
 
 Modifier AutoType::shortcut_modifier() { return Modifier::Command; }
+
+AppWindowInfo AutoType::active_window() {
+    auto pid = native_frontmost_app_pid();
+    if (!pid) {
+        return {};
+    }
+
+    auto_release windows = CGWindowListCopyWindowInfo(
+        kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements, kCGNullWindowID);
+    if (!windows) {
+        return {};
+    }
+
+    AppWindowInfo result = {.pid = pid};
+
+    auto count = CFArrayGetCount(windows);
+    for (auto i = 0; i < count; i++) {
+        auto window = reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(windows, i));
+
+        // auto desc = CFCopyDescription(window); // for debugging
+        // std::cout << CFStringGetCStringPtr(desc, kCFStringEncodingUTF8) << std::endl;
+
+        if (!CFDictionaryContainsKey(window, kCGWindowOwnerPID)) {
+            continue;
+        }
+
+        auto window_layer_number =
+            reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowLayer));
+        int window_layer;
+        if (!CFNumberGetValue(window_layer_number, kCFNumberSInt32Type, &window_layer)) {
+            continue;
+        }
+        if (window_layer > 0) {
+            continue;
+        }
+
+        auto window_pid_number =
+            reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowOwnerPID));
+        int window_pid;
+        if (!CFNumberGetValue(window_pid_number, kCFNumberSInt32Type, &window_pid)) {
+            continue;
+        }
+        if (window_pid != pid) {
+            continue;
+        }
+
+        if (CFDictionaryContainsKey(window, kCGWindowOwnerName)) {
+            auto window_owner_name_str =
+                reinterpret_cast<CFStringRef>(CFDictionaryGetValue(window, kCGWindowOwnerName));
+            auto length = CFStringGetLength(window_owner_name_str);
+            auto max_length = length * 4 + 1;
+            char window_owner_name[max_length];
+            if (CFStringGetCString(window_owner_name_str, window_owner_name, max_length,
+                                   kCFStringEncodingUTF8)) {
+                result.app_name = window_owner_name;
+            }
+        }
+
+        if (CFDictionaryContainsKey(window, kCGWindowNumber)) {
+            auto window_number =
+                reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowNumber));
+            int window_id;
+            if (CFNumberGetValue(window_number, kCFNumberSInt32Type, &window_id)) {
+                result.window_id = window_id;
+            }
+        }
+    }
+
+    auto_release<CFArrayRef> ax_windows = nullptr;
+    auto accessibility_app = AXUIElementCreateApplication(pid);
+    auto ax_res =
+        AXUIElementCopyAttributeValues(accessibility_app, kAXWindowsAttribute, 0, 10, &ax_windows);
+    if (ax_res != kAXErrorSuccess) {
+        return result;
+    }
+
+    auto ax_windows_num = CFArrayGetCount(ax_windows);
+    for (int i = 0; i < ax_windows_num; i++) {
+        auto ax_window = static_cast<AXUIElementRef>(CFArrayGetValueAtIndex(ax_windows, i));
+        auto_release<CFTypeRef> ax_main = nullptr;
+        ax_res = AXUIElementCopyAttributeValue(ax_window, kAXMainAttribute, &ax_main);
+        if (ax_res != kAXErrorSuccess) {
+            continue;
+        }
+        auto is_main =
+            CFBooleanGetValue(reinterpret_cast<CFBooleanRef>(static_cast<CFTypeRef>(ax_main)));
+        if (!is_main) {
+            continue;
+        }
+        auto_release<CFTypeRef> ax_title = nullptr;
+        ax_res = AXUIElementCopyAttributeValue(ax_window, kAXTitleAttribute, &ax_title);
+        if (ax_res != kAXErrorSuccess) {
+            continue;
+        }
+        char buf[1024];
+        CFStringGetCString(reinterpret_cast<CFStringRef>(static_cast<CFTypeRef>(ax_title)), buf,
+                           sizeof(buf), kCFStringEncodingUTF8);
+        result.title = buf;
+    }
+
+    return result;
+}
 
 } // namespace keyboard_auto_type

@@ -14,8 +14,10 @@ if (APPLE)
     set(PLATFORM_SOURCES
         src/impl/darwin/auto-release.h
         src/impl/darwin/key-map.h
+        src/impl/darwin/native-methods.h
         src/impl/darwin/auto-type.cpp
         src/impl/darwin/key-map.cpp
+        src/impl/darwin/native-methods.mm
     )
     source_group("darwin" FILES ${PLATFORM_SOURCES})
 elseif(WIN32)
