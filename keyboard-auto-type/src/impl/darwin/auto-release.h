@@ -10,8 +10,8 @@ template <typename T> class auto_release {
 
   public:
     // cppcheck-suppress noExplicitConstructor
-    auto_release(T resource)
-        : resource_(resource) {} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+    auto_release(T resource) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+        : resource_(resource) {}
 
     auto_release(const auto_release &) = delete;
     auto_release &operator=(const auto_release &other) = delete;
@@ -33,9 +33,9 @@ template <typename T> class auto_release {
         }
     }
 
-    operator T() const {
+    operator T() const { // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
         return resource_;
-    } // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
+    }
 
     T *operator&() { return &resource_; } // NOLINT(google-runtime-operator)
 };

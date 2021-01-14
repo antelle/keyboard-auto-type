@@ -16,9 +16,9 @@ Include the library headers and create an `AutoType` object:
 ```cpp
 #include "keyboard-auto-type.h"
 
-using namespace keyboard_auto_type;
+namespace kbd = keyboard_auto_type;
 
-AutoType typer;
+kbd::AutoType typer;
 ```
 
 Perform some auto-typing using a high-level API:
@@ -33,19 +33,18 @@ typer.key_press(L'a');
 
 You can also use [modifiers](Modifiers) to perform different actions, for example, this will send <kbd>⌘</kbd><kbd>A</kbd> to select all text:
 ```cpp
-typer.key_press(L'a', KeyCode::ANSI_A, typer.shortcut_modifier());
+typer.key_press(L'a', kbd::KeyCode::ANSI_A, typer.shortcut_modifier());
 ```
 
 Another example of a word deletion using <kbd>⌥</kbd><kbd>⌫</kbd>, in this case you pass `code`, but not `character` (also see more about [shortcuts](#shortcuts)):
 ```cpp
-typer.key_press(0, KeyCode::BackwardDelete, Modifier::Option);
+typer.key_press(0, kbd::KeyCode::BackwardDelete, kbd::Modifier::Option);
 ```
 
-There are shortcuts for copy-paste commands:
+There's also a method to run combinations like <kbd>⌘</kbd><kbd>A</kbd> / <kbd>⌃</kbd><kbd>A</kbd>:
 ```cpp
-typer.press_copy();
-typer.press_paste();
-typer.press_cut();
+typer.shortcut(kbd::KeyCode::ANSI_C); // copy
+typer.shortcut(kbd::KeyCode::ANSI_V); // paste
 ```
 
 If you need access to more low-level API, there's a function `key_move` that can trigger specific individual key events, for example, only `keyUp`.

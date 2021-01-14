@@ -241,3 +241,46 @@ TEST_F(AutoTypeTest, text_unicode_supplementary_ideographic) {
     kbd::AutoType typer;
     typer.text(expected_text);
 }
+
+TEST_F(AutoTypeTest, text_modifier) {
+    expected_text = U"ABC";
+    kbd::AutoType typer;
+    typer.text(U"ABC", kbd::Modifier::Shift);
+}
+
+TEST_F(AutoTypeTest, shortcut_copy_paste) {
+    kbd::AutoType typer;
+
+    // type "hello"
+    typer.text(U"hello");
+    // "hello"
+
+    // select all
+    typer.shortcut(kbd::KeyCode::ANSI_A);
+    typer.shortcut(kbd::KeyCode::ANSI_C);
+    // "[hello]"
+
+    // paste at the end
+    typer.key_press(0, kbd::KeyCode::RightArrow);
+    typer.text(U" ");
+    typer.shortcut(kbd::KeyCode::ANSI_V);
+    typer.text(U" ");
+    // "hello hello "
+
+    // cut "hell"
+    for (int i = 0; i < 2; i++) {
+        typer.key_press(0, kbd::KeyCode::LeftArrow);
+    }
+    for (int i = 0; i < 4; i++) {
+        typer.key_press(0, kbd::KeyCode::LeftArrow, kbd::Modifier::Shift);
+    }
+    typer.shortcut(kbd::KeyCode::ANSI_X);
+    // "hello [hell]o "
+
+    // paste at the end
+    typer.key_press(0, kbd::KeyCode::DownArrow);
+    typer.shortcut(kbd::KeyCode::ANSI_V);
+    // "hello o hell"
+
+    expected_text = U"hello o hell";
+}

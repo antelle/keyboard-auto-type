@@ -76,9 +76,7 @@ class AutoType {
 
     AutoTypeResult text(std::u32string_view text, Modifier modifier = Modifier::None);
 
-    AutoTypeResult press_copy();
-    AutoTypeResult press_paste();
-    AutoTypeResult press_cut();
+    AutoTypeResult shortcut(KeyCode code);
 
     static Modifier shortcut_modifier();
 
