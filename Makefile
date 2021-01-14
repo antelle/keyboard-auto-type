@@ -50,4 +50,4 @@ run-example: example
 test:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 .
 	$(MAKE) build
-	build/output/test --gtest_filter=AutoTypeTest.shortcut_copy_paste
+	build/output/test --gtest_filter=AutoTypeTest.*
