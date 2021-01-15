@@ -51,7 +51,7 @@ typer.shortcut(kbd::KeyCode::V); // paste
 
 If you need access to a low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with right Ctrl.
 
-Other methods (`key_press`, `text`) will also press the modifier key for you, while `key_move` won't do it. However it accepts `modifier` parameter because you may need to pass it to the key event. For example, an event emitted when <kbd>A</kbd> is moved down in <kbd>⌘</kdb><kbd>A</kbd> combination, contains a flag that allows to understand that Command is now pressed.
+Other methods (`key_press`, `text`) will also press the modifier key for you, while `key_move` won't do it. However it accepts `modifier` parameter because you may need to pass it to the key event. For example, an event emitted when <kbd>A</kbd> is moved down in <kbd>⌘</kbd><kbd>A</kbd> combination, contains a flag that allows to understand that Command is now pressed.
 
 ```cpp
 // make sure modifiers keys are not hold by the user
