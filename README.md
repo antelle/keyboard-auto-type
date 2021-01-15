@@ -127,6 +127,10 @@ To activate the window found using `active_window`:
 kbd::AutoType::show_window(window_info)
 ```
 
+## C++ standard
+
+This project requires C++17 or above.
+
 ## License
 
 [MIT](LICENSE.md)
