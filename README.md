@@ -109,9 +109,12 @@ Get information about the active / frontmost window:
 kbd::AutoType::active_window()
 ```
 
-By default it will try to get window title and url, which will display prompts about managing other apps. You can pass these options to disable this behavior:
+By default it will try to get window title and url (from browsers), which will display prompts about managing other apps. You can pass these options to disable this behavior:
 ```cpp
-window_info = kbd::AutoType::active_window({ .get_window_title = false, .get_url = false })
+window_info = kbd::AutoType::active_window({
+    .get_window_title = false,
+    .get_url = false,
+})
 ```
 
 This function returns just a pid of the active / frontmost process:
