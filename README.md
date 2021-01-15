@@ -128,11 +128,11 @@ Get information about the active / frontmost window:
 kbd::AutoType::active_window()
 ```
 
-By default it will try to get window title and url (from browsers), which will display prompts about managing other apps. You can pass these options to disable this behavior:
+There's an option to get window title and url from browsers, this will display prompts about managing other apps. You can pass these options to get window title and url respectively:
 ```cpp
 window_info = kbd::AutoType::active_window({
-    .get_window_title = false,
-    .get_browser_url = false,
+    .get_window_title = true,
+    .get_browser_url = true,
 })
 ```
 

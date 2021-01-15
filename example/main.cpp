@@ -16,7 +16,10 @@ int main() {
     // typer.key_press(0, keyboard_auto_type::KeyCode::A,
     // keyboard_auto_type::Modifier::Command);
     while (true) {
-        auto win = typer.active_window();
+        auto win = typer.active_window({
+            .get_window_title = true,
+            .get_browser_url = true,
+        });
         std::cout << "Active window "
                   << "pid: " << win.pid << ", "
                   << "window_id: " << win.window_id << ", "

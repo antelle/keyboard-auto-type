@@ -49,8 +49,8 @@ struct AppWindowInfo {
 };
 
 struct ActiveWindowArgs {
-    bool get_window_title = true;
-    bool get_browser_url = true;
+    bool get_window_title = false;
+    bool get_browser_url = false;
 };
 
 class AutoType {
