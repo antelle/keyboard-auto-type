@@ -1,7 +1,11 @@
 #ifndef KEYBOARD_AUTO_TYPE_H
 #define KEYBOARD_AUTO_TYPE_H
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <windows.h>
+#else
 #include <sys/types.h>
+#endif
 
 #include <cstdint>
 #include <memory>
@@ -11,6 +15,10 @@
 #include "key-code.h"
 
 namespace keyboard_auto_type {
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+using pid_t = DWORD;
+#endif
 
 enum class Modifier : uint8_t {
     None = 0b0000,

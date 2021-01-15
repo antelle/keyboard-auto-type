@@ -2,3 +2,4 @@
 build/
 xcode/
 tmp/
+.DS_Store

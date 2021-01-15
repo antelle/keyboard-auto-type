@@ -1,4 +1,4 @@
-#include <Carbon/Carbon.h>
+// #include <Carbon/Carbon.h>
 #include <unistd.h>
 
 #include <iostream>
@@ -15,19 +15,19 @@ int main() {
     //     keyboard_auto_type::Modifier::Shift);
     // typer.key_press(0, keyboard_auto_type::KeyCode::A,
     // keyboard_auto_type::Modifier::Command);
-    while (true) {
-        auto win = typer.active_window({
-            .get_window_title = true,
-            .get_browser_url = true,
-        });
-        std::cout << "Active window "
-                  << "pid: " << win.pid << ", "
-                  << "window_id: " << win.window_id << ", "
-                  << "app_name: \"" << win.app_name << "\", "
-                  << "title: \"" << win.title << "\", "
-                  << "url: \"" << win.url << "\"" << std::endl;
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1, false);
-    }
+    // while (true) {
+    auto win = typer.active_window({
+        .get_window_title = true,
+        .get_browser_url = true,
+    });
+    std::cout << "Active window "
+              << "pid: " << win.pid << ", "
+              << "window_id: " << win.window_id << ", "
+              << "app_name: \"" << win.app_name << "\", "
+              << "title: \"" << win.title << "\", "
+              << "url: \"" << win.url << "\"" << std::endl;
+    // CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1, false);
+    // }
 
     usleep(KEY_EVENT_SUBMIT_SLEEP_TIME_USEC);
 }
