@@ -2,6 +2,8 @@
 
 Cross-platform library for simulating keyboard events.
 
+<kbd>K</kbd><kbd>E</kbd><kbd>Y</kbd><kbd>B</kbd><kbd>O</kbd><kbd>A</kbd><kbd>R</kbd><kbd>D</kbd><kbd>-</kbd><kbd>A</kbd><kbd>U</kbd><kbd>T</kbd><kbd>O</kbd><kbd>-</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>P</kbd><kbd>E</kbd>
+
 ## Status
 
 WIP, don't use it yet.
