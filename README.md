@@ -113,7 +113,7 @@ By default it will try to get window title and url (from browsers), which will d
 ```cpp
 window_info = kbd::AutoType::active_window({
     .get_window_title = false,
-    .get_url = false,
+    .get_browser_url = false,
 })
 ```
 

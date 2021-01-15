@@ -325,7 +325,7 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
         result.title = ax_get_focused_window_title(app.pid);
     }
 
-    if (args.get_url && !app.bundle_id.empty()) {
+    if (args.get_browser_url && !app.bundle_id.empty()) {
         bool is_browser =
             std::find(BROWSER_APP_BUNDLE_IDS.begin(), BROWSER_APP_BUNDLE_IDS.end(), app.bundle_id);
         if (is_browser) {
