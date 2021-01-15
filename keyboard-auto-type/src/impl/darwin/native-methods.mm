@@ -32,7 +32,8 @@ NativeWindowInfo native_window_info(pid_t pid) {
 
     id app = [SBApplication applicationWithProcessIdentifier:pid];
 
-    // Chromium
+    // Chromium, equivalent of this AppleScript:
+    // tell application "Google Chrome" to get URL of active tab of front window
     if ([app respondsToSelector:@selector(windows)]) {
         id windows = [app performSelector:@selector(windows)];
         if ([windows isKindOfClass:[NSArray class]] && [windows count]) {
@@ -59,7 +60,8 @@ NativeWindowInfo native_window_info(pid_t pid) {
         return result;
     }
 
-    // Safari
+    // Safari, equivalent of this AppleScript:
+    // tell application "Safari" to get URL of front document
     if ([app respondsToSelector:@selector(document)]) {
         id doc = [app performSelector:@selector(document)];
         if ([doc respondsToSelector:@selector(name)]) {
