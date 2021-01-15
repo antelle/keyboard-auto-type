@@ -25,17 +25,17 @@ kbd::AutoType typer;
 
 Perform some auto-typing using a high-level API:
 ```cpp
-typer.text(L"Hello, world!");
+typer.text(U"Hello, world!");
 ```
 
 Alternatively, you can simulate one key stroke:
 ```cpp
-typer.key_press(L'a');
+typer.key_press(U'a');
 ```
 
 You can also use [modifiers](Modifiers) to perform different actions, for example, this will send <kbd>⌘</kbd><kbd>A</kbd> to select all text:
 ```cpp
-typer.key_press(L'a', kbd::KeyCode::A, typer.shortcut_modifier());
+typer.key_press(U'a', kbd::KeyCode::A, typer.shortcut_modifier());
 ```
 
 Another example of a word deletion using <kbd>⌥</kbd><kbd>⌫</kbd>, in this case you pass `code`, but not `character` (also see more about [shortcuts](#shortcuts)):
@@ -145,6 +145,10 @@ To activate the window found using `active_window`:
 ```cpp
 kbd::AutoType::show_window(window_info)
 ```
+
+## Strings
+
+The library accepts 32-bit wide characters as `std::u32string` or `char32_t`, the conversion is up to you. In some places, such as window information, it will return `std::string`, these strings are in UTF-8.
 
 ## C++ standard
 
