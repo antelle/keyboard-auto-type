@@ -47,7 +47,24 @@ typer.shortcut(kbd::KeyCode::C); // copy
 typer.shortcut(kbd::KeyCode::V); // paste
 ```
 
-If you need access to more low-level API, there's a function `key_move` that can trigger specific individual key events, for example, only `keyUp`.
+## Low-level API
+
+If you need access to more low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with right Ctrl.
+
+Other methods (`key_press`, `text`) will also press the modifier key for you, while `key_move` won't do it.
+
+```cpp
+// make sure modifiers keys are not hold by the user
+typer.ensure_modifier_not_pressed();
+// press Alt
+typer.key_move(kbd::Direction::Down,
+               kbd::Modifier::Alt);
+// press the A key
+typer.key_move(kbd::Direction::Down,
+               U'a',
+               kbd::KeyCode::A,
+               kbd::Modifier::Alt);
+```
 
 ## Modifiers
 

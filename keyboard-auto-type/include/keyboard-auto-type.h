@@ -75,6 +75,7 @@ class AutoType {
     AutoTypeResult shortcut(KeyCode code);
     static Modifier shortcut_modifier();
 
+    AutoTypeResult ensure_modifier_not_pressed();
     AutoTypeResult key_move(Direction direction, char32_t character,
                             Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, char32_t character, KeyCode code,

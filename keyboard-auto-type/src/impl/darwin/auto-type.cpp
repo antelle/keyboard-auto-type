@@ -13,6 +13,10 @@
 
 namespace keyboard_auto_type {
 
+static constexpr int KEY_HOLD_TOTAL_WAIT_TIME = 10 * 1000 * 1000;
+static constexpr int KEY_HOLD_LOOP_WAIT_TIME = 10000;
+static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 128;
+
 class AutoType::AutoTypeImpl {
   private:
     auto_release<CGEventSourceRef> event_source_ =
@@ -22,42 +26,7 @@ class AutoType::AutoTypeImpl {
     std::array<CGKeyCode, KEYBOARD_LAYOUT_LENGTH> keyboard_layout_ = {{}};
     CFDataRef keyboard_layout_data_ = nullptr;
 
-    static constexpr int KEY_HOLD_TOTAL_WAIT_TIME = 10 * 1000 * 1000;
-    static constexpr int KEY_HOLD_LOOP_WAIT_TIME = 10000;
-    static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 128;
-
   public:
-    AutoTypeResult validate_system_state() {
-        auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
-        auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
-        constexpr auto ALL_FLAGS_MASK = (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
-                                         kCGEventFlagMaskAlternate | kCGEventFlagMaskControl);
-        while (total_wait_time > 0) {
-            auto flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
-            if ((flags & ALL_FLAGS_MASK) == 0) {
-                return AutoTypeResult::Ok;
-            }
-            if (flags & kCGEventFlagMaskCommand) {
-                modifier_up_down(Modifier::Command, false);
-            }
-            if (flags & kCGEventFlagMaskShift) {
-                modifier_up_down(Modifier::Shift, false);
-            }
-            if (flags & kCGEventFlagMaskAlternate) {
-                modifier_up_down(Modifier::Alt, false);
-            }
-            if (flags & kCGEventFlagMaskControl) {
-                modifier_up_down(Modifier::Control, false);
-            }
-            usleep(loop_wait_time);
-            total_wait_time -= loop_wait_time;
-        }
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-        throw std::runtime_error("Modifier key not released");
-#endif
-        return AutoTypeResult::ModifierNotReleased;
-    }
-
     AutoTypeResult key_up_down(char32_t character, CGKeyCode code, CGEventFlags flags, bool down) {
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
         if (character) {
@@ -158,28 +127,28 @@ class AutoType::AutoTypeImpl {
         }
         return keyboard_layout_.at(character);
     }
+
+    static CGEventFlags modifier_to_flags(Modifier modifier) {
+        if (modifier == Modifier::None) {
+            return 0;
+        }
+
+        CGEventFlags flags = 0;
+        if ((modifier & Modifier::Command) == Modifier::Command) {
+            flags |= kCGEventFlagMaskCommand;
+        }
+        if ((modifier & Modifier::Option) == Modifier::Option) {
+            flags |= kCGEventFlagMaskAlternate;
+        }
+        if ((modifier & Modifier::Control) == Modifier::Control) {
+            flags |= kCGEventFlagMaskControl;
+        }
+        if ((modifier & Modifier::Shift) == Modifier::Shift) {
+            flags |= kCGEventFlagMaskShift;
+        }
+        return flags;
+    }
 };
-
-CGEventFlags modifier_to_flags(Modifier modifier) {
-    if (modifier == Modifier::None) {
-        return 0;
-    }
-
-    CGEventFlags flags = 0;
-    if ((modifier & Modifier::Command) == Modifier::Command) {
-        flags |= kCGEventFlagMaskCommand;
-    }
-    if ((modifier & Modifier::Option) == Modifier::Option) {
-        flags |= kCGEventFlagMaskAlternate;
-    }
-    if ((modifier & Modifier::Control) == Modifier::Control) {
-        flags |= kCGEventFlagMaskControl;
-    }
-    if ((modifier & Modifier::Shift) == Modifier::Shift) {
-        flags |= kCGEventFlagMaskShift;
-    }
-    return flags;
-}
 
 AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
@@ -187,8 +156,39 @@ AutoType::~AutoType() = default;
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character, KeyCode code,
                                   Modifier modifier) {
-    auto flags = modifier_to_flags(modifier);
+    auto flags = AutoTypeImpl::modifier_to_flags(modifier);
     return impl_->key_up_down(character, map_key_code(code), flags, direction == Direction::Down);
+}
+
+AutoTypeResult AutoType::ensure_modifier_not_pressed() {
+    auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
+    auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
+    constexpr auto ALL_FLAGS_MASK = (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
+                                     kCGEventFlagMaskAlternate | kCGEventFlagMaskControl);
+    while (total_wait_time > 0) {
+        auto flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
+        if ((flags & ALL_FLAGS_MASK) == 0) {
+            return AutoTypeResult::Ok;
+        }
+        if (flags & kCGEventFlagMaskCommand) {
+            impl_->modifier_up_down(Modifier::Command, false);
+        }
+        if (flags & kCGEventFlagMaskShift) {
+            impl_->modifier_up_down(Modifier::Shift, false);
+        }
+        if (flags & kCGEventFlagMaskAlternate) {
+            impl_->modifier_up_down(Modifier::Alt, false);
+        }
+        if (flags & kCGEventFlagMaskControl) {
+            impl_->modifier_up_down(Modifier::Control, false);
+        }
+        usleep(loop_wait_time);
+        total_wait_time -= loop_wait_time;
+    }
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+    throw std::runtime_error("Modifier key not released");
+#endif
+    return AutoTypeResult::ModifierNotReleased;
 }
 
 AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
@@ -203,7 +203,7 @@ AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier mo
         return AutoTypeResult::BadArg;
     }
 
-    auto result = impl_->validate_system_state();
+    auto result = ensure_modifier_not_pressed();
     if (result != AutoTypeResult::Ok) {
         return result;
     }
@@ -223,7 +223,7 @@ AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier mo
         if (result != AutoTypeResult::Ok) {
             return result;
         }
-        flags = modifier_to_flags(modifier);
+        flags = AutoTypeImpl::modifier_to_flags(modifier);
     }
 
     result = impl_->key_up_and_down(character, native_key_code, flags);
@@ -243,7 +243,7 @@ AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
         return AutoTypeResult::Ok;
     }
 
-    auto result = impl_->validate_system_state();
+    auto result = ensure_modifier_not_pressed();
     if (result != AutoTypeResult::Ok) {
         return result;
     }
@@ -255,7 +255,7 @@ AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
         if (result != AutoTypeResult::Ok) {
             return result;
         }
-        flags = modifier_to_flags(modifier);
+        flags = AutoTypeImpl::modifier_to_flags(modifier);
     }
 
     impl_->read_keyboard_layout();
