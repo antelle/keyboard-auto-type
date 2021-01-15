@@ -1,13 +1,12 @@
 #include <Carbon/Carbon.h>
-#include <CoreFoundation/CoreFoundation.h>
 
 #include <array>
 #include <codecvt>
 #include <exception>
 #include <iostream>
-#include <string>
 
 #include "auto-release.h"
+#include "carbon-helpers.h"
 #include "key-map.h"
 #include "keyboard-auto-type.h"
 #include "native-methods.h"
@@ -31,11 +30,11 @@ class AutoType::AutoTypeImpl {
     AutoTypeResult validate_system_state() {
         auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
         auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
-        constexpr auto all_flags_mask = (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
+        constexpr auto ALL_FLAGS_MASK = (kCGEventFlagMaskCommand | kCGEventFlagMaskShift |
                                          kCGEventFlagMaskAlternate | kCGEventFlagMaskControl);
         while (total_wait_time > 0) {
             auto flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
-            if ((flags & all_flags_mask) == 0) {
+            if ((flags & ALL_FLAGS_MASK) == 0) {
                 return AutoTypeResult::Ok;
             }
             if (flags & kCGEventFlagMaskCommand) {
@@ -53,22 +52,13 @@ class AutoType::AutoTypeImpl {
             usleep(loop_wait_time);
             total_wait_time -= loop_wait_time;
         }
-        if (throw_exceptions_) {
-#if __cpp_exceptions
-            throw std::runtime_error("Modifier key not released");
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+        throw std::runtime_error("Modifier key not released");
 #endif
-        }
         return AutoTypeResult::ModifierNotReleased;
     }
 
     AutoTypeResult key_up_down(char32_t character, CGKeyCode code, CGEventFlags flags, bool down) {
-        if (down) {
-            auto result = validate_system_state();
-            if (result != AutoTypeResult::Ok) {
-                return result;
-            }
-        }
-
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
         if (character) {
             set_event_char(event, character);
@@ -104,15 +94,15 @@ class AutoType::AutoTypeImpl {
             return AutoTypeResult::Ok;
         }
 
-        constexpr std::array modifiers{Modifier::Command, Modifier::Option, Modifier::Control,
+        constexpr std::array MODIFIERS{Modifier::Command, Modifier::Option, Modifier::Control,
                                        Modifier::Shift};
-        constexpr std::array codes{kVK_Command, kVK_Option, kVK_Control, kVK_Shift};
+        constexpr std::array CODES{kVK_Command, kVK_Option, kVK_Control, kVK_Shift};
 
-        for (auto i = 0; i < modifiers.size(); i++) {
+        for (auto i = 0; i < MODIFIERS.size(); i++) {
             AutoTypeResult result;
-            auto mod_check = modifiers.at(i);
+            auto mod_check = MODIFIERS.at(i);
             if ((modifier & mod_check) == mod_check) {
-                result = key_up_down(0, codes.at(i), 0, down);
+                result = key_up_down(0, CODES.at(i), 0, down);
                 if (result != AutoTypeResult::Ok) {
                     return result;
                 }
@@ -145,9 +135,9 @@ class AutoType::AutoTypeImpl {
         for (int i = 0; i < KEYBOARD_LAYOUT_LENGTH; i++) {
             keyboard_layout_.at(i) = 0;
         }
-        constexpr std::array mod_states{0U, static_cast<UInt32>(NX_DEVICELSHIFTKEYMASK)};
+        constexpr std::array MOD_STATES{0U, static_cast<UInt32>(NX_DEVICELSHIFTKEYMASK)};
         for (int code = 0; code < MAX_KEYBOARD_LAYOUT_CHAR_CODE; code++) {
-            for (auto mod_state : mod_states) {
+            for (auto mod_state : MOD_STATES) {
                 UCKeyTranslate(layout, code, kUCKeyActionDown, mod_state, kbd_type,
                                kUCKeyTranslateNoDeadKeysBit, &keys_down, 4, &length, chars.data());
                 auto ch = chars[0];
@@ -207,12 +197,15 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
 
 AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier modifier) {
     if (!character && code == KeyCode::Undefined) {
-        if (throw_exceptions_) {
-#if __cpp_exceptions
-            throw std::invalid_argument("Either character or code must be set");
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+        throw std::invalid_argument("Either character or code must be set");
 #endif
-        }
         return AutoTypeResult::BadArg;
+    }
+
+    auto result = impl_->validate_system_state();
+    if (result != AutoTypeResult::Ok) {
+        return result;
     }
 
     CGKeyCode native_key_code = 0;
@@ -224,7 +217,6 @@ AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier mo
     }
 
     CGEventFlags flags = 0;
-    AutoTypeResult result;
 
     if (modifier != Modifier::None) {
         result = impl_->modifier_up_down(modifier, true);
@@ -251,8 +243,12 @@ AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
         return AutoTypeResult::Ok;
     }
 
+    auto result = impl_->validate_system_state();
+    if (result != AutoTypeResult::Ok) {
+        return result;
+    }
+
     CGEventFlags flags = 0;
-    AutoTypeResult result = AutoTypeResult::Ok;
 
     if (modifier != Modifier::None) {
         result = impl_->modifier_up_down(modifier, true);
@@ -281,9 +277,19 @@ AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
 
 Modifier AutoType::shortcut_modifier() { return Modifier::Command; }
 
-AppWindowInfo AutoType::active_window() {
-    auto pid = native_frontmost_app_pid();
-    if (!pid) {
+pid_t AutoType::active_pid() { return native_frontmost_app_pid(); }
+
+constexpr std::array BROWSER_APP_BUNDLE_IDS{
+    "com.google.Chrome",
+    "org.chromium.Chromium",
+    "com.google.Chrome.canary",
+    "com.apple.Safari",
+    "com.apple.SafariTechnologyPreview",
+};
+
+AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
+    auto app = native_frontmost_app();
+    if (!app.pid) {
         return {};
     }
 
@@ -293,94 +299,51 @@ AppWindowInfo AutoType::active_window() {
         return {};
     }
 
-    AppWindowInfo result = {.pid = pid};
+    AppWindowInfo result = {
+        .pid = app.pid,
+        .app_name = app.name,
+    };
 
     auto count = CFArrayGetCount(windows);
     for (auto i = 0; i < count; i++) {
-        auto window = reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(windows, i));
-
-        // auto desc = CFCopyDescription(window); // for debugging
-        // std::cout << CFStringGetCStringPtr(desc, kCFStringEncodingUTF8) << std::endl;
-
-        if (!CFDictionaryContainsKey(window, kCGWindowOwnerPID)) {
+        // std::cout << cfstring_to_string(CFCopyDescription(window)) << std::endl;
+        const auto *window = reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(windows, i));
+        auto window_pid = get_number_from_dictionary(window, kCGWindowOwnerPID);
+        if (window_pid != app.pid) {
             continue;
         }
-
-        auto window_layer_number =
-            reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowLayer));
-        int window_layer;
-        if (!CFNumberGetValue(window_layer_number, kCFNumberSInt32Type, &window_layer)) {
+        auto window_layer = get_number_from_dictionary(window, kCGWindowLayer);
+        if (window_layer != 0) {
             continue;
         }
-        if (window_layer > 0) {
-            continue;
-        }
-
-        auto window_pid_number =
-            reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowOwnerPID));
-        int window_pid;
-        if (!CFNumberGetValue(window_pid_number, kCFNumberSInt32Type, &window_pid)) {
-            continue;
-        }
-        if (window_pid != pid) {
-            continue;
-        }
-
-        if (CFDictionaryContainsKey(window, kCGWindowOwnerName)) {
-            auto window_owner_name_str =
-                reinterpret_cast<CFStringRef>(CFDictionaryGetValue(window, kCGWindowOwnerName));
-            auto length = CFStringGetLength(window_owner_name_str);
-            auto max_length = length * 4 + 1;
-            char window_owner_name[max_length];
-            if (CFStringGetCString(window_owner_name_str, window_owner_name, max_length,
-                                   kCFStringEncodingUTF8)) {
-                result.app_name = window_owner_name;
-            }
-        }
-
-        if (CFDictionaryContainsKey(window, kCGWindowNumber)) {
-            auto window_number =
-                reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowNumber));
-            int window_id;
-            if (CFNumberGetValue(window_number, kCFNumberSInt32Type, &window_id)) {
-                result.window_id = window_id;
-            }
-        }
+        result.window_id = get_number_from_dictionary(window, kCGWindowNumber);
+        result.title = get_string_from_dictionary(window, kCGWindowName);
+        // result.app_name = get_strng_from_dictionary(window, kCGWindowOwnerName);
     }
 
-    auto_release<CFArrayRef> ax_windows = nullptr;
-    auto accessibility_app = AXUIElementCreateApplication(pid);
-    auto ax_res =
-        AXUIElementCopyAttributeValues(accessibility_app, kAXWindowsAttribute, 0, 10, &ax_windows);
-    if (ax_res != kAXErrorSuccess) {
-        return result;
+    if (args.get_window_title) {
+        result.title = ax_get_focused_window_title(app.pid);
     }
 
-    auto ax_windows_num = CFArrayGetCount(ax_windows);
-    for (int i = 0; i < ax_windows_num; i++) {
-        auto ax_window = static_cast<AXUIElementRef>(CFArrayGetValueAtIndex(ax_windows, i));
-        auto_release<CFTypeRef> ax_main = nullptr;
-        ax_res = AXUIElementCopyAttributeValue(ax_window, kAXMainAttribute, &ax_main);
-        if (ax_res != kAXErrorSuccess) {
-            continue;
+    if (args.get_url && !app.bundle_id.empty()) {
+        bool is_browser =
+            std::find(BROWSER_APP_BUNDLE_IDS.begin(), BROWSER_APP_BUNDLE_IDS.end(), app.bundle_id);
+        if (is_browser) {
+            auto native_win_info = native_window_info(app.pid);
+            if (args.get_window_title && result.title.empty() && !native_win_info.title.empty()) {
+                result.title = native_win_info.title;
+            }
+            if (!native_win_info.url.empty()) {
+                result.url = native_win_info.url;
+            }
         }
-        auto is_main =
-            CFBooleanGetValue(reinterpret_cast<CFBooleanRef>(static_cast<CFTypeRef>(ax_main)));
-        if (!is_main) {
-            continue;
-        }
-        auto_release<CFTypeRef> ax_title = nullptr;
-        ax_res = AXUIElementCopyAttributeValue(ax_window, kAXTitleAttribute, &ax_title);
-        if (ax_res != kAXErrorSuccess) {
-            continue;
-        }
-        char buf[1024];
-        CFStringGetCString(reinterpret_cast<CFStringRef>(static_cast<CFTypeRef>(ax_title)), buf,
-                           sizeof(buf), kCFStringEncodingUTF8);
-        result.title = buf;
     }
 
     return result;
+}
+
+bool AutoType::show_window(const AppWindowInfo &window) {
+    return window.pid && native_show_app(window.pid);
 }
 
 } // namespace keyboard_auto_type

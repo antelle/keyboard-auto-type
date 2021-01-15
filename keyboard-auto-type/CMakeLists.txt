@@ -13,9 +13,11 @@ set(SOURCES
 if (APPLE)
     set(PLATFORM_SOURCES
         src/impl/darwin/auto-release.h
+        src/impl/darwin/carbon-helpers.h
         src/impl/darwin/key-map.h
         src/impl/darwin/native-methods.h
         src/impl/darwin/auto-type.cpp
+        src/impl/darwin/carbon-helpers.cpp
         src/impl/darwin/key-map.cpp
         src/impl/darwin/native-methods.mm
     )
@@ -27,5 +29,9 @@ endif()
 list(APPEND SOURCES ${PLATFORM_SOURCES})
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
+
+if(APPLE)
+    target_compile_options(${PROJECT_NAME} PUBLIC "-fobjc-arc")
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)

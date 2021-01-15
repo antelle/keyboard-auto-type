@@ -19,17 +19,18 @@ format:
 	find keyboard-auto-type test example -name '*.cpp' -o -name '*.h' -o -name '*.mm' | \
 		xargs clang-format -i --verbose
 
-check:
+check: clang-tidy cppcheck
+
+clang-tidy:
 	cmake -B build \
 		-D CMAKE_EXPORT_COMPILE_COMMANDS=1 \
 		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
 		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
 		.
 	find keyboard-auto-type -name '*.cpp' -o -name '*.h' | \
-		xargs clang-tidy -p build \
-			-checks=*,-modernize-use-trailing-return-type,-fuchsia-*,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-reinterpret-cast,-llvm-header-guard \
-			-warnings-as-errors=* \
-			--quiet
+		xargs clang-tidy -p build
+
+cppcheck:
 	cppcheck --enable=all --inline-suppr keyboard-auto-type test example
 
 xcode-project:
@@ -52,4 +53,4 @@ run-example: example
 test:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 .
 	$(MAKE) build
-	build/output/test --gtest_filter=AutoTypeTest.*
+	build/output/test #--gtest_filter=AutoTypeTest.*

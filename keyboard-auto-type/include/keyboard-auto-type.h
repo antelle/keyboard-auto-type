@@ -1,5 +1,7 @@
-#ifndef __KEYBOARD_AUTO_TYPE_H__
-#define __KEYBOARD_AUTO_TYPE_H__
+#ifndef KEYBOARD_AUTO_TYPE_H
+#define KEYBOARD_AUTO_TYPE_H
+
+#include <sys/types.h>
 
 #include <cstdint>
 #include <memory>
@@ -39,16 +41,20 @@ enum class AutoTypeResult : uint8_t {
 };
 
 struct AppWindowInfo {
-    intptr_t pid = 0;
+    pid_t pid = 0;
     intptr_t window_id = 0;
     std::string app_name;
     std::string title;
     std::string url;
 };
 
+struct ActiveWindowArgs {
+    bool get_window_title = true;
+    bool get_url = true;
+};
+
 class AutoType {
   private:
-    static bool throw_exceptions_;
     class AutoTypeImpl;
     std::unique_ptr<AutoTypeImpl> impl_;
 
@@ -61,7 +67,13 @@ class AutoType {
     AutoType(AutoType &&) = delete;
     AutoType &operator=(AutoType &&) = delete;
 
-    static void set_throw_exceptions(bool throw_exceptions);
+    AutoTypeResult text(std::u32string_view text, Modifier modifier = Modifier::None);
+
+    AutoTypeResult key_press(char32_t character, Modifier modifier = Modifier::None);
+    AutoTypeResult key_press(char32_t character, KeyCode code, Modifier modifier = Modifier::None);
+
+    AutoTypeResult shortcut(KeyCode code);
+    static Modifier shortcut_modifier();
 
     AutoTypeResult key_move(Direction direction, char32_t character,
                             Modifier modifier = Modifier::None);
@@ -69,19 +81,9 @@ class AutoType {
                             Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);
 
-    AutoTypeResult key_press(char32_t character, Modifier modifier = Modifier::None);
-    AutoTypeResult key_press(char32_t character, KeyCode code, Modifier modifier = Modifier::None);
-
-    AutoTypeResult text(std::u32string_view text, Modifier modifier = Modifier::None);
-
-    AutoTypeResult shortcut(KeyCode code);
-
-    static Modifier shortcut_modifier();
-
-    static AppWindowInfo active_window();
-    static void show_window(const AppWindowInfo &window);
-    static void show_self();
-    static void hide_self();
+    static pid_t active_pid();
+    static AppWindowInfo active_window(const ActiveWindowArgs &args = {});
+    static bool show_window(const AppWindowInfo &window);
 };
 
 } // namespace keyboard_auto_type

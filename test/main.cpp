@@ -1,3 +1,4 @@
+#include <Carbon/Carbon.h>
 #include <unistd.h>
 
 #include <array>
@@ -33,7 +34,6 @@ class AutoTypeTest : public testing::Test {
     // cppcheck-suppress unusedFunction
     virtual void SetUp() {
         expected_text = U"";
-        configure_auto_type();
         open_text_editor();
     }
 
@@ -46,8 +46,6 @@ class AutoTypeTest : public testing::Test {
     }
 
   private:
-    void configure_auto_type() { kbd::AutoType::set_throw_exceptions(true); }
-
     void open_text_editor() {
         create_file();
         kill_text_editor();
@@ -63,14 +61,33 @@ class AutoTypeTest : public testing::Test {
 #endif
     }
 
+    void run_event_loop(double seconds) {
+#if __APPLE__
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, seconds, false);
+#else
+        FAIL() << "run_event_loop is not implemented";
+#endif
+    }
+
+    bool is_text_editor_app_name(std::string_view app_name) {
+#if __APPLE__
+        return app_name == "TextEdit";
+#else
+        FAIL() << "is_text_editor_app_name is not implemented";
+#endif
+    }
+
     void wait_text_editor_window() {
-        sleep(1);
-        // for (auto i = 0; i < 100; i++) {
-        //     usleep(100000);
-        //     auto active_window = kbd::WindowHelper::active_window();
-        //     std::cout << active_window.pid << " ";
-        // }
-        // FAIL() << "Text editor didn't appear";
+        kbd::AutoType typer;
+        for (auto i = 0; i < 100; i++) {
+            run_event_loop(0.1);
+            auto active_window = typer.active_window();
+            if (is_text_editor_app_name(active_window.app_name)) {
+                run_event_loop(0.5);
+                return;
+            }
+        }
+        FAIL() << "Text editor didn't appear";
     }
 
     void create_file() {
@@ -85,8 +102,14 @@ class AutoTypeTest : public testing::Test {
 
     void save_text() {
         kbd::AutoType typer;
-        typer.key_press(0, kbd::KeyCode::ANSI_S, typer.shortcut_modifier());
-        typer.key_press(0, kbd::KeyCode::ANSI_Q, typer.shortcut_modifier());
+        auto active_window = typer.active_window();
+        run_event_loop(0.01);
+        if (is_text_editor_app_name(active_window.app_name)) {
+            typer.key_press(0, kbd::KeyCode::S, typer.shortcut_modifier());
+            typer.key_press(0, kbd::KeyCode::Q, typer.shortcut_modifier());
+        } else {
+            FAIL() << "Active app is not a text editor, failed to save";
+        }
     }
 
     static void kill_text_editor() {
@@ -101,7 +124,7 @@ class AutoTypeTest : public testing::Test {
         for (auto i = 0; i < 100; i++) {
             auto ftime = std::filesystem::last_write_time(file_name);
             auto last_mod_time = decltype(ftime)::clock::to_time_t(ftime);
-            usleep(100000);
+            run_event_loop(0.1);
             if (last_mod_time > file_mod_time) {
                 return;
             }
@@ -117,6 +140,45 @@ class AutoTypeTest : public testing::Test {
         std::u32string actual_text = converter.from_bytes(data);
 
         ASSERT_EQ(expected_text, actual_text);
+    }
+
+    void open_edit_menu() {
+        kbd::AutoType typer;
+#if __APPLE__
+        // highlight the "Apple" menu
+        typer.key_press(0, kbd::KeyCode::F2, kbd::Modifier::Ctrl);
+        // go to "Edit" menu
+        typer.key_press(0, kbd::KeyCode::RightArrow);
+        typer.key_press(0, kbd::KeyCode::RightArrow);
+        typer.key_press(0, kbd::KeyCode::RightArrow);
+        // select "Select all"
+        typer.key_press(0, kbd::KeyCode::DownArrow);
+#else
+        FAIL() << "open_edit_menu not implemented";
+#endif
+    }
+
+  public:
+    void press_menu_select_all() {
+        kbd::AutoType typer;
+        open_edit_menu();
+        typer.key_press(0, kbd::KeyCode::S);
+        typer.key_press(0, kbd::KeyCode::Enter);
+    }
+
+    void press_menu_cut() {
+        kbd::AutoType typer;
+        open_edit_menu();
+        typer.key_press(0, kbd::KeyCode::C);
+        typer.key_press(0, kbd::KeyCode::U);
+        typer.key_press(0, kbd::KeyCode::Enter);
+    }
+
+    void press_menu_paste() {
+        kbd::AutoType typer;
+        open_edit_menu();
+        typer.key_press(0, kbd::KeyCode::P);
+        typer.key_press(0, kbd::KeyCode::Enter);
     }
 };
 
@@ -153,48 +215,52 @@ TEST_F(AutoTypeTest, key_press_capital) {
 
 TEST_F(AutoTypeTest, key_press_key_code) {
     kbd::AutoType typer;
-    typer.key_press(0, kbd::KeyCode::ANSI_0);
-    typer.key_press(0, kbd::KeyCode::ANSI_B);
+    typer.key_press(0, kbd::KeyCode::D0);
+    typer.key_press(0, kbd::KeyCode::B);
     expected_text = U"0b";
 }
 
 TEST_F(AutoTypeTest, key_press_key_code_with_char) {
     kbd::AutoType typer;
-    typer.key_press('0', kbd::KeyCode::ANSI_0);
-    typer.key_press('b', kbd::KeyCode::ANSI_B);
+    typer.key_press(U'0', kbd::KeyCode::D0);
+    typer.key_press(U'b', kbd::KeyCode::B);
     expected_text = U"0b";
 }
 
 TEST_F(AutoTypeTest, key_press_key_code_modifier) {
     kbd::AutoType typer;
-    typer.key_press(0, kbd::KeyCode::ANSI_1);
-    typer.key_press(0, kbd::KeyCode::ANSI_1, kbd::Modifier::Shift);
-    typer.key_press(0, kbd::KeyCode::ANSI_C);
-    typer.key_press(0, kbd::KeyCode::ANSI_C, kbd::Modifier::Shift);
+    typer.key_press(0, kbd::KeyCode::D1);
+    typer.key_press(0, kbd::KeyCode::D1, kbd::Modifier::Shift);
+    typer.key_press(0, kbd::KeyCode::C);
+    typer.key_press(0, kbd::KeyCode::C, kbd::Modifier::Shift);
     expected_text = U"1!cC";
 }
 
 TEST_F(AutoTypeTest, key_press_key_code_modifier_with_char) {
     kbd::AutoType typer;
-    typer.key_press('1', kbd::KeyCode::ANSI_1);
-    typer.key_press('!', kbd::KeyCode::ANSI_1, kbd::Modifier::Shift);
-    typer.key_press('c', kbd::KeyCode::ANSI_C);
-    typer.key_press('C', kbd::KeyCode::ANSI_C, kbd::Modifier::Shift);
+    typer.key_press(U'1', kbd::KeyCode::D1);
+    typer.key_press(U'!', kbd::KeyCode::D1, kbd::Modifier::Shift);
+    typer.key_press(U'c', kbd::KeyCode::C);
+    typer.key_press(U'C', kbd::KeyCode::C, kbd::Modifier::Shift);
     expected_text = U"1!cC";
+}
+
+TEST_F(AutoTypeTest, key_press_menu) {
+    kbd::AutoType typer;
+
+    typer.text(U"text");
+    press_menu_select_all();
+    press_menu_cut();
+    typer.text(U"more ");
+    press_menu_paste();
+
+    expected_text = U"more text";
 }
 
 TEST_F(AutoTypeTest, key_press_bad_arg) {
     kbd::AutoType typer;
-    typer.key_press('a');
+    typer.key_press(U'a');
     ASSERT_THROW(typer.key_press(0), std::invalid_argument);
-    expected_text = U"a";
-}
-
-TEST_F(AutoTypeTest, key_press_bad_arg_no_throw) {
-    kbd::AutoType typer;
-    typer.key_press('a');
-    typer.set_throw_exceptions(false);
-    typer.key_press(0);
     expected_text = U"a";
 }
 
@@ -277,14 +343,14 @@ TEST_F(AutoTypeTest, shortcut_copy_paste) {
     // "hello"
 
     // select all
-    typer.shortcut(kbd::KeyCode::ANSI_A);
-    typer.shortcut(kbd::KeyCode::ANSI_C);
+    typer.shortcut(kbd::KeyCode::A);
+    typer.shortcut(kbd::KeyCode::C);
     // "[hello]"
 
     // paste at the end
     typer.key_press(0, kbd::KeyCode::RightArrow);
     typer.text(U" ");
-    typer.shortcut(kbd::KeyCode::ANSI_V);
+    typer.shortcut(kbd::KeyCode::V);
     typer.text(U" ");
     // "hello hello "
 
@@ -295,12 +361,12 @@ TEST_F(AutoTypeTest, shortcut_copy_paste) {
     for (int i = 0; i < 4; i++) {
         typer.key_press(0, kbd::KeyCode::LeftArrow, kbd::Modifier::Shift);
     }
-    typer.shortcut(kbd::KeyCode::ANSI_X);
+    typer.shortcut(kbd::KeyCode::X);
     // "hello [hell]o "
 
     // paste at the end
     typer.key_press(0, kbd::KeyCode::DownArrow);
-    typer.shortcut(kbd::KeyCode::ANSI_V);
+    typer.shortcut(kbd::KeyCode::V);
     // "hello o hell"
 
     expected_text = U"hello o hell";

@@ -1,66 +1,88 @@
 #include "native-methods.h"
 
 #import <AppKit/AppKit.h>
+#import <ScriptingBridge/ScriptingBridge.h>
 
 namespace keyboard_auto_type {
 
-// clang-format off
-
-/*
- * ARCMacro.h  1.2 2016/10/30  https://gist.github.com/2823399 Thanks: @olance
- * ARCMacro.h  1.1 2012/05/29  https://gist.github.com/2823399
- *
- * ARCMacro.h realizes coexistence of both the ARC (Automatic
- * Reference Counting) mode and the Non-ARC mode of Objective-C
- * in the same source code. This macro works for iOS and Mac OS X.
- *
- * This is a by-product of joint research by AIST and The University of Ryukyu.
- * HIRANO Satoshi (AIST), NAKAMURA Morikazu (U. Ryukyu) and GUAN Senlin (U. Ryukyu)
- *
- * Author: HIRANO Satoshi (AIST, Japan) on 2011/11/14
- * Copyright 2011-2012 National Institute of Advanced Industrial Science
- *      and Technology (AIST), Japan.  Apache License 2.0.
- *
- * Usage:
- *    #import "ARCMacro.h"
- *    [o1 RETAIN];
- *    o2 = [[o3 RETAIN] AUTORELEASE];
- *    [super DEALLOC];
- */
-
-#if __clang__
-    #if __has_feature(objc_arc)
-        #define S_RETAIN self
-        #define S_AUTORELEASE self
-        #define S_RELEASE self
-        #define S_DEALLOC self
-    #else
-        #define S_RETAIN retain
-        #define S_AUTORELEASE autorelease
-        #define S_RELEASE release
-        #define S_DEALLOC dealloc
-    #endif
-#else
-    #define S_RETAIN retain
-    #define S_AUTORELEASE autorelease
-    #define S_RELEASE release
-    #define S_DEALLOC dealloc
-#endif
-
-// clang-format on
-
 pid_t native_frontmost_app_pid() {
     NSRunningApplication *app = [[NSWorkspace sharedWorkspace] frontmostApplication];
+    return app ? app.processIdentifier : 0;
+}
 
+NativeAppInfo native_frontmost_app() {
+    NSRunningApplication *app = [[NSWorkspace sharedWorkspace] frontmostApplication];
     if (!app) {
-        return 0;
+        return {};
+    }
+    return {
+        .pid = app.processIdentifier,
+        .name = app.localizedName.UTF8String,
+        .bundle_id = app.bundleIdentifier.UTF8String,
+    };
+}
+
+bool native_show_app(pid_t pid) {
+    NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+    return app && [app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+}
+
+NativeWindowInfo native_window_info(pid_t pid) {
+    NativeWindowInfo result{};
+
+    id app = [SBApplication applicationWithProcessIdentifier:pid];
+
+    // Chromium
+    if ([app respondsToSelector:@selector(windows)]) {
+        id windows = [app performSelector:@selector(windows)];
+        if ([windows isKindOfClass:[NSArray class]] && [windows count]) {
+            id window = [windows objectAtIndex:0];
+            if ([window respondsToSelector:@selector(activeTab)]) {
+                id activeTab = [window performSelector:@selector(activeTab)];
+                if ([activeTab respondsToSelector:@selector(name)]) {
+                    id name = [activeTab performSelector:@selector(name)];
+                    if ([name isKindOfClass:[NSString class]]) {
+                        result.title = [name UTF8String];
+                    }
+                }
+                if ([activeTab respondsToSelector:@selector(URL)]) {
+                    id url = [activeTab performSelector:@selector(URL)];
+                    if ([url isKindOfClass:[NSString class]]) {
+                        result.url = [url UTF8String];
+                    }
+                }
+            }
+        }
     }
 
-    auto pid = app.processIdentifier;
+    if (!result.url.empty() || !result.title.empty()) {
+        return result;
+    }
 
-    [app S_RELEASE];
+    // Safari
+    if ([app respondsToSelector:@selector(document)]) {
+        id doc = [app performSelector:@selector(document)];
+        if ([doc respondsToSelector:@selector(name)]) {
+            id names = [doc performSelector:@selector(name)];
+            if ([names isKindOfClass:[NSArray class]] && [names count]) {
+                id name = [names objectAtIndex:0];
+                if ([name isKindOfClass:[NSString class]]) {
+                    result.title = [name UTF8String];
+                }
+            }
+        }
+        if ([doc respondsToSelector:@selector(URL)]) {
+            id urls = [doc performSelector:@selector(URL)];
+            if ([urls isKindOfClass:[NSArray class]] && [urls count]) {
+                id url = [urls objectAtIndex:0];
+                if ([url isKindOfClass:[NSString class]]) {
+                    result.url = [url UTF8String];
+                }
+            }
+        }
+    }
 
-    return pid;
+    return result;
 }
 
 } // namespace keyboard_auto_type

@@ -1,0 +1,18 @@
+---
+Checks: >-
+    *,
+    -llvmlibc-*,
+    -fuchsia-*,
+    -modernize-use-trailing-return-type,
+    -readability-implicit-bool-conversion,
+    -cppcoreguidelines-pro-type-reinterpret-cast,
+    -llvm-header-guard,
+WarningsAsErrors: '*'
+CheckOptions:
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+  - key:             readability-identifier-naming.ConstexprVariableCase
+    value:           UPPER_CASE
+  - key:             readability-identifier-naming.ConstVariableCase
+    value:           UPPER_CASE
+...

@@ -24,6 +24,7 @@ if(APPLE)
         "-framework CoreFoundation"
         "-framework Carbon"
         "-framework AppKit"
+        "-framework ScriptingBridge"
     )
 endif()
 
