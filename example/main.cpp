@@ -11,11 +11,6 @@ constexpr int KEY_EVENT_SUBMIT_SLEEP_TIME_USEC = 100000;
 int main() {
     keyboard_auto_type::AutoType typer;
 
-    // typer.text(U"Hello!");
-    // typer.key_press(U'!', keyboard_auto_type::KeyCode::D1,
-    //     keyboard_auto_type::Modifier::Shift);
-    // typer.key_press(0, keyboard_auto_type::KeyCode::A,
-    // keyboard_auto_type::Modifier::Command);
     auto win = typer.active_window({
         .get_window_title = true,
         .get_browser_url = true,
@@ -27,7 +22,12 @@ int main() {
               << "title: \"" << win.title << "\", "
               << "url: \"" << win.url << "\"" << std::endl;
 
+    typer.text(U"Hello");
+    typer.key_press(U'!', keyboard_auto_type::KeyCode::D1,
+        keyboard_auto_type::Modifier::Shift);
+
 #if __APPLE__
+    // wait for events to send
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.1, false);
 #endif
 }
