@@ -49,7 +49,7 @@ typer.shortcut(kbd::KeyCode::V); // paste
 
 ## Low-level API
 
-If you need access to more low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with right Ctrl.
+If you need access to a low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with right Ctrl.
 
 Other methods (`key_press`, `text`) will also press the modifier key for you, while `key_move` won't do it.
 
