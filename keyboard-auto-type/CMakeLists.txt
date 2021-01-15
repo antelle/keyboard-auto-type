@@ -28,6 +28,7 @@ elseif(WIN32)
         src/impl/win32/auto-type.cpp
         src/impl/win32/key-map.cpp
     )
+    source_group("win32" FILES ${PLATFORM_SOURCES})
 else()
 endif()
 
