@@ -23,6 +23,11 @@ if (APPLE)
     )
     source_group("darwin" FILES ${PLATFORM_SOURCES})
 elseif(WIN32)
+    set(PLATFORM_SOURCES
+        src/impl/win32/key-map.h
+        src/impl/win32/auto-type.cpp
+        src/impl/win32/key-map.cpp
+    )
 else()
 endif()
 
