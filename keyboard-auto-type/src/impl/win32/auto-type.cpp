@@ -1,8 +1,8 @@
-#include <array>
-#include <vector>
-#include <iostream>
-#include <exception>
 #include <algorithm>
+#include <array>
+#include <exception>
+#include <iostream>
+#include <vector>
 
 #include "key-map.h"
 #include "keyboard-auto-type.h"
@@ -64,11 +64,10 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
         result.title = native_window_text(hwnd);
     }
     if (args.get_browser_url) {
-        auto is_browser =
-            std::any_of(BROWSER_PROCESS_NAMES.begin(), BROWSER_PROCESS_NAMES.end(),
-                        [&app_name = result.app_name](auto name) {
-                            return includes_case_insensitive(app_name, name);
-                        });
+        auto is_browser = std::any_of(BROWSER_PROCESS_NAMES.begin(), BROWSER_PROCESS_NAMES.end(),
+                                      [&app_name = result.app_name](auto name) {
+                                          return includes_case_insensitive(app_name, name);
+                                      });
         if (!is_browser) {
             std::array<char, BROWSER_WINDOW_CLASS.size() + 1> window_class_name;
             if (GetClassNameA(hwnd, window_class_name.data(), window_class_name.size())) {

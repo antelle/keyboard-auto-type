@@ -3,9 +3,9 @@
 #include <Shlwapi.h>
 #include <UIAutomation.h>
 
-#include <vector>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 namespace keyboard_auto_type {
 
@@ -78,7 +78,8 @@ std::string native_browser_url(DWORD pid, HWND hwnd) {
     IUIAutomationCondition *condition_property = nullptr;
     VARIANT var_type_id = {VT_I4};
     var_type_id.uintVal = UIA_EditControlTypeId;
-    hr = client->CreatePropertyCondition(UIA_ControlTypePropertyId, var_type_id, &condition_property);
+    hr = client->CreatePropertyCondition(UIA_ControlTypePropertyId, var_type_id,
+                                         &condition_property);
     if (hr != S_OK) {
         std::for_each(to_release.begin(), to_release.end(), [](auto i) { i->Release(); });
         return "";
@@ -113,7 +114,8 @@ std::string native_browser_url(DWORD pid, HWND hwnd) {
     to_release.push_back(found_element);
 
     IUIAutomationValuePattern *pattern = nullptr;
-    hr = found_element->GetCurrentPattern(UIA_ValuePatternId, reinterpret_cast<IUnknown **>(&pattern));
+    hr = found_element->GetCurrentPattern(UIA_ValuePatternId,
+                                          reinterpret_cast<IUnknown **>(&pattern));
     if (hr != S_OK || !pattern) {
         std::for_each(to_release.begin(), to_release.end(), [](auto i) { i->Release(); });
         return "";
