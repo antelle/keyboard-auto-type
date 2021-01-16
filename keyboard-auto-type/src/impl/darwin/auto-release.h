@@ -9,6 +9,8 @@ template <typename T> class auto_release {
     T resource_ = nullptr;
 
   public:
+    auto_release() { resource_ = nullptr; }
+
     // cppcheck-suppress noExplicitConstructor
     auto_release(T resource) // NOLINT(google-explicit-constructor, hicpp-explicit-conversions)
         : resource_(resource) {}

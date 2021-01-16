@@ -41,7 +41,7 @@ std::string get_string_from_dictionary(CFDictionaryRef dictionary, CFStringRef k
 
 std::string ax_get_focused_window_title(pid_t pid) {
     auto_release accessibility_app = AXUIElementCreateApplication(pid);
-    auto_release<CFTypeRef> ax_window = nullptr;
+    auto_release<CFTypeRef> ax_window;
     auto ax_err = AXUIElementCopyAttributeValue(
         accessibility_app,
         kAXFocusedWindowAttribute, // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
@@ -50,7 +50,7 @@ std::string ax_get_focused_window_title(pid_t pid) {
         return "";
     }
 
-    auto_release<CFTypeRef> ax_title = nullptr;
+    auto_release<CFTypeRef> ax_title;
     ax_err = AXUIElementCopyAttributeValue(
         reinterpret_cast<AXUIElementRef>(static_cast<CFTypeRef>(ax_window)),
         kAXTitleAttribute, // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
