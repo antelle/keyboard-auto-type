@@ -150,6 +150,10 @@ kbd::AutoType::show_window(window_info)
 
 The library accepts 32-bit platform-independent wide characters in form of `std::u32string` or `char32_t`, the conversion is up to you. In some places, such as window information, it will return `std::string`, these strings are in UTF-8.
 
+## Thread safety
+
+The library is not thread safe. Moreover, it's not a good idea to manipulate the keyboard from different threads at the same time, don't do it.
+
 ## C++ standard
 
 This project requires C++17 or above.
