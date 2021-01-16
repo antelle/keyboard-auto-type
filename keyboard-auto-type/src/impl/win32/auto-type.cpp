@@ -1,16 +1,21 @@
 #include <array>
-#include <codecvt>
-#include <exception>
+#include <vector>
 #include <iostream>
+#include <exception>
+#include <algorithm>
 
 #include "key-map.h"
 #include "keyboard-auto-type.h"
+#include "winapi-tools.h"
 
 namespace keyboard_auto_type {
 
 static constexpr int KEY_HOLD_TOTAL_WAIT_TIME = 10 * 1000 * 1000;
 static constexpr int KEY_HOLD_LOOP_WAIT_TIME = 10000;
-static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 128;
+
+static constexpr std::array BROWSER_PROCESS_NAMES{
+    "chrome", "firefox", "opera", "browser", "applicationframehost", "iexplore", "edge"};
+static constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
 
 class AutoType::AutoTypeImpl {};
 
@@ -41,7 +46,44 @@ Modifier AutoType::shortcut_modifier() { return Modifier::Control; }
 
 pid_t AutoType::active_pid() { return 0; }
 
-AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) { return {}; }
+AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
+    auto hwnd = GetForegroundWindow();
+    if (!hwnd) {
+        return {};
+    }
+
+    DWORD pid;
+    GetWindowThreadProcessId(hwnd, &pid);
+
+    AppWindowInfo result{};
+    result.window_id = reinterpret_cast<intptr_t>(hwnd);
+    result.pid = pid;
+
+    result.app_name = native_process_main_module_name(pid);
+    if (args.get_window_title) {
+        result.title = native_window_text(hwnd);
+    }
+    if (args.get_browser_url) {
+        auto is_browser =
+            std::any_of(BROWSER_PROCESS_NAMES.begin(), BROWSER_PROCESS_NAMES.end(),
+                        [&app_name = result.app_name](auto name) {
+                            return includes_case_insensitive(app_name, name);
+                        });
+        if (!is_browser) {
+            std::array<char, BROWSER_WINDOW_CLASS.size() + 1> window_class_name;
+            if (GetClassNameA(hwnd, window_class_name.data(), window_class_name.size())) {
+                if (BROWSER_WINDOW_CLASS == std::string_view(window_class_name.data())) {
+                    is_browser = true;
+                }
+            }
+        }
+        if (is_browser) {
+            result.url = native_browser_url(pid, hwnd);
+        }
+    }
+
+    return result;
+}
 
 bool AutoType::show_window(const AppWindowInfo &window) { return false; }
 

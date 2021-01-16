@@ -23,10 +23,13 @@ if (APPLE)
     )
     source_group("darwin" FILES ${PLATFORM_SOURCES})
 elseif(WIN32)
+    add_definitions(-DUNICODE -D_UNICODE)
     set(PLATFORM_SOURCES
         src/impl/win32/key-map.h
+        src/impl/win32/winapi-tools.h
         src/impl/win32/auto-type.cpp
         src/impl/win32/key-map.cpp
+        src/impl/win32/winapi-tools.cpp
     )
     source_group("win32" FILES ${PLATFORM_SOURCES})
 else()

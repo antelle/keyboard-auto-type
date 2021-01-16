@@ -2,7 +2,7 @@
 #define KEYBOARD_AUTO_TYPE_H
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <sys/types.h>
 #endif

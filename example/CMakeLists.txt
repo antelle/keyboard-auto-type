@@ -12,6 +12,11 @@ if(APPLE)
         "-framework AppKit"
         "-framework ScriptingBridge"
     )
+elseif(WIN32)
+    add_definitions(-DUNICODE -D_UNICODE)
+    set(SYSTEM_LIBRARIES
+        "Shlwapi.lib"
+    )
 endif()
 
 target_link_libraries(${PROJECT_NAME}

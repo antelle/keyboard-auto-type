@@ -26,6 +26,8 @@ if(APPLE)
         "-framework AppKit"
         "-framework ScriptingBridge"
     )
+elseif(WIN32)
+    add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
