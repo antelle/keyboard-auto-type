@@ -30,9 +30,14 @@ elseif(WIN32)
     add_definitions(-DUNICODE -D_UNICODE)
 endif()
 
+set(SANITIZER_FLAGS "")
+if(KEYBOARD_AUTO_TYPE_USE_SANITIZERS)
+    set(SANITIZER_FLAGS "-fsanitize=address,undefined")
+endif()
+
 target_link_libraries(${PROJECT_NAME}
-    # -fsanitize=address,undefined
     keyboard-auto-type
     ${SYSTEM_LIBRARIES}
     gtest
+    ${SANITIZER_FLAGS}
 )

@@ -50,6 +50,9 @@ run-example: example
 	build/output/example
 
 test:
-	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 .
+	cmake -B build \
+		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
+		-D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 \
+		.
 	$(MAKE) build
 	build/output/test #--gtest_filter=AutoTypeTest.*
