@@ -5,7 +5,7 @@
 
 namespace keyboard_auto_type {
 
-enum class KeyCode : uint8_t {
+enum class KeyCode {
     Undefined,
 
     // numbers

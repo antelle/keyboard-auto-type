@@ -40,9 +40,9 @@ Modifier operator+(Modifier lhs, Modifier rhs);
 Modifier operator|(Modifier lhs, Modifier rhs);
 Modifier operator&(Modifier lhs, Modifier rhs);
 
-enum class Direction : uint8_t { Up, Down };
+enum class Direction { Up, Down };
 
-enum class AutoTypeResult : uint8_t {
+enum class AutoTypeResult {
     Ok,
     BadArg,
     ModifierNotReleased,
