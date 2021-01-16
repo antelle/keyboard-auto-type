@@ -27,8 +27,7 @@ clang-tidy:
 		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
 		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
 		.
-	find keyboard-auto-type -name '*.cpp' -o -name '*.h' | \
-		xargs clang-tidy -p build
+	cmake --build build --target clang-tidy
 
 cppcheck:
 	cppcheck --enable=all --inline-suppr keyboard-auto-type test example

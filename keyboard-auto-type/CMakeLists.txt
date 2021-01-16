@@ -44,3 +44,12 @@ if(APPLE)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+
+list(TRANSFORM SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
+
+add_custom_command(
+    OUTPUT keyboard-auto-type-clang-tidy
+    COMMAND clang-tidy -p build ${SOURCES}
+)
+
+add_custom_target(clang-tidy DEPENDS keyboard-auto-type-clang-tidy)
