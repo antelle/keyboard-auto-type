@@ -39,15 +39,15 @@ NativeWindowInfo native_window_info(pid_t pid) {
         if ([windows isKindOfClass:[NSArray class]] && [windows count]) {
             id window = [windows objectAtIndex:0];
             if ([window respondsToSelector:@selector(activeTab)]) {
-                id activeTab = [window performSelector:@selector(activeTab)];
-                if ([activeTab respondsToSelector:@selector(name)]) {
-                    id name = [activeTab performSelector:@selector(name)];
+                id active_tab = [window performSelector:@selector(activeTab)];
+                if ([active_tab respondsToSelector:@selector(name)]) {
+                    id name = [active_tab performSelector:@selector(name)];
                     if ([name isKindOfClass:[NSString class]]) {
                         result.title = [name UTF8String];
                     }
                 }
-                if ([activeTab respondsToSelector:@selector(URL)]) {
-                    id url = [activeTab performSelector:@selector(URL)];
+                if ([active_tab respondsToSelector:@selector(URL)]) {
+                    id url = [active_tab performSelector:@selector(URL)];
                     if ([url isKindOfClass:[NSString class]]) {
                         result.url = [url UTF8String];
                     }
