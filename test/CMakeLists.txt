@@ -29,6 +29,7 @@ if(APPLE)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
+    # -fsanitize=address,undefined
     keyboard-auto-type
     ${SYSTEM_LIBRARIES}
     gtest

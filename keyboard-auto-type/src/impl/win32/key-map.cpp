@@ -96,7 +96,7 @@ constexpr std::array<BYTE, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     VK_ADD,
 
     // others
-    VK_BACK,
+    VK_OEM_5, // Backslash
     VK_OEM_COMMA,
     VK_OEM_PLUS, // Equal
     VK_OEM_3,    // Grave

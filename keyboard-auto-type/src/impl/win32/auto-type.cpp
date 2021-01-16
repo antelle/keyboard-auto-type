@@ -12,8 +12,7 @@ static constexpr int KEY_HOLD_TOTAL_WAIT_TIME = 10 * 1000 * 1000;
 static constexpr int KEY_HOLD_LOOP_WAIT_TIME = 10000;
 static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 128;
 
-class AutoType::AutoTypeImpl {
-};
+class AutoType::AutoTypeImpl {};
 
 AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
@@ -24,9 +23,7 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character, KeyCo
     return AutoTypeResult::Ok;
 }
 
-AutoTypeResult AutoType::ensure_modifier_not_pressed() {
-    return AutoTypeResult::Ok;
-}
+AutoTypeResult AutoType::ensure_modifier_not_pressed() { return AutoTypeResult::Ok; }
 
 AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
     return AutoTypeResult::Ok;

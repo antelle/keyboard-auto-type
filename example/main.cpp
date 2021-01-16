@@ -23,8 +23,7 @@ int main() {
               << "url: \"" << win.url << "\"" << std::endl;
 
     typer.text(U"Hello");
-    typer.key_press(U'!', keyboard_auto_type::KeyCode::D1,
-        keyboard_auto_type::Modifier::Shift);
+    typer.key_press(U'!', keyboard_auto_type::KeyCode::D1, keyboard_auto_type::Modifier::Shift);
 
 #if __APPLE__
     // wait for events to send
