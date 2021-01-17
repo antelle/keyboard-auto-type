@@ -23,3 +23,7 @@ target_link_libraries(${PROJECT_NAME}
     keyboard-auto-type
     ${SYSTEM_LIBRARIES}
 )
+
+add_custom_target(run-example
+    COMMAND "$<TARGET_FILE:example>"
+)

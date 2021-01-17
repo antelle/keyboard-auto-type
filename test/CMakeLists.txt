@@ -46,5 +46,5 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_custom_target(run-tests
-    COMMAND echo TESTS: "${OUTPUT_NAME}"
+    COMMAND "$<TARGET_FILE:test>"
 )

@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
 class AutoTypeTest : public testing::Test {
   protected:
-    const std::string file_name = "build/test/test.txt";
+    const std::string file_name = "test.txt";
     std::filesystem::file_time_type file_mod_time;
     std::u32string expected_text;
 
