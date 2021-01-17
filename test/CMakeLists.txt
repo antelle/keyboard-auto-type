@@ -31,7 +31,7 @@ elseif(WIN32)
 endif()
 
 set(SANITIZER_FLAGS "")
-if(KEYBOARD_AUTO_TYPE_USE_SANITIZERS)
+if(KEYBOARD_AUTO_TYPE_USE_SANITIZERS AND NOT WIN32)
     set(SANITIZER_FLAGS "-fsanitize=address,undefined")
 endif()
 
