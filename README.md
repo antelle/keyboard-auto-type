@@ -116,7 +116,7 @@ There are a lot of keyboard shortcuts available in operating systems and applica
 
 By default, if exception support is enabled, auto-type methods can throw an exception. If exception support is disabled, they will just return an error code described below. You can also disable exceptions using `KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS` flag.
 
-All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, ther are following errors possible:
+All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, there are following errors possible:
 
 - `AutoTypeResult::BadArg`: bad argument
 - `AutoTypeResult::ModifierNotReleased`: the user is holding a modifier key, simulating keystrokes in this state can have unexpected consequences
