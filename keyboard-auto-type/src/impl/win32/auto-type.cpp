@@ -25,17 +25,19 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character, os_ke
     if (character > MAXWORD) {
         return AutoTypeResult::BadArg;
     }
-    // auto flags = direction == Direction::Up ? KEYEVENTF_KEYUP : 0;
-    // keybd_event(code, 0, flags, NULL);
 
     KEYBDINPUT keyboard_input{};
     keyboard_input.wVk = code;
-    keyboard_input.wScan = static_cast<WORD>(character);
     keyboard_input.dwFlags = direction == Direction::Up ? KEYEVENTF_KEYUP : 0;
+    keyboard_input.dwExtraInfo = GetMessageExtraInfo();
 
     if (character) {
         keyboard_input.wVk = 0;
+        keyboard_input.wScan = static_cast<WORD>(character);
         keyboard_input.dwFlags |= KEYEVENTF_UNICODE;
+    }
+    else {
+        keyboard_input.wScan = MapVirtualKey(code, MAPVK_VK_TO_VSC);
     }
 
     INPUT input = {INPUT_KEYBOARD};
@@ -85,7 +87,11 @@ std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
     return native_key_code;
 }
 
-os_key_code_t AutoType::os_key_code_for_char(char32_t character) { return 0; }
+os_key_code_t AutoType::os_key_code_for_char(char32_t character) {
+    //auto hkl = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), nullptr));
+    //auto scan_code = VkKeyScanExW(character, hkl);
+    return 0;
+}
 
 std::vector<os_key_code_t> AutoType::os_key_codes_for_chars(std::u32string_view text) {
     return std::vector<os_key_code_t>(text.length());
