@@ -60,7 +60,7 @@ Modifier AutoType::get_pressed_modifiers() {
         std::make_pair(VK_SHIFT, Modifier::Shift),     std::make_pair(VK_MENU, Modifier::Option),
         std::make_pair(VK_CONTROL, Modifier::Control),
     };
-    static constexpr SHORT SHORT_MSB = 0b10000000'00000000;
+    static constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
     auto pressed_modifiers = Modifier::None;
     for (auto [key_code, modifier] : FLAGS_MODIFIERS) {
         auto key_state = GetAsyncKeyState(key_code);
