@@ -174,6 +174,16 @@ On Windows you can use `nmake` instead:
 nmake
 ```
 
+IDE projects can be generated on macOS using
+```sh
+make xcode-project
+```
+
+and on Windows with
+```sh
+nmake vs-project
+```
+
 ## Tests
 
 Tests currently run only in English language (for Copy-Paste menu) and keyboard layout. To run tests:
