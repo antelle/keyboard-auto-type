@@ -49,10 +49,14 @@ build-example:
 run-example: build-example
 	build/output/example
 
-tests:
+tests: build-tests run-tests
+
+build-tests:
 	cmake -B build \
 		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
 		-D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 \
 		.
 	$(RUN_CMAKE)
-	build/output/test #--gtest_filter=AutoTypeTest.*
+
+run-tests:
+	cmake --build build --target run-tests

@@ -1,6 +1,6 @@
 project(test)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -27,9 +27,10 @@ if(APPLE)
         "-framework ScriptingBridge"
     )
 elseif(WIN32)
-    add_definitions(-DUNICODE -D_UNICODE)
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    add_definitions(-DUNICODE -D_UNICODE -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+    set(SYSTEM_LIBRARIES
+        "Shlwapi.lib"
+    )
 endif()
 
 set(SANITIZER_FLAGS "")
@@ -42,4 +43,8 @@ target_link_libraries(${PROJECT_NAME}
     ${SYSTEM_LIBRARIES}
     gtest
     ${SANITIZER_FLAGS}
+)
+
+add_custom_target(run-tests
+    COMMAND echo TESTS: "${OUTPUT_NAME}"
 )
