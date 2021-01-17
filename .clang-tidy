@@ -5,6 +5,7 @@ Checks: >-
     -fuchsia-*,
     -modernize-use-trailing-return-type,
     -readability-implicit-bool-conversion,
+    -readability-convert-member-functions-to-static,
     -cppcoreguidelines-pro-type-reinterpret-cast,
     -llvm-header-guard,
 WarningsAsErrors: '*'
