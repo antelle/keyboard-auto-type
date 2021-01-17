@@ -58,12 +58,15 @@ Other methods (`key_press`, `text`) will also press the modifier key for you, wh
 ```cpp
 // make sure modifiers keys are not hold by the user
 typer.ensure_modifier_not_pressed();
-// press Alt
+// press a modifier: Alt, Ctrl, ...
 typer.key_move(kbd::Direction::Down,
                kbd::Modifier::Alt);
-// press the A key
+// press the A key as text
 typer.key_move(kbd::Direction::Down,
                U'a',
+               kbd::Modifier::Alt);
+// press the A key without text
+typer.key_move(kbd::Direction::Down,
                kbd::KeyCode::A,
                kbd::Modifier::Alt);
 ```
