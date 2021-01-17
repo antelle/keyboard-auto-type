@@ -331,12 +331,6 @@ TEST_F(AutoTypeTest, text_unicode_supplementary_ideographic) {
     typer.text(expected_text);
 }
 
-TEST_F(AutoTypeTest, text_modifier) {
-    expected_text = U"ABC";
-    kbd::AutoType typer;
-    typer.text(U"ABC", kbd::Modifier::Shift);
-}
-
 TEST_F(AutoTypeTest, shortcut_copy_paste) {
     kbd::AutoType typer;
 

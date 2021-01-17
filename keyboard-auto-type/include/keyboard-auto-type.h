@@ -85,7 +85,7 @@ class AutoType {
     AutoType(AutoType &&) = delete;
     AutoType &operator=(AutoType &&) = delete;
 
-    AutoTypeResult text(std::u32string_view text, Modifier modifier = Modifier::None);
+    AutoTypeResult text(std::u32string_view text);
 
     AutoTypeResult key_press(char32_t character, Modifier modifier = Modifier::None);
     AutoTypeResult key_press(char32_t character, KeyCode code, Modifier modifier = Modifier::None);

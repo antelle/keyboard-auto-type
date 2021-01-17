@@ -18,7 +18,7 @@ constexpr std::array MODIFIERS_KEY_CODES{
     std::make_pair(Modifier::Ctrl, KeyCode::Ctrl),
 };
 
-AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
+AutoTypeResult AutoType::text(std::u32string_view text) {
     if (text.length() == 0) {
         return AutoTypeResult::Ok;
     }
@@ -28,31 +28,17 @@ AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
         return result;
     }
 
-    if (modifier != Modifier::None) {
-        result = key_move(Direction::Down, modifier);
-        if (result != AutoTypeResult::Ok) {
-            return result;
-        }
-    }
-
     auto native_key_codes = os_key_codes_for_chars(text);
     auto length = text.length();
 
     for (auto i = 0; i < length; i++) {
         auto character = text[i];
         auto native_key_code = native_key_codes[i];
-        result = key_move(Direction::Down, character, native_key_code, modifier);
+        result = key_move(Direction::Down, character, native_key_code);
         if (result != AutoTypeResult::Ok) {
             return result;
         }
-        result = key_move(Direction::Up, character, native_key_code, modifier);
-        if (result != AutoTypeResult::Ok) {
-            return result;
-        }
-    }
-
-    if (modifier != Modifier::None) {
-        result = key_move(Direction::Up, modifier);
+        result = key_move(Direction::Up, character, native_key_code);
     }
 
     return result;
