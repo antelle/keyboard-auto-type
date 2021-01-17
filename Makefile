@@ -50,6 +50,12 @@ xcode-project:
 		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
 		.
 
+vs-project:
+	cmake -B build
+		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
+		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
+		.
+
 build-example:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 	$(RUN_CMAKE)
