@@ -1,19 +1,19 @@
-.DEFAULT_GOAL := default
+RUN_CMAKE = cmake --build build -j4
 
-.PHONY: build test example
-
-default: configure build
+all: configure cmake
+	$(RUN_CMAKE)
 
 configure:
 	cmake -B build .
 
-build:
-	cmake --build build -j4
+cmake:
+	$(RUN_CMAKE)
 
-rebuild: clean build
+rebuild: clean
+	$(RUN_CMAKE)
 
 clean:
-	rm -rf build xcode
+	git clean -fxd build xcode
 
 format:
 	find keyboard-auto-type test example -name '*.cpp' -o -name '*.h' -o -name '*.mm' | \
@@ -42,17 +42,17 @@ xcode-project:
 		-D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 \
 		.
 
-example:
+build-example:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
-	$(MAKE) build
+	$(RUN_CMAKE)
 
-run-example: example
+run-example: build-example
 	build/output/example
 
-test:
+tests:
 	cmake -B build \
 		-D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 \
 		-D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 \
 		.
-	$(MAKE) build
+	$(RUN_CMAKE)
 	build/output/test #--gtest_filter=AutoTypeTest.*
