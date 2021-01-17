@@ -350,19 +350,19 @@ TEST_F(AutoTypeTest, text_unicode_basic) {
 }
 
 #if __APPLE__
-
 TEST_F(AutoTypeTest, text_unicode_emoji) {
     expected_text = U"🍆🍑😈";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
+#endif
 
+#if __APPLE__
 TEST_F(AutoTypeTest, text_unicode_supplementary_ideographic) {
     expected_text = U"𠀧𠀪";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
-
 #endif
 
 TEST_F(AutoTypeTest, shortcut_copy_paste) {
