@@ -160,6 +160,25 @@ The library is not thread safe. Moreover, it's not a good idea to manipulate the
 
 This project requires C++17 or above.
 
+## Development
+
+You will need `cmake` and the standard development toolchain to build the project.  
+
+Build the library:
+```sh
+make
+```
+
+Run tests:
+```sh
+make tests
+```
+
+On Windows you can use `nmake` instead, for example:
+```sh
+nmake tests
+```
+
 ## License
 
 [MIT](LICENSE.md)
