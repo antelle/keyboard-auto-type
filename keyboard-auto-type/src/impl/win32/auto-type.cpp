@@ -35,8 +35,7 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character, os_ke
         keyboard_input.wVk = 0;
         keyboard_input.wScan = static_cast<WORD>(character);
         keyboard_input.dwFlags |= KEYEVENTF_UNICODE;
-    }
-    else {
+    } else {
         keyboard_input.wScan = MapVirtualKey(code, MAPVK_VK_TO_VSC);
     }
 
@@ -88,8 +87,8 @@ std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
 }
 
 os_key_code_t AutoType::os_key_code_for_char(char32_t character) {
-    //auto hkl = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), nullptr));
-    //auto scan_code = VkKeyScanExW(character, hkl);
+    // auto hkl = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), nullptr));
+    // auto scan_code = VkKeyScanExW(character, hkl);
     return 0;
 }
 
