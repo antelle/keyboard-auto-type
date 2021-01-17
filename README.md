@@ -23,7 +23,7 @@ namespace kbd = keyboard_auto_type;
 kbd::AutoType typer;
 ```
 
-Perform some auto-typing using a high-level API:
+Perform some auto-typing using the high-level API:
 ```cpp
 typer.text(U"Hello, world!");
 ```
