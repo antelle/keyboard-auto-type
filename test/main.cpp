@@ -1,5 +1,7 @@
+#if __APPLE__
 #include <Carbon/Carbon.h>
 #include <unistd.h>
+#endif
 
 #include <array>
 #include <codecvt>
@@ -21,7 +23,7 @@ int main(int argc, char **argv) {
 class AutoTypeTest : public testing::Test {
   protected:
     const std::string file_name = "build/test/test.txt";
-    time_t file_mod_time;
+    std::filesystem::file_time_type file_mod_time;
     std::u32string expected_text;
 
   protected:
@@ -72,6 +74,8 @@ class AutoTypeTest : public testing::Test {
     bool is_text_editor_app_name(std::string_view app_name) {
 #if __APPLE__
         return app_name == "TextEdit";
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        return app_name == "Notepad";
 #else
         FAIL() << "is_text_editor_app_name is not implemented";
 #endif
@@ -96,8 +100,7 @@ class AutoTypeTest : public testing::Test {
         // fstream << "\xEF\xBB\xBF";
         fstream.close();
 
-        auto ftime = std::filesystem::last_write_time(file_name);
-        file_mod_time = decltype(ftime)::clock::to_time_t(ftime);
+        file_mod_time = std::filesystem::last_write_time(file_name);
     }
 
     void save_text() {
@@ -122,8 +125,7 @@ class AutoTypeTest : public testing::Test {
 
     void wait_for_file_save() {
         for (auto i = 0; i < 100; i++) {
-            auto ftime = std::filesystem::last_write_time(file_name);
-            auto last_mod_time = decltype(ftime)::clock::to_time_t(ftime);
+            auto last_mod_time = std::filesystem::last_write_time(file_name);
             run_event_loop(0.1);
             if (last_mod_time > file_mod_time) {
                 return;
