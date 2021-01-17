@@ -33,7 +33,7 @@ Alternatively, you can simulate one key stroke:
 typer.key_press(U'a');
 ```
 
-You can also use [modifiers](Modifiers) to perform different actions, for example, this will send <kbd>⌘</kbd><kbd>A</kbd> to select all text:
+You can also use [modifiers](#Modifiers) to perform different actions, for example, this will send <kbd>⌘</kbd><kbd>A</kbd> to select all text:
 ```cpp
 typer.key_press(U'a', kbd::KeyCode::A, typer.shortcut_modifier());
 ```
