@@ -109,8 +109,8 @@ class AutoTypeTest : public testing::Test {
 
     void save_text() {
         kbd::AutoType typer;
-        auto active_window = typer.active_window();
         wait_millis(10);
+        auto active_window = typer.active_window();
         if (is_text_editor_app_name(active_window.app_name)) {
             typer.key_press(0, kbd::KeyCode::S, typer.shortcut_modifier());
             typer.key_press(0, kbd::KeyCode::Q, typer.shortcut_modifier());
