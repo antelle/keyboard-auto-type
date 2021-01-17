@@ -143,7 +143,31 @@ bool AutoType::show_window(const AppWindowInfo &window) {
     if (!window.window_id) {
         return false;
     }
-    return false;
+
+    auto current_window = GetForegroundWindow();
+    auto current_thread_id = GetCurrentThreadId();
+    auto win_thread_id = GetWindowThreadProcessId(current_window, 0);
+
+    if (current_thread_id != win_thread_id) {
+        AttachThreadInput(current_thread_id, win_thread_id, TRUE);
+
+        DWORD lock_timeout = 0;
+        SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lock_timeout, 0);
+        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, 0,
+                             SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+
+        AllowSetForegroundWindow(ASFW_ANY);
+    }
+
+    auto result = SetForegroundWindow(window.window_id);
+
+    if (current_thread_id != win_thread_id) {
+        DWORD lock_timeout = 0;
+        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, &lock_timeout,
+                             SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+        AttachThreadInput(current_thread_id, win_thread_id, FALSE);
+    }
+    return result;
 }
 
 } // namespace keyboard_auto_type
