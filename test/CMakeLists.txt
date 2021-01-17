@@ -1,6 +1,6 @@
 project(test)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.10.0
+    GIT_TAG        d128fc8252d53baad6ea456fa08cbf9028d255f4
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -43,8 +43,4 @@ target_link_libraries(${PROJECT_NAME}
     ${SYSTEM_LIBRARIES}
     gtest
     ${SANITIZER_FLAGS}
-)
-
-add_custom_target(run-tests
-    COMMAND "$<TARGET_FILE:test>"
 )

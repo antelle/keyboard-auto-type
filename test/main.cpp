@@ -9,6 +9,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
@@ -22,7 +24,7 @@ int main(int argc, char **argv) {
 
 class AutoTypeTest : public testing::Test {
   protected:
-    const std::string file_name = "test.txt";
+    const std::string file_name = "build/test/test.txt";
     std::filesystem::file_time_type file_mod_time;
     std::u32string expected_text;
 
@@ -58,16 +60,18 @@ class AutoTypeTest : public testing::Test {
     void launch_text_editor() {
 #if __APPLE__
         system(("open /System/Applications/TextEdit.app " + file_name).c_str());
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        system(("start notepad.exe " + file_name).c_str());
 #else
         FAIL() << "launch_text_editor is not implemented";
 #endif
     }
 
-    void run_event_loop(double seconds) {
+    void wait_millis(long ms) {
 #if __APPLE__
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, seconds, false);
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, ms / 1000, false);
 #else
-        FAIL() << "run_event_loop is not implemented";
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 #endif
     }
 
@@ -75,7 +79,7 @@ class AutoTypeTest : public testing::Test {
 #if __APPLE__
         return app_name == "TextEdit";
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        return app_name == "Notepad";
+        return app_name.ends_with("notepad.exe");
 #else
         FAIL() << "is_text_editor_app_name is not implemented";
 #endif
@@ -84,10 +88,10 @@ class AutoTypeTest : public testing::Test {
     void wait_text_editor_window() {
         kbd::AutoType typer;
         for (auto i = 0; i < 100; i++) {
-            run_event_loop(0.1);
+            wait_millis(100);
             auto active_window = typer.active_window();
             if (is_text_editor_app_name(active_window.app_name)) {
-                run_event_loop(0.5);
+                wait_millis(500);
                 return;
             }
         }
@@ -106,7 +110,7 @@ class AutoTypeTest : public testing::Test {
     void save_text() {
         kbd::AutoType typer;
         auto active_window = typer.active_window();
-        run_event_loop(0.01);
+        wait_millis(10);
         if (is_text_editor_app_name(active_window.app_name)) {
             typer.key_press(0, kbd::KeyCode::S, typer.shortcut_modifier());
             typer.key_press(0, kbd::KeyCode::Q, typer.shortcut_modifier());
@@ -118,6 +122,8 @@ class AutoTypeTest : public testing::Test {
     static void kill_text_editor() {
 #if __APPLE__
         system("killall TextEdit >/dev/null 2>/dev/null");
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        system("taskkill /IM notepad.exe /F >nul 2>nul");
 #else
         FAIL() << "kill_text_editor is not implemented";
 #endif
@@ -126,7 +132,7 @@ class AutoTypeTest : public testing::Test {
     void wait_for_file_save() {
         for (auto i = 0; i < 100; i++) {
             auto last_mod_time = std::filesystem::last_write_time(file_name);
-            run_event_loop(0.1);
+            wait_millis(100);
             if (last_mod_time > file_mod_time) {
                 return;
             }
@@ -153,7 +159,14 @@ class AutoTypeTest : public testing::Test {
         typer.key_press(0, kbd::KeyCode::RightArrow);
         typer.key_press(0, kbd::KeyCode::RightArrow);
         typer.key_press(0, kbd::KeyCode::RightArrow);
-        // select "Select all"
+        // open the menu
+        typer.key_press(0, kbd::KeyCode::DownArrow);
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        // highlight the first menu ("File")
+        typer.key_press(0, kbd::KeyCode::Alt);
+        // go to "Edit" menu
+        typer.key_press(0, kbd::KeyCode::RightArrow);
+        // open the menu
         typer.key_press(0, kbd::KeyCode::DownArrow);
 #else
         FAIL() << "open_edit_menu not implemented";
@@ -164,23 +177,33 @@ class AutoTypeTest : public testing::Test {
     void press_menu_select_all() {
         kbd::AutoType typer;
         open_edit_menu();
+#if __APPLE__
         typer.key_press(0, kbd::KeyCode::S);
         typer.key_press(0, kbd::KeyCode::Enter);
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        typer.key_press(0, kbd::KeyCode::A);
+#endif
     }
 
     void press_menu_cut() {
         kbd::AutoType typer;
         open_edit_menu();
+#if __APPLE__
         typer.key_press(0, kbd::KeyCode::C);
         typer.key_press(0, kbd::KeyCode::U);
         typer.key_press(0, kbd::KeyCode::Enter);
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        typer.key_press(0, kbd::KeyCode::T);
+#endif
     }
 
     void press_menu_paste() {
         kbd::AutoType typer;
         open_edit_menu();
         typer.key_press(0, kbd::KeyCode::P);
+#if __APPLE__
         typer.key_press(0, kbd::KeyCode::Enter);
+#endif
     }
 };
 
@@ -319,6 +342,8 @@ TEST_F(AutoTypeTest, text_unicode_basic) {
     typer.text(expected_text);
 }
 
+#if __APPLE__
+
 TEST_F(AutoTypeTest, text_unicode_emoji) {
     expected_text = U"🍆🍑😈";
     kbd::AutoType typer;
@@ -330,6 +355,8 @@ TEST_F(AutoTypeTest, text_unicode_supplementary_ideographic) {
     kbd::AutoType typer;
     typer.text(expected_text);
 }
+
+#endif
 
 TEST_F(AutoTypeTest, shortcut_copy_paste) {
     kbd::AutoType typer;
@@ -361,7 +388,7 @@ TEST_F(AutoTypeTest, shortcut_copy_paste) {
     // "hello [hell]o "
 
     // paste at the end
-    typer.key_press(0, kbd::KeyCode::DownArrow);
+    typer.key_press(0, kbd::KeyCode::End);
     typer.shortcut(kbd::KeyCode::V);
     // "hello o hell"
 
