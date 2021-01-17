@@ -96,11 +96,15 @@ class AutoType::AutoTypeImpl {
         keyboard_layout_data_ = layout_data;
     }
 
-    CGKeyCode char_to_key_code(char32_t character) {
+    std::optional<KeyCodeWithModifiers> char_to_key_code(char32_t character) {
         if (character >= keyboard_layout_.size()) {
-            return 0;
+            return std::nullopt;
         }
-        return keyboard_layout_.at(character);
+        auto code = keyboard_layout_.at(character);
+        KeyCodeWithModifiers code_with_modifiers{};
+        code_with_modifiers.code = code;
+        // TODO: code_with_modifiers.modifier = ...
+        return code_with_modifiers;
     }
 
     static CGEventFlags modifier_to_flags(Modifier modifier) {
@@ -129,10 +133,10 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
 AutoType::~AutoType() = default;
 
-AutoTypeResult AutoType::key_move(Direction direction, char32_t character, os_key_code_t code,
-                                  Modifier modifier) {
+AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
+                                  std::optional<os_key_code_t> code, Modifier modifier) {
     auto flags = AutoTypeImpl::modifier_to_flags(modifier);
-    return impl_->key_move(character, code, flags, direction);
+    return impl_->key_move(character, code.value_or(0), flags, direction);
 }
 
 Modifier AutoType::get_pressed_modifiers() {
@@ -167,14 +171,15 @@ std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
     return native_key_code;
 }
 
-os_key_code_t AutoType::os_key_code_for_char(char32_t character) {
+std::optional<KeyCodeWithModifiers> AutoType::os_key_code_for_char(char32_t character) {
     impl_->read_keyboard_layout();
     return impl_->char_to_key_code(character);
 }
 
-std::vector<os_key_code_t> AutoType::os_key_codes_for_chars(std::u32string_view text) {
+std::vector<std::optional<KeyCodeWithModifiers>>
+AutoType::os_key_codes_for_chars(std::u32string_view text) {
     impl_->read_keyboard_layout();
-    std::vector<os_key_code_t> result(text.length());
+    std::vector<std::optional<KeyCodeWithModifiers>> result(text.length());
     auto length = text.length();
     for (auto i = 0; i < length; i++) {
         result[i] = impl_->char_to_key_code(text[i]);

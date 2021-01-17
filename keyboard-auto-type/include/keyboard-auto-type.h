@@ -71,6 +71,11 @@ struct ActiveWindowArgs {
     bool get_browser_url = false;
 };
 
+struct KeyCodeWithModifiers {
+    os_key_code_t code;
+    Modifier modifier;
+};
+
 class AutoType {
   private:
     class AutoTypeImpl;
@@ -87,8 +92,7 @@ class AutoType {
 
     AutoTypeResult text(std::u32string_view text);
 
-    AutoTypeResult key_press(char32_t character, Modifier modifier = Modifier::None);
-    AutoTypeResult key_press(char32_t character, KeyCode code, Modifier modifier = Modifier::None);
+    AutoTypeResult key_press(KeyCode code, Modifier modifier = Modifier::None);
 
     AutoTypeResult shortcut(KeyCode code);
     static Modifier shortcut_modifier();
@@ -96,17 +100,14 @@ class AutoType {
     AutoTypeResult ensure_modifier_not_pressed();
     Modifier get_pressed_modifiers();
     static bool can_unpress_modifier();
-    AutoTypeResult key_move(Direction direction, char32_t character,
-                            Modifier modifier = Modifier::None);
-    AutoTypeResult key_move(Direction direction, char32_t character, KeyCode code,
-                            Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, KeyCode code, Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);
-    AutoTypeResult key_move(Direction direction, char32_t character, os_key_code_t code,
-                            Modifier modifier = Modifier::None);
+    AutoTypeResult key_move(Direction direction, char32_t character,
+                            std::optional<os_key_code_t> code, Modifier modifier = Modifier::None);
     std::optional<os_key_code_t> os_key_code(KeyCode code);
-    os_key_code_t os_key_code_for_char(char32_t character);
-    std::vector<os_key_code_t> os_key_codes_for_chars(std::u32string_view text);
+    std::optional<KeyCodeWithModifiers> os_key_code_for_char(char32_t character);
+    std::vector<std::optional<KeyCodeWithModifiers>>
+    os_key_codes_for_chars(std::u32string_view text);
 
     static pid_t active_pid();
     static AppWindowInfo active_window(const ActiveWindowArgs &args = {});

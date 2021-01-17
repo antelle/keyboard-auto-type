@@ -28,77 +28,99 @@ AutoTypeResult AutoType::text(std::u32string_view text) {
         return result;
     }
 
-    auto native_key_codes = os_key_codes_for_chars(text);
+    auto native_keys = os_key_codes_for_chars(text);
     auto length = text.length();
+
+    auto pressed_modifiers = Modifier::None;
 
     for (auto i = 0; i < length; i++) {
         auto character = text[i];
-        auto native_key_code = native_key_codes[i];
-        result = key_move(Direction::Down, character, native_key_code);
+        if (!character) {
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+            throw std::invalid_argument("Typing a null character is not possible");
+#endif
+            return AutoTypeResult::BadArg;
+        }
+
+        auto native_key_with_modifiers = native_keys[i];
+
+        std::optional<os_key_code_t> code;
+        auto modifier = Modifier::None;
+
+        if (native_key_with_modifiers.has_value()) {
+            code = native_key_with_modifiers->code;
+            modifier = native_key_with_modifiers->modifier;
+
+            for (auto mod_check : MODIFIERS) {
+                auto is_pressed = (modifier & mod_check) == mod_check;
+                auto was_pressed = (pressed_modifiers & mod_check) == mod_check;
+                if (is_pressed && !was_pressed) {
+                    result = key_move(Direction::Down, mod_check);
+                } else if (!is_pressed && was_pressed) {
+                    result = key_move(Direction::Up, mod_check);
+                }
+                if (result != AutoTypeResult::Ok) {
+                    return result;
+                }
+            }
+
+            pressed_modifiers = modifier;
+        }
+
+        result = key_move(Direction::Down, character, code, modifier);
         if (result != AutoTypeResult::Ok) {
             return result;
         }
-        result = key_move(Direction::Up, character, native_key_code);
+
+        result = key_move(Direction::Up, character, code, modifier);
+        if (result != AutoTypeResult::Ok) {
+            return result;
+        }
     }
 
-    return result;
+    if (pressed_modifiers != Modifier::None) {
+        result = key_move(Direction::Up, pressed_modifiers);
+        if (result != AutoTypeResult::Ok) {
+            return result;
+        }
+    }
+
+    return AutoTypeResult::Ok;
 }
 
-AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier modifier) {
-    if (!character && code == KeyCode::Undefined) {
+AutoTypeResult AutoType::key_press(KeyCode code, Modifier modifier) {
+    auto key_code = os_key_code(code);
+    if (!key_code.has_value()) {
 #if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-        throw std::invalid_argument("Either character or code must be set");
+        throw std::invalid_argument(std::string("Key code ") +
+                                    std::to_string(static_cast<int>(code)) + " not supported");
 #endif
         return AutoTypeResult::BadArg;
     }
 
-    auto result = ensure_modifier_not_pressed();
+    auto result = key_move(Direction::Down, modifier);
     if (result != AutoTypeResult::Ok) {
         return result;
     }
 
-    os_key_code_t native_key_code = 0;
-    if (code == KeyCode::Undefined) {
-        native_key_code = os_key_code_for_char(character);
-    } else {
-        auto os_key_code_opt = os_key_code(code);
-        if (!os_key_code_opt.has_value()) {
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-            throw std::invalid_argument(std::string("Key code ") +
-                                        std::to_string(static_cast<int>(code)) + " not supported");
-#endif
-        }
-        native_key_code = os_key_code_opt.value();
-    }
-
-    if (modifier != Modifier::None) {
-        result = key_move(Direction::Down, modifier);
-        if (result != AutoTypeResult::Ok) {
-            return result;
-        }
-    }
-
-    result = key_move(Direction::Down, character, native_key_code, modifier);
+    result = key_move(Direction::Down, 0, key_code, modifier);
     if (result != AutoTypeResult::Ok) {
         return result;
     }
-    result = key_move(Direction::Up, character, native_key_code, modifier);
+    result = key_move(Direction::Up, 0, key_code, modifier);
     if (result != AutoTypeResult::Ok) {
         return result;
     }
 
-    if (modifier != Modifier::None) {
-        result = key_move(Direction::Up, modifier);
+    result = key_move(Direction::Up, modifier);
+    if (result != AutoTypeResult::Ok) {
+        return result;
     }
 
-    return result;
+    return AutoTypeResult::Ok;
 }
 
-AutoTypeResult AutoType::key_press(char32_t character, Modifier modifier) {
-    return key_press(character, KeyCode::Undefined, modifier);
-}
-
-AutoTypeResult AutoType::shortcut(KeyCode code) { return key_press(0, code, shortcut_modifier()); }
+AutoTypeResult AutoType::shortcut(KeyCode code) { return key_press(code, shortcut_modifier()); }
 
 AutoTypeResult AutoType::ensure_modifier_not_pressed() {
     auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME_MS;
@@ -125,12 +147,16 @@ AutoTypeResult AutoType::ensure_modifier_not_pressed() {
     return AutoTypeResult::ModifierNotReleased;
 }
 
-AutoTypeResult AutoType::key_move(Direction direction, char32_t character, Modifier modifier) {
-    return key_move(direction, character, KeyCode::Undefined, modifier);
-}
-
 AutoTypeResult AutoType::key_move(Direction direction, KeyCode code, Modifier modifier) {
-    return key_move(direction, 0, code, modifier);
+    auto key_code_opt = os_key_code(code);
+    if (!key_code_opt.has_value()) {
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+        throw std::invalid_argument(std::string("Key code ") +
+                                    std::to_string(static_cast<int>(code)) + " not supported");
+#endif
+        return AutoTypeResult::BadArg;
+    }
+    return key_move(direction, 0, key_code_opt, modifier);
 }
 
 AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
@@ -141,7 +167,7 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
     for (auto [mod_check, key_code] : MODIFIERS_KEY_CODES) {
         AutoTypeResult result;
         if ((modifier & mod_check) == mod_check) {
-            result = key_move(direction, 0, key_code);
+            result = key_move(direction, key_code);
             if (result != AutoTypeResult::Ok) {
                 return result;
             }
@@ -149,19 +175,6 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
     }
 
     return AutoTypeResult::Ok;
-}
-
-AutoTypeResult AutoType::key_move(Direction direction, char32_t character, KeyCode code,
-                                  Modifier modifier) {
-    auto native_key_code = os_key_code(code);
-    if (code != KeyCode::Undefined && !native_key_code.has_value()) {
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-        throw std::invalid_argument(std::string("Key code ") +
-                                    std::to_string(static_cast<int>(code)) + " not supported");
-#endif
-        return AutoTypeResult::NotSupported;
-    }
-    return key_move(direction, character, native_key_code.value(), modifier);
 }
 
 } // namespace keyboard_auto_type

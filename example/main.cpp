@@ -21,8 +21,7 @@ int main() {
                   << "title: \"" << win.title << "\", "
                   << "url: \"" << win.url << "\"" << std::endl;
 
-        typer.text(U"Hello");
-        typer.key_press(U'!', keyboard_auto_type::KeyCode::D1, keyboard_auto_type::Modifier::Shift);
+        typer.text(U"Hello!");
     } catch (std::exception &ex) {
         std::cerr << ex.what() << std::endl;
     }
