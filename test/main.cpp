@@ -4,13 +4,13 @@
 #endif
 
 #include <array>
+#include <chrono>
 #include <codecvt>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <thread>
-#include <chrono>
 
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
@@ -69,7 +69,7 @@ class AutoTypeTest : public testing::Test {
 
     void wait_millis(long ms) {
 #if __APPLE__
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, ms / 1000, false);
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, ms / 1000., false);
 #else
         std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 #endif
@@ -174,6 +174,8 @@ class AutoTypeTest : public testing::Test {
     }
 
   public:
+    void short_delay() { wait_millis(100); }
+
     void press_menu_select_all() {
         kbd::AutoType typer;
         open_edit_menu();
@@ -274,10 +276,15 @@ TEST_F(AutoTypeTest, key_press_menu) {
     kbd::AutoType typer;
 
     typer.text(U"text");
+    short_delay();
     press_menu_select_all();
+    short_delay();
     press_menu_cut();
+    short_delay();
     typer.text(U"more ");
+    short_delay();
     press_menu_paste();
+    short_delay();
 
     expected_text = U"more text";
 }
@@ -388,7 +395,9 @@ TEST_F(AutoTypeTest, shortcut_copy_paste) {
     // "hello [hell]o "
 
     // paste at the end
-    typer.key_press(0, kbd::KeyCode::End);
+    typer.key_press(0, kbd::KeyCode::RightArrow);
+    typer.key_press(0, kbd::KeyCode::RightArrow);
+    typer.key_press(0, kbd::KeyCode::RightArrow);
     typer.shortcut(kbd::KeyCode::V);
     // "hello o hell"
 
