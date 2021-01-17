@@ -2,8 +2,8 @@
 
 # Windows NMAKE \
 !ifndef 0 # \ 
-RUN_EXAMPLE = build\output\Debug\example.exe # \
-RUN_TEST = build\output\Debug\test.exe # \
+RUN_EXAMPLE = build\output\Debug\example.exe # \ 
+RUN_TEST = build\output\Debug\test.exe # \ 
 !else
 # GNU Make
 RUN_EXAMPLE = build/output/example
