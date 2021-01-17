@@ -339,8 +339,8 @@ TEST_F(AutoTypeTest, text_unicode_basic) {
         std::pair{U'゠', U'イ'},
     };
 
-    for (auto range : char_ranges) {
-        for (auto ch = range.first; ch <= range.second; ch++) {
+    for (auto [from, to] : char_ranges) {
+        for (auto ch = from; ch <= to; ch++) {
             expected_text += ch;
         }
         expected_text += U"\n";
