@@ -55,6 +55,7 @@ enum class AutoTypeResult {
     BadArg,
     ModifierNotReleased,
     NotSupported,
+    OsError,
 };
 
 struct AppWindowInfo {
@@ -94,6 +95,7 @@ class AutoType {
 
     AutoTypeResult ensure_modifier_not_pressed();
     Modifier get_pressed_modifiers();
+    bool can_unpress_modifier();
     AutoTypeResult key_move(Direction direction, char32_t character,
                             Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, char32_t character, KeyCode code,

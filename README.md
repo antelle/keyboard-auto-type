@@ -118,6 +118,7 @@ All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, ther ar
 - `AutoTypeResult::BadArg`: bad argument
 - `AutoTypeResult::ModifierNotReleased`: the user is holding a modifier key, simulating keystrokes in this state can have unexpected consequences
 - `AutoTypeResult::NotSupported`: the given key code is not supported on this operating system
+- `AutoTypeResult::OsError`: there was an error during simulating keyboard input
 
 ## Window management
 

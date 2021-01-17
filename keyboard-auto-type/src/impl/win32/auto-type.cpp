@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <array>
-#include <exception>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include "key-map.h"
@@ -20,35 +20,76 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
 AutoType::~AutoType() = default;
 
-// AutoTypeResult AutoType::ensure_modifier_not_pressed() {
-//     auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
-//     auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
-//     static constexpr std::array checked_keys = {
-//         VK_SHIFT, VK_RSHIFT, VK_CONTROL, VK_RCONTROL, VK_MENU, VK_RMENU, VK_LWIN, VK_RWIN,
-//     };
-//     while (total_wait_time > 0) {
-//         auto any_pressed = false;
-//         for (auto key : checked_keys) {
-//             auto key_state = GetKeyState(key);
-//             if (key_state) {
-//                 // TODO: press it?
-//                 any_pressed = true;
-//                 break;
-//             }
-//         }
-//         if (!any_pressed) {
-//             return AutoTypeResult::Ok;
-//         }
-//         Sleep(loop_wait_time);
-//         total_wait_time -= loop_wait_time;
-//     }
-// #if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-//     throw std::runtime_error("Modifier key not released");
-// #endif
-//     return AutoTypeResult::ModifierNotReleased;
-// }
+AutoTypeResult AutoType::key_move(Direction direction, char32_t character, os_key_code_t code,
+                                  Modifier modifier) {
+    if (character > MAXWORD) {
+        return AutoTypeResult::BadArg;
+    }
+    // auto flags = direction == Direction::Up ? KEYEVENTF_KEYUP : 0;
+    // keybd_event(code, 0, flags, NULL);
+
+    KEYBDINPUT keyboard_input{};
+    keyboard_input.wVk = code;
+    keyboard_input.wScan = static_cast<WORD>(character);
+    keyboard_input.dwFlags = direction == Direction::Up ? KEYEVENTF_KEYUP : 0;
+
+    if (character) {
+        keyboard_input.wVk = 0;
+        keyboard_input.dwFlags |= KEYEVENTF_UNICODE;
+    }
+
+    INPUT input = {INPUT_KEYBOARD};
+    input.ki = keyboard_input;
+
+    auto events_sent = SendInput(1, &input, sizeof(input));
+
+    if (!events_sent) {
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+        throw std::runtime_error("SendInput error");
+#endif
+        return AutoTypeResult::OsError;
+    }
+
+    return AutoTypeResult::Ok;
+}
+
+Modifier AutoType::get_pressed_modifiers() {
+    static constexpr std::array FLAGS_MODIFIERS{
+        std::make_pair(VK_LWIN, Modifier::Command),    std::make_pair(VK_RWIN, Modifier::Command),
+        std::make_pair(VK_SHIFT, Modifier::Shift),     std::make_pair(VK_MENU, Modifier::Option),
+        std::make_pair(VK_CONTROL, Modifier::Control),
+    };
+    static constexpr SHORT SHORT_MSB = 0b10000000'00000000;
+    auto pressed_modifiers = Modifier::None;
+    for (auto [key_code, modifier] : FLAGS_MODIFIERS) {
+        auto key_state = GetAsyncKeyState(key_code);
+        if (key_state & SHORT_MSB) {
+            pressed_modifiers = pressed_modifiers | modifier;
+        }
+    }
+    return pressed_modifiers;
+}
+
+bool AutoType::can_unpress_modifier() { return false; }
 
 Modifier AutoType::shortcut_modifier() { return Modifier::Control; }
+
+std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
+    if (code == KeyCode::Undefined) {
+        return std::nullopt;
+    }
+    auto native_key_code = map_key_code(code);
+    if (!native_key_code) {
+        return std::nullopt;
+    }
+    return native_key_code;
+}
+
+os_key_code_t AutoType::os_key_code_for_char(char32_t character) { return 0; }
+
+std::vector<os_key_code_t> AutoType::os_key_codes_for_chars(std::u32string_view text) {
+    return std::vector<os_key_code_t>(text.length());
+}
 
 pid_t AutoType::active_pid() {
     DWORD pid = 0;
@@ -69,7 +110,7 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
     GetWindowThreadProcessId(hwnd, &pid);
 
     AppWindowInfo result{};
-    result.window_id = reinterpret_cast<intptr_t>(hwnd);
+    result.window_id = hwnd;
     result.pid = pid;
 
     result.app_name = native_process_main_module_name(pid);
@@ -83,7 +124,8 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
                                       });
         if (!is_browser) {
             std::array<char, BROWSER_WINDOW_CLASS.size() + 1> window_class_name;
-            if (GetClassNameA(hwnd, window_class_name.data(), window_class_name.size())) {
+            if (GetClassNameA(hwnd, window_class_name.data(),
+                              static_cast<int>(window_class_name.size()))) {
                 if (BROWSER_WINDOW_CLASS == std::string_view(window_class_name.data())) {
                     is_browser = true;
                 }
@@ -97,6 +139,11 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
     return result;
 }
 
-bool AutoType::show_window(const AppWindowInfo &window) { return false; }
+bool AutoType::show_window(const AppWindowInfo &window) {
+    if (!window.window_id) {
+        return false;
+    }
+    return false;
+}
 
 } // namespace keyboard_auto_type

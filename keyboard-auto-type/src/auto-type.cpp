@@ -1,5 +1,6 @@
 #include <array>
 #include <chrono>
+#include <stdexcept>
 #include <thread>
 
 #include "keyboard-auto-type.h"
@@ -122,9 +123,11 @@ AutoTypeResult AutoType::ensure_modifier_not_pressed() {
         if (pressed_modifiers == Modifier::None) {
             return AutoTypeResult::Ok;
         }
-        for (auto modifier : MODIFIERS) {
-            if ((pressed_modifiers & modifier) == modifier) {
-                key_move(Direction::Up, modifier);
+        if (can_unpress_modifier()) {
+            for (auto modifier : MODIFIERS) {
+                if ((pressed_modifiers & modifier) == modifier) {
+                    key_move(Direction::Up, modifier);
+                }
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(loop_wait_time));
@@ -165,7 +168,7 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character, KeyCode code,
                                   Modifier modifier) {
     auto native_key_code = os_key_code(code);
-    if (!native_key_code.has_value()) {
+    if (code != KeyCode::Undefined && !native_key_code.has_value()) {
 #if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
         throw std::invalid_argument(std::string("Key code ") +
                                     std::to_string(static_cast<int>(code)) + " not supported");

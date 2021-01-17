@@ -152,11 +152,13 @@ Modifier AutoType::get_pressed_modifiers() {
     return pressed_modifiers;
 }
 
+bool AutoType::can_unpress_modifier() { return true; }
+
 Modifier AutoType::shortcut_modifier() { return Modifier::Command; }
 
 std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
     if (code == KeyCode::Undefined) {
-        return 0;
+        return std::nullopt;
     }
     auto native_key_code = map_key_code(code);
     if (!native_key_code && code != KeyCode::A) { // A maps to kVK_ANSI_A = 0
@@ -175,7 +177,7 @@ std::vector<os_key_code_t> AutoType::os_key_codes_for_chars(std::u32string_view 
     std::vector<os_key_code_t> result(text.length());
     auto length = text.length();
     for (auto i = 0; i < length; i++) {
-        result[i] = os_key_code_for_char(text[i]);
+        result[i] = impl_->char_to_key_code(text[i]);
     }
     return result;
 }
