@@ -10,12 +10,9 @@
 
 namespace keyboard_auto_type {
 
-static constexpr int KEY_HOLD_TOTAL_WAIT_TIME = 10'000;
-static constexpr int KEY_HOLD_LOOP_WAIT_TIME = 100;
-
-static constexpr std::array BROWSER_PROCESS_NAMES{
+constexpr std::array BROWSER_PROCESS_NAMES{
     "chrome", "firefox", "opera", "browser", "applicationframehost", "iexplore", "edge"};
-static constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
+constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
 
 class AutoType::AutoTypeImpl {};
 
@@ -23,61 +20,44 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
 AutoType::~AutoType() = default;
 
-AutoTypeResult AutoType::key_move(Direction direction, char32_t character, KeyCode code,
-                                  Modifier modifier) {
-    return AutoTypeResult::Ok;
-}
-
-AutoTypeResult AutoType::ensure_modifier_not_pressed() {
-    auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
-    auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
-    static constexpr std::array checked_keys = {
-        VK_SHIFT, VK_RSHIFT, VK_CONTROL, VK_RCONTROL, VK_MENU, VK_RMENU, VK_LWIN, VK_RWIN,
-    };
-    while (total_wait_time > 0) {
-        auto any_pressed = false;
-        for (auto key : checked_keys) {
-            auto key_state = GetKeyState(key);
-            if (key_state) {
-                // TODO: press it?
-                any_pressed = true;
-                break;
-            }
-        }
-        if (!any_pressed) {
-            return AutoTypeResult::Ok;
-        }
-        Sleep(loop_wait_time);
-        total_wait_time -= loop_wait_time;
-    }
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-    throw std::runtime_error("Modifier key not released");
-#endif
-    return AutoTypeResult::ModifierNotReleased;
-}
-
-AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
-    return AutoTypeResult::Ok;
-}
-
-AutoTypeResult AutoType::key_press(char32_t character, KeyCode code, Modifier modifier) {
-    return AutoTypeResult::Ok;
-}
-
-AutoTypeResult AutoType::text(std::u32string_view text, Modifier modifier) {
-    if (text.length() == 0) {
-        return AutoTypeResult::Ok;
-    }
-    auto result = ensure_modifier_not_pressed();
-    if (result != AutoTypeResult::Ok) {
-        return result;
-    }
-    return AutoTypeResult::Ok;
-}
+// AutoTypeResult AutoType::ensure_modifier_not_pressed() {
+//     auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME;
+//     auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME;
+//     static constexpr std::array checked_keys = {
+//         VK_SHIFT, VK_RSHIFT, VK_CONTROL, VK_RCONTROL, VK_MENU, VK_RMENU, VK_LWIN, VK_RWIN,
+//     };
+//     while (total_wait_time > 0) {
+//         auto any_pressed = false;
+//         for (auto key : checked_keys) {
+//             auto key_state = GetKeyState(key);
+//             if (key_state) {
+//                 // TODO: press it?
+//                 any_pressed = true;
+//                 break;
+//             }
+//         }
+//         if (!any_pressed) {
+//             return AutoTypeResult::Ok;
+//         }
+//         Sleep(loop_wait_time);
+//         total_wait_time -= loop_wait_time;
+//     }
+// #if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+//     throw std::runtime_error("Modifier key not released");
+// #endif
+//     return AutoTypeResult::ModifierNotReleased;
+// }
 
 Modifier AutoType::shortcut_modifier() { return Modifier::Control; }
 
-pid_t AutoType::active_pid() { return 0; }
+pid_t AutoType::active_pid() {
+    DWORD pid = 0;
+    auto hwnd = GetForegroundWindow();
+    if (hwnd) {
+        GetWindowThreadProcessId(hwnd, &pid);
+    }
+    return pid;
+}
 
 AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
     auto hwnd = GetForegroundWindow();

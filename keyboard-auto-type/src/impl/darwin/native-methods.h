@@ -1,6 +1,6 @@
 #pragma once
 
-#include <CoreFoundation/CoreFoundation.h>
+#include <unistd.h>
 
 #include <string>
 

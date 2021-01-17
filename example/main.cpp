@@ -1,12 +1,10 @@
-#if __APPLE__
-#include <Carbon/Carbon.h>
-#endif
-
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "keyboard-auto-type.h"
 
-constexpr int KEY_EVENT_SUBMIT_SLEEP_TIME_USEC = 100000;
+constexpr int KEY_EVENT_SUBMIT_SLEEP_TIME_MS = 100;
 
 int main() {
     keyboard_auto_type::AutoType typer;
@@ -25,8 +23,5 @@ int main() {
     typer.text(U"Hello");
     typer.key_press(U'!', keyboard_auto_type::KeyCode::D1, keyboard_auto_type::Modifier::Shift);
 
-#if __APPLE__
-    // wait for events to send
-    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.1, false);
-#endif
+    std::this_thread::sleep_for(std::chrono::milliseconds(KEY_EVENT_SUBMIT_SLEEP_TIME_MS));
 }
