@@ -169,12 +169,19 @@ Build the library:
 make
 ```
 
-Run tests:
+On Windows you can use `nmake` instead:
+```sh
+nmake
+```
+
+## Tests
+
+Tests currently run only in English language (for Copy-Paste menu) and keyboard layout. To run tests:
 ```sh
 make tests
 ```
 
-On Windows you can use `nmake` instead, for example:
+or, on Windows:
 ```sh
 nmake tests
 ```
