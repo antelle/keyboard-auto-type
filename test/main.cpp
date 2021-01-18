@@ -292,9 +292,8 @@ TEST_F(AutoTypeKeysTest, key_press_menu) {
 }
 
 TEST_F(AutoTypeKeysTest, key_press_bad_arg) {
-    expected_text = U"a";
+    expected_text = U"";
     kbd::AutoType typer;
-    typer.text(U"a");
     ASSERT_THROW(typer.key_press(kbd::KeyCode::Undefined), std::invalid_argument);
 }
 
@@ -336,7 +335,7 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     // "hello o hell"
 }
 
-TEST_F(AutoTypeKeysTest, key_move_simple) {
+TEST_F(AutoTypeKeysTest, key_move_single) {
     expected_text = U"a";
     kbd::AutoType typer;
 
@@ -401,7 +400,7 @@ TEST_F(AutoTypeKeysTest, key_move_right_shift) {
 }
 
 TEST_F(AutoTypeKeysTest, key_move_all_keys) {
-    expected_text = U"0123456789 abcdefghijklmnopqrstuvwxyz\t0123456789\n,/\n=-*+\\,=`[-.'];/";
+    expected_text = U"0123456789 abcdefghijklmnopqrstuvwxyz\t0123456789\n/-*+\n\\,=`[-.'];/";
     kbd::AutoType typer;
 
     static constexpr std::array ALL_KEYS{
@@ -460,13 +459,11 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
 
         kbd::KeyCode::Return,
 
-        kbd::KeyCode::KeypadDecimal,
         kbd::KeyCode::KeypadDivide,
-        kbd::KeyCode::KeypadEnter,
-        kbd::KeyCode::KeypadEquals,
         kbd::KeyCode::KeypadMinus,
         kbd::KeyCode::KeypadMultiply,
         kbd::KeyCode::KeypadPlus,
+        kbd::KeyCode::KeypadEnter,
 
         kbd::KeyCode::Backslash,
         kbd::KeyCode::Comma,
@@ -479,19 +476,6 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         kbd::KeyCode::RightBracket,
         kbd::KeyCode::Semicolon,
         kbd::KeyCode::Slash,
-
-        kbd::KeyCode::Meta,
-        kbd::KeyCode::Ctrl,
-        kbd::KeyCode::Function,
-        kbd::KeyCode::Shift,
-        kbd::KeyCode::Option,
-        kbd::KeyCode::Escape,
-
-        kbd::KeyCode::RightMeta,
-        kbd::KeyCode::RightControl,
-        kbd::KeyCode::RightShift,
-        kbd::KeyCode::RightOption,
-        kbd::KeyCode::Escape,
 
         kbd::KeyCode::UpArrow,
         kbd::KeyCode::DownArrow,
@@ -509,6 +493,19 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         kbd::KeyCode::X,
         kbd::KeyCode::LeftArrow,
         kbd::KeyCode::ForwardDelete,
+
+        kbd::KeyCode::Ctrl,
+        kbd::KeyCode::Function,
+        kbd::KeyCode::Shift,
+        kbd::KeyCode::Option,
+        kbd::KeyCode::Meta,
+        kbd::KeyCode::Escape,
+
+        kbd::KeyCode::RightControl,
+        kbd::KeyCode::RightShift,
+        kbd::KeyCode::RightOption,
+        kbd::KeyCode::RightMeta,
+        kbd::KeyCode::Escape,
     };
 
     for (auto key_code : ALL_KEYS) {
@@ -518,6 +515,12 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
             typer.key_move(kbd::Direction::Up, key_code);
         }
     }
+
+    wait_millis(100);
+
+    // hide all possible menus
+    typer.key_press(kbd::KeyCode::Escape);
+    wait_millis(100);
 }
 
 class AutoTypeWindowTest : public testing::Test {
@@ -574,14 +577,14 @@ TEST_F(AutoTypeWindowTest, active_window) {
 
             auto win = typer.active_window();
             ASSERT_EQ(active_pid, win.pid);
-            ASSERT_NE(0, win.window_id);
+            ASSERT_TRUE(win.window_id);
             ASSERT_FALSE(win.app_name.empty());
             ASSERT_TRUE(win.title.empty());
             ASSERT_TRUE(win.url.empty());
 
             win = typer.active_window({.get_window_title = true, .get_browser_url = true});
             ASSERT_EQ(active_pid, win.pid);
-            ASSERT_NE(0, win.window_id);
+            ASSERT_TRUE(win.window_id);
             ASSERT_FALSE(win.app_name.empty());
             ASSERT_FALSE(win.title.empty());
             ASSERT_TRUE(win.url.empty());

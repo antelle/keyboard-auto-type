@@ -1,8 +1,10 @@
-#include "../platform-util.h"
+#include "platform-util.h"
+
+#include <Windows.h>
 
 namespace keyboard_auto_type_test {
 
-void wait_millis(long ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+void wait_millis(long ms) { Sleep(ms); }
 
 void launch_text_editor(std::string_view file_name) {
     system(("start notepad.exe " + std::string(file_name)).c_str());
