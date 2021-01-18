@@ -37,7 +37,7 @@ clang-tidy:
 	cmake --build build --target clang-tidy
 
 cppcheck:
-	cppcheck --enable=all --inline-suppr keyboard-auto-type test example
+	cppcheck --enable=all --inline-suppr keyboard-auto-type
 
 build-tests:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
