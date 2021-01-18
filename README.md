@@ -12,12 +12,13 @@ WIP, don't use it yet. Detailed status:
 |----------------------------|-------------------------|--------------------|-------|
 | Sending key codes          | :white_check_mark:      | :white_check_mark: | :x:   |
 | Typing text                | :white_check_mark:      | :white_check_mark: | :x:   |
+| Layout-aware text entry    | :white_check_mark:      | :white_check_mark: | :x:   |
 | Emoji and CJK characters   | :white_check_mark:      | :x:                | :x:   |
 | Getting window information | :white_check_mark:      | :white_check_mark: | :x:   |
 | Getting browser URL        | :eight_spoked_asterisk: | :white_check_mark: | :x:   |
 | Switching to an app        | :white_check_mark:      | :white_check_mark: | :x:   |
 | Switching an given window  | :x:                     | :white_check_mark: | :x:   |
-| Virtual desktops (spaces)  | :x:                     | :x:                | :x:   |
+| Virtual desktops (spaces)  | :x:                     | :white_check_mark: | :x:   |
 
 ## Installation
 
