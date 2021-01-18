@@ -158,7 +158,7 @@ This function returns just a pid of the active / frontmost process:
 kbd::AutoType::active_pid()
 ```
 
-To activate the window found using `active_window`:
+To activate a window found using `active_window`:
 ```cpp
 kbd::AutoType::show_window(window_info)
 ```
