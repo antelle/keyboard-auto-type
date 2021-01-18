@@ -14,10 +14,11 @@ TODO
 
 ## Usage
 
-Include the library headers and create an `AutoType` object:
+Include the library header and create an `AutoType` object:
 ```cpp
 #include "keyboard-auto-type.h"
 
+// for convenience, to type less
 namespace kbd = keyboard_auto_type;
 
 kbd::AutoType typer;
@@ -30,17 +31,12 @@ typer.text(U"Hello, world!");
 
 Alternatively, you can simulate one key stroke:
 ```cpp
-typer.key_press(U'a');
+typer.key_press(kbd::KeyCode::A);
 ```
 
 You can also use [modifiers](#Modifiers) to perform different actions, for example, this will send <kbd>⌘</kbd><kbd>A</kbd> to select all text:
 ```cpp
-typer.key_press(U'a', kbd::KeyCode::A, typer.shortcut_modifier());
-```
-
-Another example of a word deletion using <kbd>⌥</kbd><kbd>⌫</kbd>, in this case you pass `code`, but not `character` (also see more about [shortcuts](#shortcuts)):
-```cpp
-typer.key_press(0, kbd::KeyCode::BackwardDelete, kbd::Modifier::Option);
+typer.key_press(kbd::KeyCode::A, typer.shortcut_modifier());
 ```
 
 There's also a method to run combinations like <kbd>⌘</kbd><kbd>A</kbd> / <kbd>⌃</kbd><kbd>A</kbd>:
@@ -49,26 +45,41 @@ typer.shortcut(kbd::KeyCode::C); // copy
 typer.shortcut(kbd::KeyCode::V); // paste
 ```
 
+Another example of word deletion using <kbd>⌥</kbd><kbd>⌫</kbd>, in this case you pass `code`, but not `character` (also see more about [shortcuts](#shortcuts)):
+```cpp
+typer.key_press(kbd::KeyCode::BackwardDelete, kbd::Modifier::Option);
+```
+
 ## Low-level API
 
 If you need access to a low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with right Ctrl.
 
 Other methods (`key_press`, `text`) will also press the modifier key for you, while `key_move` won't do it. However it accepts `modifier` parameter because you may need to pass it to the key event. For example, an event emitted when <kbd>A</kbd> is moved down in <kbd>⌘</kbd><kbd>A</kbd> combination, contains a flag that allows to understand that Command is now pressed.
 
+First of all, there are three things that you can do using a keyboard:
+- enter text, which sends unicode values of typed _characters_, this usually depends on keyboard layout
+- press a key and send a _key code_, for example <kbd>⌘</kbd><kbd>A</kbd> works in the same way no matter which keyboard layout is selected
+- manipulate the modifier key itself (Shift, Ctrl, ...)
+
+Therefore, there are three methods:
+
 ```cpp
-// make sure modifiers keys are not hold by the user
-typer.ensure_modifier_not_pressed();
-// press a modifier: Alt, Ctrl, ...
-typer.key_move(kbd::Direction::Down,
-               kbd::Modifier::Alt);
 // press the A key as text
 typer.key_move(kbd::Direction::Down,
                U'a',
                kbd::Modifier::Alt);
-// press the A key without text
+// send the key code A
 typer.key_move(kbd::Direction::Down,
                kbd::KeyCode::A,
                kbd::Modifier::Alt);
+// use a modifier: Shift, Ctrl, ...
+typer.key_move(kbd::Direction::Down,
+               kbd::Modifier::Alt);
+```
+
+Additionally, this method checks if any of modifiers is currently pressed. It makes sense to call it before starting text input. This method will throw an exception if the user keeps holding a key unnaturally long (more than 10s, to be precise):
+```cpp
+typer.ensure_modifier_not_pressed();
 ```
 
 ## Modifiers
@@ -120,8 +131,9 @@ All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, there a
 
 - `AutoTypeResult::BadArg`: bad argument
 - `AutoTypeResult::ModifierNotReleased`: the user is holding a modifier key, simulating keystrokes in this state can have unexpected consequences
+- `AutoTypeResult::KeyPressFailed`: we have sent a keypress event, however it didn't have any effect
 - `AutoTypeResult::NotSupported`: the given key code is not supported on this operating system
-- `AutoTypeResult::OsError`: there was an error during simulating keyboard input
+- `AutoTypeResult::OsError`: opereating system reported an error during simulating keyboard input
 
 ## Window management
 
@@ -161,11 +173,13 @@ The library is not thread safe. Moreover, it's not a good idea to manipulate the
 
 ## C++ standard
 
-This project requires C++17 or above.
+The library requires C++17 or above. Tests and examples are using C++20 features.
 
 ## Development
 
-You will need `cmake` and the standard development toolchain to build the project.  
+You will need CMake and the standard development toolchain to build the project.
+
+`Makefile` is provided as a convenience measure to launch `cmake` commands. There's nothing important there, however using it is easier than typing commands. If you're familiar with CMake, you can build without `make` if you prefer.
 
 Build the library:
 ```sh
@@ -189,7 +203,7 @@ nmake vs-project
 
 ## Tests
 
-Tests currently run only in English language (for Copy-Paste menu) and keyboard layout. To run tests:
+Tests currently run only in English language (for Copy-Paste menu) and QWERTY keyboard layout. To run tests:
 ```sh
 make tests
 ```
