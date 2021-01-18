@@ -3,11 +3,11 @@
 # Windows NMAKE \
 !ifndef 0 # \ 
 RUN_EXAMPLE = build\output\Debug\example.exe # \ 
-RUN_TEST = build\output\Debug\test.exe # \
+RUN_TESTS = build\output\Debug\test.exe # \
 !else
 # GNU Make
 RUN_EXAMPLE = build/output/example
-RUN_TEST = build/output/test
+RUN_TESTS = build/output/test
 # \
 !endif
 
@@ -44,7 +44,7 @@ build-tests:
 	$(RUN_CMAKE)
 
 tests: build-tests
-	$(RUN_TEST)
+	$(RUN_TESTS)
 
 xcode-project:
 	cmake -G Xcode -B xcode -D CMAKE_C_COMPILER="$$(xcrun -find c++)" -D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
