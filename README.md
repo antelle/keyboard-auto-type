@@ -94,6 +94,27 @@ Additionally, this method checks if any of modifiers is currently pressed. It ma
 typer.ensure_modifier_not_pressed();
 ```
 
+And finally, if you want to mess with underlying OS key codes, there's a way to do so:
+```cpp
+// get a system key code, type varies per OS
+auto key_code = typer.os_key_code(kbd::KeyCode::A)
+
+// using the current locale, find its key by character
+auto key = typer.os_key_code_for_char(character)
+// the result is not guaranteed to exist, so it's optional
+// e.g. there's no key combination for "★"
+key.code     // key code that represents the character
+key.modifier // modifier required to get the desired result
+
+// same as above, but optimized for long strings
+typer.os_key_codes_for_chars(long_string)
+
+// and here we go, pass what you get to:
+typer.key_move(kbd::Direction::Down, U'★', key.code, key.modifier)
+
+// but be careful, it's a low-level API, all checks are on you
+```
+
 ## Modifiers
 
 The library supports keyboard modifiers in most of methods. The modifiers are:
