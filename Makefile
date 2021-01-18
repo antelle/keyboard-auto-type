@@ -22,8 +22,7 @@ configure:
 cmake:
 	$(RUN_CMAKE)
 
-rebuild: clean
-	$(RUN_CMAKE)
+rebuild: clean all
 
 clean:
 	git clean -fxd build xcode
