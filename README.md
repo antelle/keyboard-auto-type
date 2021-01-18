@@ -17,6 +17,7 @@ WIP, don't use it yet. Detailed status:
 | Getting browser URL        | :eight_spoked_asterisk: | :white_check_mark: | :x:   |
 | Switching to an app        | :white_check_mark:      | :white_check_mark: | :x:   |
 | Switching an given window  | :x:                     | :white_check_mark: | :x:   |
+| Virtual desktops (spaces)  | :x:                     | :x:                | :x:   |
 
 ## Installation
 
