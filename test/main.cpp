@@ -1,8 +1,3 @@
-#if __APPLE__
-#include <Carbon/Carbon.h>
-#include <unistd.h>
-#endif
-
 #include <array>
 #include <chrono>
 #include <codecvt>
@@ -14,6 +9,7 @@
 
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
+#include "platform-util.h"
 
 namespace kbd = keyboard_auto_type;
 
@@ -22,13 +18,14 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-class AutoTypeTest : public testing::Test {
+namespace keyboard_auto_type_test {
+
+class AutoTypeKeysTest : public testing::Test {
   protected:
     const std::string file_name = "build/test/test.txt";
     std::filesystem::file_time_type file_mod_time;
     std::u32string expected_text;
 
-  protected:
     // cppcheck-suppress unusedFunction
     static void SetUpTestSuite() {}
 
@@ -53,36 +50,9 @@ class AutoTypeTest : public testing::Test {
     void open_text_editor() {
         create_file();
         kill_text_editor();
-        launch_text_editor();
+        wait_millis(100);
+        launch_text_editor(file_name);
         wait_text_editor_window();
-    }
-
-    void launch_text_editor() {
-#if __APPLE__
-        system(("open /System/Applications/TextEdit.app " + file_name).c_str());
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        system(("start notepad.exe " + file_name).c_str());
-#else
-        FAIL() << "launch_text_editor is not implemented";
-#endif
-    }
-
-    void wait_millis(long ms) {
-#if __APPLE__
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, ms / 1000., false);
-#else
-        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-#endif
-    }
-
-    bool is_text_editor_app_name(std::string_view app_name) {
-#if __APPLE__
-        return app_name == "TextEdit";
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        return app_name.ends_with("notepad.exe");
-#else
-        FAIL() << "is_text_editor_app_name is not implemented";
-#endif
     }
 
     void wait_text_editor_window() {
@@ -117,16 +87,6 @@ class AutoTypeTest : public testing::Test {
         } else {
             FAIL() << "Active app is not a text editor, failed to save";
         }
-    }
-
-    static void kill_text_editor() {
-#if __APPLE__
-        system("killall TextEdit >/dev/null 2>/dev/null");
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        system("taskkill /IM notepad.exe /F >nul 2>nul");
-#else
-        FAIL() << "kill_text_editor is not implemented";
-#endif
     }
 
     void wait_for_file_save() {
@@ -207,31 +167,31 @@ class AutoTypeTest : public testing::Test {
     }
 };
 
-TEST_F(AutoTypeTest, text_letter) {
+TEST_F(AutoTypeKeysTest, text_letter) {
     expected_text = U"a";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
-TEST_F(AutoTypeTest, text_two_letters) {
+TEST_F(AutoTypeKeysTest, text_two_letters) {
     expected_text = U"ab";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
-TEST_F(AutoTypeTest, text_two_lines) {
+TEST_F(AutoTypeKeysTest, text_two_lines) {
     expected_text = U"ab\ncd";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
-TEST_F(AutoTypeTest, text_capital) {
+TEST_F(AutoTypeKeysTest, text_capital) {
     expected_text = U"AbC";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
-TEST_F(AutoTypeTest, text_unicode_basic) {
+TEST_F(AutoTypeKeysTest, text_unicode_basic) {
     kbd::AutoType typer;
     expected_text = U"";
 
@@ -289,7 +249,7 @@ TEST_F(AutoTypeTest, text_unicode_basic) {
 }
 
 #if __APPLE__
-TEST_F(AutoTypeTest, text_unicode_emoji) {
+TEST_F(AutoTypeKeysTest, text_unicode_emoji) {
     expected_text = U"🍆🍑😈";
     kbd::AutoType typer;
     typer.text(expected_text);
@@ -297,21 +257,21 @@ TEST_F(AutoTypeTest, text_unicode_emoji) {
 #endif
 
 #if __APPLE__
-TEST_F(AutoTypeTest, text_unicode_supplementary_ideographic) {
+TEST_F(AutoTypeKeysTest, text_unicode_supplementary_ideographic) {
     expected_text = U"𠀧𠀪";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 #endif
 
-TEST_F(AutoTypeTest, key_press_key_code) {
+TEST_F(AutoTypeKeysTest, key_press_key_code) {
     expected_text = U"0b";
     kbd::AutoType typer;
     typer.key_press(kbd::KeyCode::D0);
     typer.key_press(kbd::KeyCode::B);
 }
 
-TEST_F(AutoTypeTest, key_press_key_code_modifier) {
+TEST_F(AutoTypeKeysTest, key_press_key_code_modifier) {
     expected_text = U"1!cC";
     kbd::AutoType typer;
     typer.key_press(kbd::KeyCode::D1);
@@ -320,7 +280,7 @@ TEST_F(AutoTypeTest, key_press_key_code_modifier) {
     typer.key_press(kbd::KeyCode::C, kbd::Modifier::Shift);
 }
 
-TEST_F(AutoTypeTest, key_press_menu) {
+TEST_F(AutoTypeKeysTest, key_press_menu) {
     expected_text = U"more text";
     kbd::AutoType typer;
 
@@ -331,14 +291,14 @@ TEST_F(AutoTypeTest, key_press_menu) {
     press_menu_paste();
 }
 
-TEST_F(AutoTypeTest, key_press_bad_arg) {
+TEST_F(AutoTypeKeysTest, key_press_bad_arg) {
     expected_text = U"a";
     kbd::AutoType typer;
     typer.text(U"a");
     ASSERT_THROW(typer.key_press(kbd::KeyCode::Undefined), std::invalid_argument);
 }
 
-TEST_F(AutoTypeTest, shortcut_copy_paste) {
+TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     expected_text = U"hello o hell";
     kbd::AutoType typer;
 
@@ -376,7 +336,7 @@ TEST_F(AutoTypeTest, shortcut_copy_paste) {
     // "hello o hell"
 }
 
-TEST_F(AutoTypeTest, key_move_simple) {
+TEST_F(AutoTypeKeysTest, key_move_simple) {
     expected_text = U"a";
     kbd::AutoType typer;
 
@@ -384,7 +344,7 @@ TEST_F(AutoTypeTest, key_move_simple) {
     typer.key_move(kbd::Direction::Up, kbd::KeyCode::A);
 }
 
-TEST_F(AutoTypeTest, key_move_multiple) {
+TEST_F(AutoTypeKeysTest, key_move_multiple) {
     expected_text = U"aab";
     kbd::AutoType typer;
 
@@ -398,7 +358,7 @@ TEST_F(AutoTypeTest, key_move_multiple) {
     typer.key_move(kbd::Direction::Up, kbd::KeyCode::B);
 }
 
-TEST_F(AutoTypeTest, key_move_shift) {
+TEST_F(AutoTypeKeysTest, key_move_shift) {
     expected_text = U"aABb";
     kbd::AutoType typer;
 
@@ -419,7 +379,7 @@ TEST_F(AutoTypeTest, key_move_shift) {
     typer.key_move(kbd::Direction::Up, kbd::KeyCode::B);
 }
 
-TEST_F(AutoTypeTest, key_move_right_shift) {
+TEST_F(AutoTypeKeysTest, key_move_right_shift) {
     expected_text = U"aABb";
     kbd::AutoType typer;
 
@@ -440,7 +400,7 @@ TEST_F(AutoTypeTest, key_move_right_shift) {
     typer.key_move(kbd::Direction::Up, kbd::KeyCode::B);
 }
 
-TEST_F(AutoTypeTest, key_move_all_keys) {
+TEST_F(AutoTypeKeysTest, key_move_all_keys) {
     expected_text = U"0123456789 abcdefghijklmnopqrstuvwxyz\t0123456789\n,/\n=-*+\\,=`[-.'];/";
     kbd::AutoType typer;
 
@@ -556,9 +516,123 @@ TEST_F(AutoTypeTest, key_move_all_keys) {
         if (os_key_code.has_value()) {
             typer.key_move(kbd::Direction::Down, key_code);
             typer.key_move(kbd::Direction::Up, key_code);
-            // sleep(0.4);
+        }
+    }
+}
+
+class AutoTypeWindowTest : public testing::Test {
+  protected:
+    static constexpr std::string_view file_name = "build/test/test.txt";
+
+    // cppcheck-suppress unusedFunction
+    static void SetUpTestSuite() { create_file(); }
+
+    // cppcheck-suppress unusedFunction
+    virtual void SetUp() {
+        kill_text_editor();
+        wait_millis(100);
+    }
+
+    // cppcheck-suppress unusedFunction
+    virtual void TearDown() { kill_text_editor(); }
+
+    static void create_file() {
+        std::filesystem::remove(file_name);
+        std::fstream(file_name, std::ios::out).close();
+    }
+};
+
+TEST_F(AutoTypeWindowTest, active_pid) {
+    kbd::AutoType typer;
+
+    auto pid = typer.active_pid();
+    ASSERT_NE(0, pid);
+
+    launch_text_editor(file_name);
+    for (auto i = 0; i < 100; i++) {
+        wait_millis(100);
+        auto active_pid = typer.active_pid();
+        if (pid != active_pid) {
+            return;
         }
     }
 
-    sleep(3);
+    FAIL() << "active_pid didn't change";
 }
+
+TEST_F(AutoTypeWindowTest, active_window) {
+    kbd::AutoType typer;
+
+    auto pid = typer.active_pid();
+
+    launch_text_editor(file_name);
+    for (auto i = 0; i < 100; i++) {
+        wait_millis(100);
+        auto active_pid = typer.active_pid();
+        if (pid != active_pid) {
+            wait_millis(1000);
+
+            auto win = typer.active_window();
+            ASSERT_EQ(active_pid, win.pid);
+            ASSERT_NE(0, win.window_id);
+            ASSERT_FALSE(win.app_name.empty());
+            ASSERT_TRUE(win.title.empty());
+            ASSERT_TRUE(win.url.empty());
+
+            win = typer.active_window({.get_window_title = true, .get_browser_url = true});
+            ASSERT_EQ(active_pid, win.pid);
+            ASSERT_NE(0, win.window_id);
+            ASSERT_FALSE(win.app_name.empty());
+            ASSERT_FALSE(win.title.empty());
+            ASSERT_TRUE(win.url.empty());
+
+            return;
+        }
+    }
+
+    FAIL() << "Text editor didn't start";
+}
+
+TEST_F(AutoTypeWindowTest, show_window) {
+    kbd::AutoType typer;
+
+    auto self_window = typer.active_window();
+    ASSERT_EQ(self_window.pid, typer.active_pid());
+    ASSERT_NE(0, self_window.pid);
+
+    launch_text_editor(file_name);
+    for (auto i = 0; i < 100; i++) {
+        wait_millis(100);
+        auto editor_window = typer.active_window();
+        ASSERT_EQ(editor_window.pid, typer.active_pid());
+        if (editor_window.pid != self_window.pid) {
+            wait_millis(1000);
+
+            auto win = typer.active_window();
+            ASSERT_EQ(win.pid, typer.active_pid());
+            ASSERT_EQ(editor_window.pid, win.pid);
+
+            auto shown = typer.show_window(self_window);
+            ASSERT_TRUE(shown);
+            wait_millis(100);
+
+            win = typer.active_window();
+            ASSERT_EQ(win.pid, typer.active_pid());
+            ASSERT_EQ(self_window.pid, win.pid);
+
+            shown = typer.show_window(editor_window);
+            ASSERT_TRUE(shown);
+            wait_millis(100);
+
+            win = typer.active_window();
+            ASSERT_EQ(win.pid, typer.active_pid());
+            ASSERT_EQ(editor_window.pid, win.pid);
+
+            return;
+        }
+    }
+
+    FAIL() << "Text editor didn't start";
+}
+
+} // namespace keyboard_auto_type_test

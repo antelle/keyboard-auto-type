@@ -17,8 +17,6 @@ set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
-add_executable(${PROJECT_NAME} main.cpp)
-
 if(APPLE)
     set(SYSTEM_LIBRARIES
         "-framework CoreFoundation"
@@ -26,12 +24,26 @@ if(APPLE)
         "-framework AppKit"
         "-framework ScriptingBridge"
     )
+    set(PLATFORM_SOURCES
+        "impl/darwin/platform-util.cpp"
+    )
 elseif(WIN32)
     add_definitions(-DUNICODE -D_UNICODE -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     set(SYSTEM_LIBRARIES
         "Shlwapi.lib"
     )
+    set(PLATFORM_SOURCES
+        "impl/win32/platform-util.cpp"
+    )
 endif()
+
+add_executable(${PROJECT_NAME}
+    ${PLATFORM_SOURCES}
+    "platform-util.h"
+    "main.cpp"
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC .)
 
 set(SANITIZER_FLAGS "")
 if(KEYBOARD_AUTO_TYPE_USE_SANITIZERS AND NOT WIN32)
