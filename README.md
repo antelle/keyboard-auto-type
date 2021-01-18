@@ -6,7 +6,7 @@ Cross-platform library for simulating keyboard input events.
 
 ## Status
 
-WIP, don't use it yet.
+WIP, don't use it yet. Detailed status:
 
 |                            | macOS                   | Windows            | Linux |
 |----------------------------|-------------------------|--------------------|-------|
@@ -15,8 +15,8 @@ WIP, don't use it yet.
 | Tests passing              | :white_check_mark:      | :white_check_mark: | :x:   |
 | Getting window information | :white_check_mark:      | :white_check_mark: | :x:   |
 | Getting browser URL        | :eight_spoked_asterisk: | :white_check_mark: | :x:   |
-| Switching to the app       | :white_check_mark:      | :white_check_mark: | :x:   |
-| Switching to app window    | :x:                     | :white_check_mark: | :x:   |
+| Switching to an app        | :white_check_mark:      | :white_check_mark: | :x:   |
+| Switching an given window  | :x:                     | :white_check_mark: | :x:   |
 
 ## Installation
 
