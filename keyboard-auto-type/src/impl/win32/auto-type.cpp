@@ -105,7 +105,7 @@ pid_t AutoType::active_pid() {
     return pid;
 }
 
-AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
+AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
     auto hwnd = GetForegroundWindow();
     if (!hwnd) {
         return {};
@@ -114,7 +114,7 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
     DWORD pid;
     GetWindowThreadProcessId(hwnd, &pid);
 
-    AppWindowInfo result{};
+    AppWindow result{};
     result.window_id = hwnd;
     result.pid = pid;
 
@@ -144,7 +144,7 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
     return result;
 }
 
-bool AutoType::show_window(const AppWindowInfo &window) {
+bool AutoType::show_window(const AppWindow &window) {
     if (!window.window_id) {
         return false;
     }

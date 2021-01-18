@@ -5,7 +5,6 @@
 #include <Windows.h>
 #elif __APPLE__
 #include <Carbon/Carbon.h>
-#include <sys/types.h>
 #endif
 
 #include <cstdint>
@@ -44,9 +43,13 @@ enum class Modifier : uint8_t {
     Win = Meta,
 };
 
-Modifier operator+(Modifier lhs, Modifier rhs);
-Modifier operator|(Modifier lhs, Modifier rhs);
-Modifier operator&(Modifier lhs, Modifier rhs);
+constexpr Modifier operator|(Modifier lhs, Modifier rhs) {
+    return static_cast<Modifier>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+}
+
+constexpr Modifier operator&(Modifier lhs, Modifier rhs) {
+    return static_cast<Modifier>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+}
 
 enum class Direction { Up, Down };
 
@@ -54,11 +57,12 @@ enum class AutoTypeResult {
     Ok,
     BadArg,
     ModifierNotReleased,
+    KeyPressFailed,
     NotSupported,
     OsError,
 };
 
-struct AppWindowInfo {
+struct AppWindow {
     pid_t pid = 0;
     window_handle_t window_id = 0;
     std::string app_name;
@@ -110,8 +114,8 @@ class AutoType {
     os_key_codes_for_chars(std::u32string_view text);
 
     static pid_t active_pid();
-    static AppWindowInfo active_window(const ActiveWindowArgs &args = {});
-    static bool show_window(const AppWindowInfo &window);
+    static AppWindow active_window(const ActiveWindowArgs &args = {});
+    static bool show_window(const AppWindow &window);
 };
 
 } // namespace keyboard_auto_type

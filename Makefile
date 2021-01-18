@@ -40,9 +40,11 @@ clang-tidy:
 cppcheck:
 	cppcheck --enable=all --inline-suppr keyboard-auto-type test example
 
-tests:
+build-tests:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
 	$(RUN_CMAKE)
+
+tests: build-tests
 	$(RUN_TEST)
 
 xcode-project:

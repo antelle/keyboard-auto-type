@@ -1,8 +1,6 @@
 #ifndef KEYBOARD_AUTO_TYPE_KEY_CODE_H
 #define KEYBOARD_AUTO_TYPE_KEY_CODE_H
 
-#include <cstdint>
-
 namespace keyboard_auto_type {
 
 enum class KeyCode {

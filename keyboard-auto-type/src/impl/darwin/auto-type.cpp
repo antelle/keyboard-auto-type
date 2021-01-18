@@ -1,8 +1,12 @@
 #include <Carbon/Carbon.h>
 
 #include <array>
+#include <chrono>
 #include <codecvt>
+#include <iostream>
 #include <locale>
+#include <thread>
+#include <unordered_map>
 
 #include "auto-release.h"
 #include "carbon-helpers.h"
@@ -12,6 +16,9 @@
 
 namespace keyboard_auto_type {
 
+constexpr auto KEY_PRESS_TOTAL_WAIT_TIME_MS = 10'000;
+constexpr auto KEY_PRESS_LOOP_WAIT_TIME_MS = 10;
+
 constexpr std::array BROWSER_APP_BUNDLE_IDS{
     "com.google.Chrome",
     "org.chromium.Chromium",
@@ -20,14 +27,20 @@ constexpr std::array BROWSER_APP_BUNDLE_IDS{
     "com.apple.SafariTechnologyPreview",
 };
 
+constexpr std::array KEY_CHECK_CODES{
+    std::make_pair(kVK_RightCommand, kVK_Command),
+    std::make_pair(kVK_RightShift, kVK_Shift),
+    std::make_pair(kVK_RightOption, kVK_Option),
+    std::make_pair(kVK_RightControl, kVK_Control),
+};
+
 class AutoType::AutoTypeImpl {
   private:
     auto_release<CGEventSourceRef> event_source_ =
         CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
 
-    static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 128;
-    static constexpr int KEYBOARD_LAYOUT_LENGTH = 128;
-    std::array<CGKeyCode, KEYBOARD_LAYOUT_LENGTH> keyboard_layout_ = {{}};
+    static constexpr int MAX_KEYBOARD_LAYOUT_CHAR_CODE = 127;
+    std::unordered_map<char32_t, KeyCodeWithModifiers> keyboard_layout_ = {};
     CFDataRef keyboard_layout_data_ = nullptr;
 
   public:
@@ -42,6 +55,32 @@ class AutoType::AutoTypeImpl {
             CGEventSetFlags(event, flags);
         }
         CGEventPost(kCGHIDEventTap, event);
+
+        auto start_time = std::chrono::system_clock::now();
+        auto key_check_code = code;
+        for (auto [original_code, check_code] : KEY_CHECK_CODES) {
+            if (original_code == code) {
+                key_check_code = check_code;
+            }
+        }
+        while (true) {
+            auto key_state =
+                CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key_check_code);
+            if (key_state == down) {
+                break;
+            }
+            auto elapsed = std::chrono::system_clock::now() - start_time;
+            auto wait_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+            if (wait_ms.count() > KEY_PRESS_TOTAL_WAIT_TIME_MS) {
+#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+                throw std::runtime_error(std::string("Key state didn't change: key ") +
+                                         std::to_string(code) + " should be " +
+                                         (down ? "down" : "up"));
+#endif
+                return AutoTypeResult::KeyPressFailed;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(KEY_PRESS_LOOP_WAIT_TIME_MS));
+        }
 
         return AutoTypeResult::Ok;
     }
@@ -76,19 +115,27 @@ class AutoType::AutoTypeImpl {
         std::array<UniChar, 4> chars{};
         UniCharCount length = 0;
 
-        for (int i = 0; i < KEYBOARD_LAYOUT_LENGTH; i++) {
-            keyboard_layout_.at(i) = 0;
-        }
-        static constexpr std::array MOD_STATES{0U, static_cast<UInt32>(NX_DEVICELSHIFTKEYMASK)};
-        for (int code = 0; code < MAX_KEYBOARD_LAYOUT_CHAR_CODE; code++) {
-            for (auto mod_state : MOD_STATES) {
-                UCKeyTranslate(layout, code, kUCKeyActionDown, mod_state, kbd_type,
-                               kUCKeyTranslateNoDeadKeysBit, &keys_down, 4, &length, chars.data());
-                auto ch = chars[0];
+        keyboard_layout_.clear();
 
-                if (length && (ch >= ' ' && ch <= '~' || ch == '\t' || ch == ' ') &&
-                    !keyboard_layout_.at(ch)) {
-                    keyboard_layout_.at(ch) = code;
+        static constexpr auto SHIFT_MASK = (static_cast<UInt32>(shiftKey) >> 8U) & 0xFFU;
+        static constexpr auto OPTION_MASK = (static_cast<UInt32>(optionKey) >> 8U) & 0xFFU;
+        static constexpr std::array MODIFIER_STATES{
+            std::make_pair(0U, Modifier::None),
+            std::make_pair(SHIFT_MASK, Modifier::Shift),
+            std::make_pair(OPTION_MASK, Modifier::Option),
+            std::make_pair(SHIFT_MASK | OPTION_MASK, Modifier::Option | Modifier::Shift),
+        };
+        for (int code = 0; code <= MAX_KEYBOARD_LAYOUT_CHAR_CODE; code++) {
+            for (auto [mod_state, modifier] : MODIFIER_STATES) {
+                auto status = UCKeyTranslate(layout, code, kUCKeyActionDown, mod_state, kbd_type,
+                                             kUCKeyTranslateNoDeadKeysBit, &keys_down, 4, &length,
+                                             chars.data());
+                auto ch = chars[0];
+                if (status == noErr && length == 1 && ch && !keyboard_layout_.count(ch)) {
+                    KeyCodeWithModifiers code_with_modifier{};
+                    code_with_modifier.code = code;
+                    code_with_modifier.modifier = modifier;
+                    keyboard_layout_.emplace(ch, code_with_modifier);
                 }
             }
         }
@@ -97,14 +144,11 @@ class AutoType::AutoTypeImpl {
     }
 
     std::optional<KeyCodeWithModifiers> char_to_key_code(char32_t character) {
-        if (character >= keyboard_layout_.size()) {
+        auto code = keyboard_layout_.find(character);
+        if (code == keyboard_layout_.end()) {
             return std::nullopt;
         }
-        auto code = keyboard_layout_.at(character);
-        KeyCodeWithModifiers code_with_modifiers{};
-        code_with_modifiers.code = code;
-        // TODO: code_with_modifiers.modifier = ...
-        return code_with_modifiers;
+        return code->second;
     }
 
     static CGEventFlags modifier_to_flags(Modifier modifier) {
@@ -189,7 +233,7 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
 
 pid_t AutoType::active_pid() { return native_frontmost_app_pid(); }
 
-AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
+AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
     auto app = native_frontmost_app();
     if (!app.pid) {
         return {};
@@ -201,7 +245,7 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
         return {};
     }
 
-    AppWindowInfo result = {};
+    AppWindow result = {};
     result.pid = app.pid;
     result.app_name = app.name;
 
@@ -243,7 +287,7 @@ AppWindowInfo AutoType::active_window(const ActiveWindowArgs &args) {
     return result;
 }
 
-bool AutoType::show_window(const AppWindowInfo &window) {
+bool AutoType::show_window(const AppWindow &window) {
     return window.pid && native_show_app(window.pid);
 }
 

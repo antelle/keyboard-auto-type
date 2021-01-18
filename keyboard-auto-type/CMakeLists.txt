@@ -7,7 +7,6 @@ set(SOURCES
     include/keyboard-auto-type.h
     include/key-code.h
     src/auto-type.cpp
-    src/modifier.cpp
 )
 
 if (APPLE)

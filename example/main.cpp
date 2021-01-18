@@ -1,10 +1,6 @@
-#include <chrono>
 #include <iostream>
-#include <thread>
 
 #include "keyboard-auto-type.h"
-
-constexpr int KEY_EVENT_SUBMIT_SLEEP_TIME_MS = 100;
 
 int main() {
     try {
@@ -25,6 +21,4 @@ int main() {
     } catch (std::exception &ex) {
         std::cerr << ex.what() << std::endl;
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(KEY_EVENT_SUBMIT_SLEEP_TIME_MS));
 }
