@@ -103,8 +103,8 @@ auto key_code = typer.os_key_code(kbd::KeyCode::A)
 auto key = typer.os_key_code_for_char(character)
 // the result is not guaranteed to exist, so it's optional
 // e.g. there's no key combination for "★"
-key.code     // key code that represents the character
-key.modifier // modifier required to get the desired result
+key->code     // key code that represents the character
+key->modifier // modifier required to get the desired result
 
 // same as above, but optimized for long strings
 typer.os_key_codes_for_chars(long_string)
