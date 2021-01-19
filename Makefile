@@ -27,8 +27,8 @@ rebuild: clean all
 clean:
 	git clean -fxd build xcode
 
-format:
-	find keyboard-auto-type test example -name '*.cpp' -o -name '*.h' -o -name '*.mm' | xargs clang-format -i --verbose
+format: configure
+	cmake --build build --target clang-format
 
 check: clang-tidy cppcheck
 

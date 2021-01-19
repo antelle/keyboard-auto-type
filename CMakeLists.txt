@@ -24,3 +24,15 @@ endif()
 if(KEYBOARD_AUTO_TYPE_WITH_TESTS)
     add_subdirectory(test)
 endif()
+
+file(GLOB_RECURSE CLANG_FORMAT_FILES
+    ${PROJECT_SOURCE_DIR}/example/*.h
+    ${PROJECT_SOURCE_DIR}/example/*.cpp
+    ${PROJECT_SOURCE_DIR}/keyboard-auto-type/*.h
+    ${PROJECT_SOURCE_DIR}/keyboard-auto-type/*.cpp
+    ${PROJECT_SOURCE_DIR}/keyboard-auto-type/*.mm
+    ${PROJECT_SOURCE_DIR}/test/*.h
+    ${PROJECT_SOURCE_DIR}/test/*.cpp
+    ${PROJECT_SOURCE_DIR}/test/*.mm
+)
+add_custom_target(clang-format COMMAND clang-format -i --verbose ${CLANG_FORMAT_FILES})
