@@ -45,7 +45,7 @@ if(APPLE)
 endif()
 
 if(WIN32)
-    target_compile_options(${PROJECT_NAME} PRIVATE /Wall /WX /Werror /permissive-)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX /permissive-)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()

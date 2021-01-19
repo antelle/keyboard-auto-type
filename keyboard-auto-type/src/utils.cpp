@@ -15,8 +15,9 @@ AutoTypeResult throw_or_return(AutoTypeResult result, std::string message) {
     default:
         throw std::runtime_error(message);
     }
-#endif
+#else
     return result;
+#endif
 }
 
 } // namespace keyboard_auto_type
