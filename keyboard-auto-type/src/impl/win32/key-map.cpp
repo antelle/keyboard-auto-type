@@ -86,7 +86,7 @@ constexpr std::array<BYTE, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     VK_NUMPAD9,
 
     // keypad other
-    VK_OEM_CLEAR, // KeypadClear
+    VK_CLEAR,
     VK_DECIMAL,
     VK_DIVIDE,
     VK_RETURN, // KeypadEnter
@@ -149,6 +149,7 @@ constexpr std::array<BYTE, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     VK_VOLUME_DOWN,
     VK_VOLUME_UP,
     VK_CANCEL, // ControlBreak
+    VK_INSERT,
     VK_SLEEP,
 };
 

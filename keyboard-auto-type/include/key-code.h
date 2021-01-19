@@ -158,6 +158,7 @@ enum class KeyCode {
     VolumeDown,
     VolumeUp,
     ControlBreak,
+    Insert,
     Sleep,
 
     // number of key codes

@@ -56,6 +56,7 @@ constexpr std::array<CGKeyCode, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_
     0, // PrintScreen
     kVK_Return, kVK_Space, kVK_Tab, kVK_VolumeDown, kVK_VolumeUp,
     0, // ControlBreak
+    0, // Insert
     0, // Sleep
 };
 
