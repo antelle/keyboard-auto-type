@@ -32,7 +32,9 @@ See more in the [Usage](#usage) section.
 
 ## Status
 
-The library is WIP, so the API is not stable now. Detailed feature status:
+The library is WIP, so the API is not stable now. Tests may be not complete, but basic stuff on macOS and Windows should work, Linux is coming soon.
+
+## Features
 
 |                            | macOS                      | Windows                 | Linux |
 |----------------------------|----------------------------|-------------------------|-------|
@@ -45,6 +47,46 @@ The library is WIP, so the API is not stable now. Detailed feature status:
 | Switching to an app        | :white_check_mark:         | :x:                     | :x:   |
 | Switching a given window   | :x:                        | :white_check_mark:      | :x:   |
 | Virtual desktops (spaces)  | :eight_pointed_black_star: | :white_check_mark:      | :x:   |
+
+### Sending key codes
+
+Before sending keys `keyboard-auto-type` makes sure other modifiers are not pressed to prevent accidental surprisees, see more in [Modifiers](#modifiers).
+
+### Typing text
+
+Text entry is performed according to keyboard rules, for example, to enter "C++", you need to press these keys: <kbd>Shift</kbd><kbd>C</kbd><kbd>+</kbd><kbd>+</kbd><kbd>Shift↑</kbd>. If you pass string "C++" to the library, it will perform generate the same sequence of events.
+
+Here's what you will see on the [W3C Keyboard Event Viewer](https://w3c.github.io/uievents/tools/key-event-viewer.html):
+
+![Generated keyboard events](https://user-images.githubusercontent.com/633557/105089977-1e9efa80-5a9e-11eb-8eb6-19819c5d6276.png)
+
+Note the <kbd>Shift</kbd> key pressed only once and correct key codes.
+
+### Layout-aware text entry
+
+The library checks the locale before every high-level operation (`text` method). After this it does its best to find matching keys on the keyboard. If it fails to do so, it just sends text without a key code, which also works in most of cases. The library will never switch system layouts.
+
+### Emoji and CJK characters
+
+You can pass all range of Unicode characters to `text` method, it accepts both `std::u32string` and `std::wstring`, whichever your prefer. To type characters with high code points, sucj as emoji, it's recommended to use cross-platform 32-bit characters (`std::u32string`). See more in [Strings](#strings).
+
+### Getting window information
+
+Using `active_window` method you can get active app pid, name, and window title, more in [Window management](#window-management).
+
+### Getting browser URL
+
+The methos above also returns the URL if the active window is a browser. Currently supported:
+- Windows: Chrome, Firefox, Edge, Internet Explorer, other Chromium-based browsers
+- macOS: Chrome, Safari
+
+### Switching to an app or window
+
+There's a method `show_window` that activates the window using the window information obtained using `active_window`, you will find more in [Window management](#window-management). On Windows this will bring up the specific window, while on macOS it will activate the app and show its topmost window.
+
+### Virtual desktops (spaces)
+
+Suppose a user has an app with windows on several virtual desktops (spaces), for example a browser with different tabs. You obtained window information using `active_window`, after which the active space was switched to another one. If you call `show_window` on Windows, it will correctly activate the window, however on macOS it will bring up the browser, but not its specific window. It's because there seems to be no way doing it with public API and we would like to refrein from using private frameworks.
 
 ## Installation
 
