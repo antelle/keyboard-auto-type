@@ -4,7 +4,6 @@
 #include <UIAutomation.h>
 
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 namespace keyboard_auto_type {
@@ -51,7 +50,7 @@ std::string native_process_main_module_name(DWORD pid) {
     return name;
 }
 
-std::string native_browser_url(DWORD pid, HWND hwnd) {
+std::string native_browser_url(HWND hwnd) {
     auto hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (hr != S_OK && hr != S_FALSE && hr != RPC_E_CHANGED_MODE) {
         return "";

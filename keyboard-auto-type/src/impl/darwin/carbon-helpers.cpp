@@ -1,6 +1,5 @@
 #include "carbon-helpers.h"
 
-#include <iostream>
 #include <vector>
 
 #include "auto-release.h"

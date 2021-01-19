@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <vector>
 
 #include "key-map.h"
@@ -13,28 +14,28 @@ constexpr std::array BROWSER_PROCESS_NAMES{
     "chrome", "firefox", "opera", "browser", "applicationframehost", "iexplore", "edge"};
 constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
 static constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
-// static const auto EXTENDED_KEYS = []() {
-//     std::array<bool, 0xFF> extended_keys;
-//     extended_keys.at(VK_MENU) = true;
-//     extended_keys.at(VK_RMENU) = true;
-//     extended_keys.at(VK_CONTROL) = true;
-//     extended_keys.at(VK_RCONTROL) = true;
-//     extended_keys.at(VK_INSERT) = true;
-//     extended_keys.at(VK_DELETE) = true;
-//     extended_keys.at(VK_HOME) = true;
-//     extended_keys.at(VK_END) = true;
-//     extended_keys.at(VK_PRIOR) = true;
-//     extended_keys.at(VK_NEXT) = true;
-//     extended_keys.at(VK_DOWN) = true;
-//     extended_keys.at(VK_LEFT) = true;
-//     extended_keys.at(VK_RIGHT) = true;
-//     extended_keys.at(VK_UP) = true;
-//     extended_keys.at(VK_NUMLOCK) = true;
-//     extended_keys.at(VK_CANCEL) = true;
-//     extended_keys.at(VK_SNAPSHOT) = true;
-//     extended_keys.at(VK_DIVIDE) = true;
-//     return extended_keys;
-// };
+static const auto EXTENDED_KEYS = std::invoke([] {
+    std::array<bool, 0xFF> extended_keys;
+    extended_keys.at(VK_MENU) = true;
+    extended_keys.at(VK_RMENU) = true;
+    extended_keys.at(VK_CONTROL) = true;
+    extended_keys.at(VK_RCONTROL) = true;
+    extended_keys.at(VK_INSERT) = true;
+    extended_keys.at(VK_DELETE) = true;
+    extended_keys.at(VK_HOME) = true;
+    extended_keys.at(VK_END) = true;
+    extended_keys.at(VK_PRIOR) = true;
+    extended_keys.at(VK_NEXT) = true;
+    extended_keys.at(VK_DOWN) = true;
+    extended_keys.at(VK_LEFT) = true;
+    extended_keys.at(VK_RIGHT) = true;
+    extended_keys.at(VK_UP) = true;
+    extended_keys.at(VK_NUMLOCK) = true;
+    extended_keys.at(VK_CANCEL) = true;
+    extended_keys.at(VK_SNAPSHOT) = true;
+    extended_keys.at(VK_DIVIDE) = true;
+    return extended_keys;
+});
 
 class AutoType::AutoTypeImpl {
   public:
@@ -43,7 +44,10 @@ class AutoType::AutoTypeImpl {
     }
 
     static std::optional<KeyCodeWithModifiers> char_to_key_code(HKL layout, char32_t character) {
-        auto scan_code_ex = VkKeyScanEx(character, layout);
+        if (character > WCHAR_MAX) {
+            return std::nullopt;
+        }
+        auto scan_code_ex = VkKeyScanEx(static_cast<WCHAR>(character), layout);
 
         auto vk = LOBYTE(scan_code_ex);
         auto shift_state = HIBYTE(scan_code_ex);
@@ -76,11 +80,7 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 AutoType::~AutoType() = default;
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
-                                  std::optional<os_key_code_t> code, Modifier modifier) {
-    if (character > MAXWORD) {
-        return AutoTypeResult::BadArg;
-    }
-
+                                  std::optional<os_key_code_t> code, Modifier) {
     auto down = direction == Direction::Down;
 
     KEYBDINPUT keyboard_input{};
@@ -89,11 +89,11 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
 
     if (code.has_value()) {
         keyboard_input.wVk = code.value();
-        if (impl_->is_extended_key(code)) {
-            // TODO
+        if (code.value() < EXTENDED_KEYS.size() && EXTENDED_KEYS.at(code.value())) {
             keyboard_input.dwFlags |= KEYEVENTF_EXTENDEDKEY;
         }
-        keyboard_input.wScan = MapVirtualKey(code.value(), MAPVK_VK_TO_VSC);
+        auto scan_code = MapVirtualKey(code.value(), MAPVK_VK_TO_VSC);
+        keyboard_input.wScan = LOWORD(scan_code);
     } else {
         keyboard_input.wVk = 0;
         keyboard_input.wScan = static_cast<WORD>(character);
@@ -199,7 +199,7 @@ AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
             }
         }
         if (is_browser) {
-            result.url = native_browser_url(pid, hwnd);
+            result.url = native_browser_url(hwnd);
         }
     }
 
