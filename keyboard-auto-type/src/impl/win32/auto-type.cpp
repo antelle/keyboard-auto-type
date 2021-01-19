@@ -80,7 +80,7 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 AutoType::~AutoType() = default;
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
-                                  std::optional<os_key_code_t> code, Modifier) {
+                                  std::optional<uint16_t> code, Modifier) {
     auto down = direction == Direction::Down;
 
     std::vector<WORD> chars;
@@ -152,7 +152,7 @@ bool AutoType::can_unpress_modifier() { return false; }
 
 Modifier AutoType::shortcut_modifier() { return Modifier::Control; }
 
-std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
+std::optional<uint16_t> AutoType::os_key_code(KeyCode code) {
     if (code == KeyCode::Undefined) {
         return std::nullopt;
     }

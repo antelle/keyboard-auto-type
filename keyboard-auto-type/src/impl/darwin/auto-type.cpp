@@ -42,7 +42,7 @@ class AutoType::AutoTypeImpl {
     CFDataRef keyboard_layout_data_ = nullptr;
 
   public:
-    AutoTypeResult key_move(Direction direction, char32_t character, CGKeyCode code,
+    AutoTypeResult key_move(Direction direction, char32_t character, uint16_t code,
                             CGEventFlags flags) {
         auto down = direction == Direction::Down;
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
@@ -171,7 +171,7 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 AutoType::~AutoType() = default;
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
-                                  std::optional<os_key_code_t> code, Modifier modifier) {
+                                  std::optional<uint16_t> code, Modifier modifier) {
     auto flags = AutoTypeImpl::modifier_to_flags(modifier);
     return impl_->key_move(direction, character, code.value_or(0), flags);
 }
@@ -197,7 +197,7 @@ bool AutoType::can_unpress_modifier() { return true; }
 
 Modifier AutoType::shortcut_modifier() { return Modifier::Command; }
 
-std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
+std::optional<uint16_t> AutoType::os_key_code(KeyCode code) {
     if (code == KeyCode::Undefined) {
         return std::nullopt;
     }

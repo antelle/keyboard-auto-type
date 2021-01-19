@@ -42,7 +42,7 @@ AutoTypeResult AutoType::text(std::u32string_view str) {
 
         auto native_key_with_modifiers = native_keys[i];
 
-        std::optional<os_key_code_t> code;
+        std::optional<uint16_t> code;
         auto modifier = Modifier::None;
 
         if (native_key_with_modifiers.has_value()) {

@@ -1,12 +1,6 @@
 #ifndef KEYBOARD_AUTO_TYPE_H
 #define KEYBOARD_AUTO_TYPE_H
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <Windows.h>
-#elif __APPLE__
-#include <Carbon/Carbon.h>
-#endif
-
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -19,12 +13,7 @@
 namespace keyboard_auto_type {
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-using pid_t = DWORD;
-using window_handle_t = HWND;
-using os_key_code_t = BYTE;
-#elif __APPLE__
-using window_handle_t = intptr_t;
-using os_key_code_t = CGKeyCode;
+using pid_t = unsigned long;
 #endif
 
 enum class Modifier : uint8_t {
@@ -64,7 +53,7 @@ enum class AutoTypeResult {
 
 struct AppWindow {
     pid_t pid = 0;
-    window_handle_t window_id = 0;
+    intptr_t window_id = 0;
     std::string app_name;
     std::string title;
     std::string url;
@@ -76,7 +65,7 @@ struct ActiveWindowArgs {
 };
 
 struct KeyCodeWithModifiers {
-    os_key_code_t code;
+    uint16_t code;
     Modifier modifier;
 };
 
@@ -107,9 +96,9 @@ class AutoType {
     static bool can_unpress_modifier();
     AutoTypeResult key_move(Direction direction, KeyCode code, Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);
-    AutoTypeResult key_move(Direction direction, char32_t character,
-                            std::optional<os_key_code_t> code, Modifier modifier = Modifier::None);
-    std::optional<os_key_code_t> os_key_code(KeyCode code);
+    AutoTypeResult key_move(Direction direction, char32_t character, std::optional<uint16_t> code,
+                            Modifier modifier = Modifier::None);
+    std::optional<uint16_t> os_key_code(KeyCode code);
     std::optional<KeyCodeWithModifiers> os_key_code_for_char(char32_t character);
     std::vector<std::optional<KeyCodeWithModifiers>>
     os_key_codes_for_chars(std::u32string_view text);

@@ -1,10 +1,12 @@
 #include "key-map.h"
 
+#include <Carbon/Carbon.h>
+
 #include <array>
 
 namespace keyboard_auto_type {
 
-constexpr std::array<CGKeyCode, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
+constexpr std::array<uint16_t, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     0,
 
     // numbers
@@ -60,7 +62,7 @@ constexpr std::array<CGKeyCode, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_
     0, // Sleep
 };
 
-CGKeyCode map_key_code(KeyCode code) {
+uint16_t map_key_code(KeyCode code) {
     auto code_byte = static_cast<uint8_t>(code);
     if (code_byte >= KEY_MAP.size()) {
         return 0;
