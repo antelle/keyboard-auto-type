@@ -254,21 +254,17 @@ TEST_F(AutoTypeKeysTest, text_unicode_basic) {
     typer.text(expected_text);
 }
 
-#if __APPLE__
 TEST_F(AutoTypeKeysTest, text_unicode_emoji) {
     expected_text = U"🍆🍑😈";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
-#endif
 
-#if __APPLE__
 TEST_F(AutoTypeKeysTest, text_unicode_supplementary_ideographic) {
     expected_text = U"𠀧𠀪";
     kbd::AutoType typer;
     typer.text(expected_text);
 }
-#endif
 
 TEST_F(AutoTypeKeysTest, key_press_key_code) {
     expected_text = U"0b";
@@ -506,11 +502,13 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         kbd::KeyCode::Shift,
         kbd::KeyCode::Option,
         kbd::KeyCode::Meta,
+        kbd::KeyCode::Meta,
         kbd::KeyCode::Escape,
 
         kbd::KeyCode::RightControl,
         kbd::KeyCode::RightShift,
         kbd::KeyCode::RightOption,
+        kbd::KeyCode::RightMeta,
         kbd::KeyCode::RightMeta,
         kbd::KeyCode::Escape,
     };
@@ -523,7 +521,7 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         }
     }
 
-    wait_millis(100);
+    wait_millis(500);
 
     // hide all possible menus
     typer.key_press(kbd::KeyCode::Escape);

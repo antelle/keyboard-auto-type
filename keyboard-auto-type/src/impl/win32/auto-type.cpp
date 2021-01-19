@@ -15,7 +15,7 @@ constexpr std::array BROWSER_PROCESS_NAMES{
 constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
 static constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
 static const auto EXTENDED_KEYS = std::invoke([] {
-    std::array<bool, 0xFF> extended_keys;
+    std::array<bool, 0xFF> extended_keys{};
     extended_keys.at(VK_MENU) = true;
     extended_keys.at(VK_RMENU) = true;
     extended_keys.at(VK_CONTROL) = true;
@@ -83,29 +83,49 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
                                   std::optional<os_key_code_t> code, Modifier) {
     auto down = direction == Direction::Down;
 
-    KEYBDINPUT keyboard_input{};
-    keyboard_input.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
-    keyboard_input.dwExtraInfo = GetMessageExtraInfo();
-
-    if (code.has_value()) {
-        keyboard_input.wVk = code.value();
-        if (code.value() < EXTENDED_KEYS.size() && EXTENDED_KEYS.at(code.value())) {
-            keyboard_input.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+    std::vector<WORD> chars;
+    if (character) {
+        if (character > 0x10FFFF || (character >= 0xD800 && character <= 0xDFFF)) {
+            return throw_or_return(AutoTypeResult::BadArg,
+                                   std::string("Bad character: ") + std::to_string(character));
+        } else if (character <= 0xFFFFU) {
+            chars.push_back(static_cast<WORD>(character));
+        } else {
+            chars.push_back(static_cast<WORD>(((character - 0x10000UL) / 0x400U) + 0xD800U));
+            chars.push_back(static_cast<WORD>(((character - 0x10000UL) % 0x400U) + 0xDC00U));
         }
-        auto scan_code = MapVirtualKey(code.value(), MAPVK_VK_TO_VSC);
-        keyboard_input.wScan = LOWORD(scan_code);
     } else {
-        keyboard_input.wVk = 0;
-        keyboard_input.wScan = static_cast<WORD>(character);
-        keyboard_input.dwFlags |= KEYEVENTF_UNICODE;
+        chars.push_back(0);
     }
 
-    INPUT input = {INPUT_KEYBOARD};
-    input.ki = keyboard_input;
+    std::vector<INPUT> inputs;
 
-    auto events_sent = SendInput(1, &input, sizeof(input));
+    for (auto ch : chars) {
+        KEYBDINPUT keyboard_input{};
+        keyboard_input.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
+        keyboard_input.dwExtraInfo = GetMessageExtraInfo();
 
-    if (!events_sent) {
+        if (code.has_value()) {
+            keyboard_input.wVk = code.value();
+            if (code.value() < EXTENDED_KEYS.size() && EXTENDED_KEYS.at(code.value())) {
+                keyboard_input.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+            }
+            auto scan_code = MapVirtualKey(code.value(), MAPVK_VK_TO_VSC);
+            keyboard_input.wScan = LOWORD(scan_code);
+        } else {
+            keyboard_input.wVk = 0;
+            keyboard_input.wScan = ch;
+            keyboard_input.dwFlags |= KEYEVENTF_UNICODE;
+        }
+
+        INPUT input = {INPUT_KEYBOARD};
+        input.ki = keyboard_input;
+
+        inputs.push_back(input);
+    }
+
+    auto events_sent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+    if (events_sent != inputs.size()) {
         return throw_or_return(AutoTypeResult::OsError, "SendInput error");
     }
 

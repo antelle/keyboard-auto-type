@@ -13,7 +13,7 @@ The library is WIP, so the API is not stable now. Detailed feature status:
 | Sending key codes          | :white_check_mark:         | :white_check_mark:      | :x:   |
 | Typing text                | :white_check_mark:         | :white_check_mark:      | :x:   |
 | Layout-aware text entry    | :white_check_mark:         | :white_check_mark:      | :x:   |
-| Emoji and CJK characters   | :white_check_mark:         | :x:                     | :x:   |
+| Emoji and CJK characters   | :white_check_mark:         | :white_check_mark:      | :x:   |
 | Getting window information | :white_check_mark:         | :white_check_mark:      | :x:   |
 | Getting browser URL        | :eight_spoked_asterisk:    | :eight_spoked_asterisk: | :x:   |
 | Switching to an app        | :white_check_mark:         | :white_check_mark:      | :x:   |
