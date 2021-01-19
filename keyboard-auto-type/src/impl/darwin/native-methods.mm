@@ -15,11 +15,11 @@ NativeAppInfo native_frontmost_app() {
     if (!app) {
         return {};
     }
-    return {
-        .pid = app.processIdentifier,
-        .name = app.localizedName.UTF8String,
-        .bundle_id = app.bundleIdentifier.UTF8String,
-    };
+    NativeAppInfo result;
+    result.pid = app.processIdentifier;
+    result.name = app.localizedName.UTF8String;
+    result.bundle_id = app.bundleIdentifier.UTF8String;
+    return result;
 }
 
 bool native_show_app(pid_t pid) {
