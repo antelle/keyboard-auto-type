@@ -90,7 +90,7 @@ There's a method `show_window` that activates the window using the window inform
 
 ### Virtual desktops (spaces)
 
-Suppose a user has an app with windows on several virtual desktops (spaces), for example a browser with different tabs. You obtained window information using `active_window`, after which the active space was switched to another one. If you call `show_window` on Windows, it will correctly activate the window, however on macOS it will bring up the browser, but not its specific window. It's because there seems to be no way doing it with public API and we would like to refrein from using private frameworks.
+Suppose a user has an app with windows on several virtual desktops (spaces), for example a browser with different tabs. You obtained window information using `active_window`, after which the active space was switched to another one. If you call `show_window` on Windows, it will correctly activate the window, however on macOS it will bring up the browser, but not its specific window. It's because there seems to be no way of doing it with public API and we would like to refrein from using private frameworks.
 
 ## Installation
 
