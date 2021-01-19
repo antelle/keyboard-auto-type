@@ -53,7 +53,7 @@ enum class AutoTypeResult {
 
 struct AppWindow {
     pid_t pid = 0;
-    intptr_t window_id = 0;
+    void *window_id = 0;
     std::string app_name;
     std::string title;
     std::string url;

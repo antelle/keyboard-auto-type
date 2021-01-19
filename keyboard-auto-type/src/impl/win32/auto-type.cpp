@@ -197,7 +197,7 @@ AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
     GetWindowThreadProcessId(hwnd, &pid);
 
     AppWindow result{};
-    result.window_id = hwnd;
+    result.window_id = HandleToHandle64(hwnd);
     result.pid = pid;
 
     result.app_name = native_process_main_module_name(pid);
@@ -246,7 +246,7 @@ bool AutoType::show_window(const AppWindow &window) {
         AllowSetForegroundWindow(ASFW_ANY);
     }
 
-    auto result = SetForegroundWindow(window.window_id);
+    auto result = SetForegroundWindow(static_cast<HWND>(Handle64ToHandle(window.window_id)));
 
     if (current_thread_id != win_thread_id) {
         DWORD lock_timeout = 0;
