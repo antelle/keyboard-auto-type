@@ -23,7 +23,7 @@ do_something_with(win.pid, win.app_name, win.title);
 // type something
 typer.text(U"Hello, world!");
 // press Enter
-typer.key_press(kbd::KeyCode::Enter);
+typer.key_press(keyboard_auto_type::KeyCode::Enter);
 // select all
 typer.shortcut(keyboard_auto_type::KeyCode::A);
 ```
