@@ -16,7 +16,7 @@ The library is WIP, so the API is not stable now. Detailed feature status:
 | Emoji and CJK characters   | :white_check_mark:         | :white_check_mark:      | :x:   |
 | Getting window information | :white_check_mark:         | :white_check_mark:      | :x:   |
 | Getting browser URL        | :eight_spoked_asterisk:    | :eight_spoked_asterisk: | :x:   |
-| Switching to an app        | :x:                        | :white_check_mark:      | :x:   |
+| Switching to an app        | :white_check_mark:         | :x:                     | :x:   |
 | Switching a given window   | :x:                        | :white_check_mark:      | :x:   |
 | Virtual desktops (spaces)  | :eight_pointed_black_star: | :white_check_mark:      | :x:   |
 
