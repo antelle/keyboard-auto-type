@@ -16,6 +16,10 @@ A minimalistic example:
 // create an instance of AutoType
 keyboard_auto_type::AutoType typer;
 
+// get active / frontmost window information
+auto win = typer.active_window({ .get_window_title = true });
+do_something_with(win.pid, win.app_name, win.title);
+
 // type something
 typer.text(U"Hello, world!");
 // press Enter
