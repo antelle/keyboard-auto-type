@@ -56,7 +56,11 @@ Before sending keys `keyboard-auto-type` makes sure other modifiers are not pres
 
 Text entry is performed according to keyboard rules, for example, to enter "C++", you need to press these keys: <kbd>Shift</kbd><kbd>C</kbd><kbd>+</kbd><kbd>+</kbd><kbd>Shift↑</kbd>. If you pass string "C++" to the library, it will generate the same sequence of events.
 
-Here's what you will see on the [W3C Keyboard Event Viewer](https://w3c.github.io/uievents/tools/key-event-viewer.html):
+Here's what you will see on the [W3C Keyboard Event Viewer](https://w3c.github.io/uievents/tools/key-event-viewer.html) if you call
+
+```cpp
+typer.text(U"C++")
+```
 
 ![Generated keyboard events](https://user-images.githubusercontent.com/633557/105089977-1e9efa80-5a9e-11eb-8eb6-19819c5d6276.png)
 
