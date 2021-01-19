@@ -6,7 +6,7 @@ Cross-platform library for simulating keyboard input events.
 
 ## TL;DR
 
-This library allows you to send keystrokes to different applications as if they were typed by the user. It provides both simple and low-level API consistent across platforms. It can be useful in password managers, automation, testing software and everywhere else where you need to simulate user input.
+This library allows you to send keystrokes to different applications as if they were typed by the user. It provides both simple and low-level API consistent across platforms. It can be useful in password managers, automation, testing software, and everywhere else where you need to simulate user input.
 
 A minimalistic example:
 
