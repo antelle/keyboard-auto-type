@@ -7,6 +7,8 @@ set(SOURCES
     include/keyboard-auto-type.h
     include/key-code.h
     src/auto-type.cpp
+    src/utils.h
+    src/utils.cpp
 )
 
 if (APPLE)
@@ -42,7 +44,14 @@ if(APPLE)
     target_compile_options(${PROJECT_NAME} PUBLIC "-fobjc-arc")
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+if(WIN32)
+    target_compile_options(${PROJECT_NAME} PRIVATE /Wall /WX /Werror /permissive-)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+
+target_include_directories(${PROJECT_NAME} PUBLIC "include")
+target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
 list(TRANSFORM SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 

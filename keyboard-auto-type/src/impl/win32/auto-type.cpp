@@ -1,10 +1,10 @@
 #include <algorithm>
 #include <array>
-#include <stdexcept>
 #include <vector>
 
 #include "key-map.h"
 #include "keyboard-auto-type.h"
+#include "utils.h"
 #include "winapi-tools.h"
 
 namespace keyboard_auto_type {
@@ -13,6 +13,28 @@ constexpr std::array BROWSER_PROCESS_NAMES{
     "chrome", "firefox", "opera", "browser", "applicationframehost", "iexplore", "edge"};
 constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
 static constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
+// static const auto EXTENDED_KEYS = []() {
+//     std::array<bool, 0xFF> extended_keys;
+//     extended_keys.at(VK_MENU) = true;
+//     extended_keys.at(VK_RMENU) = true;
+//     extended_keys.at(VK_CONTROL) = true;
+//     extended_keys.at(VK_RCONTROL) = true;
+//     extended_keys.at(VK_INSERT) = true;
+//     extended_keys.at(VK_DELETE) = true;
+//     extended_keys.at(VK_HOME) = true;
+//     extended_keys.at(VK_END) = true;
+//     extended_keys.at(VK_PRIOR) = true;
+//     extended_keys.at(VK_NEXT) = true;
+//     extended_keys.at(VK_DOWN) = true;
+//     extended_keys.at(VK_LEFT) = true;
+//     extended_keys.at(VK_RIGHT) = true;
+//     extended_keys.at(VK_UP) = true;
+//     extended_keys.at(VK_NUMLOCK) = true;
+//     extended_keys.at(VK_CANCEL) = true;
+//     extended_keys.at(VK_SNAPSHOT) = true;
+//     extended_keys.at(VK_DIVIDE) = true;
+//     return extended_keys;
+// };
 
 class AutoType::AutoTypeImpl {
   public:
@@ -67,6 +89,10 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
 
     if (code.has_value()) {
         keyboard_input.wVk = code.value();
+        if (impl_->is_extended_key(code)) {
+            // TODO
+            keyboard_input.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+        }
         keyboard_input.wScan = MapVirtualKey(code.value(), MAPVK_VK_TO_VSC);
     } else {
         keyboard_input.wVk = 0;
@@ -80,33 +106,8 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
     auto events_sent = SendInput(1, &input, sizeof(input));
 
     if (!events_sent) {
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-        throw std::runtime_error("SendInput error");
-#endif
-        return AutoTypeResult::OsError;
+        return throw_or_return(AutoTypeResult::OsError, "SendInput error");
     }
-
-    // the same as for macOS, but it doesn't seem to be necessary
-    //    auto start_time = std::chrono::system_clock::now();
-    //    while (true) {
-    //        auto key_state = GetAsyncKeyState(code.value_or(VK_PACKET));
-    //        auto key_is_down = !!(key_state & SHORT_MSB);
-    //        if (key_is_down == down) {
-    //            break;
-    //        }
-    //        abort();
-    //        auto elapsed = std::chrono::system_clock::now() - start_time;
-    //        auto wait_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
-    //        if (wait_ms.count() > KEY_PRESS_TOTAL_WAIT_TIME_MS) {
-    //#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-    //            throw std::runtime_error(std::string("Key state didn't change: key ") +
-    //                                     std::to_string(code.value_or(VK_PACKET)) + " should be "
-    //                                     + (down ? "down" : "up"));
-    //#endif
-    //            return AutoTypeResult::KeyPressFailed;
-    //        }
-    //        std::this_thread::sleep_for(std::chrono::milliseconds(KEY_PRESS_LOOP_WAIT_TIME_MS));
-    //    }
 
     return AutoTypeResult::Ok;
 }

@@ -2,9 +2,6 @@
 
 #include <array>
 #include <chrono>
-#include <codecvt>
-#include <iostream>
-#include <locale>
 #include <thread>
 #include <unordered_map>
 
@@ -13,6 +10,7 @@
 #include "key-map.h"
 #include "keyboard-auto-type.h"
 #include "native-methods.h"
+#include "utils.h"
 
 namespace keyboard_auto_type {
 
@@ -44,8 +42,8 @@ class AutoType::AutoTypeImpl {
     CFDataRef keyboard_layout_data_ = nullptr;
 
   public:
-    AutoTypeResult key_move(char32_t character, CGKeyCode code, CGEventFlags flags,
-                            Direction direction) {
+    AutoTypeResult key_move(Direction direction, char32_t character, CGKeyCode code,
+                            CGEventFlags flags) {
         auto down = direction == Direction::Down;
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
         if (character) {
@@ -72,12 +70,10 @@ class AutoType::AutoTypeImpl {
             auto elapsed = std::chrono::system_clock::now() - start_time;
             auto wait_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
             if (wait_ms.count() > KEY_PRESS_TOTAL_WAIT_TIME_MS) {
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-                throw std::runtime_error(std::string("Key state didn't change: key ") +
-                                         std::to_string(code) + " should be " +
-                                         (down ? "down" : "up"));
-#endif
-                return AutoTypeResult::KeyPressFailed;
+                return throw_or_return(AutoTypeResult::KeyPressFailed,
+                                       std::string("Key state didn't change: key ") +
+                                           std::to_string(code) + " should be " +
+                                           (down ? "down" : "up"));
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(KEY_PRESS_LOOP_WAIT_TIME_MS));
         }
@@ -86,19 +82,16 @@ class AutoType::AutoTypeImpl {
     }
 
     static void set_event_char(CGEventRef event, char32_t character) {
-        std::u32string char_str(1, character);
-        std::wstring_convert<std::codecvt_utf16<char32_t, UINT32_MAX, std::little_endian>, char32_t>
-            converter;
-        auto utf16 = converter.to_bytes(char_str.c_str());
-        const auto *utf16_cstr = reinterpret_cast<const UniChar *>(utf16.c_str());
-        auto utf16_length = utf16.length() / sizeof(UniChar);
-        CGEventKeyboardSetUnicodeString(event, utf16_length, utf16_cstr);
+        auto_release cfstr =
+            CFStringCreateWithBytes(kCFAllocatorDefault, reinterpret_cast<UInt8 *>(&character),
+                                    sizeof(character), kCFStringEncodingUTF32LE, false);
+        auto length = CFStringGetLength(cfstr);
+        std::vector<UniChar> utf16_data(length);
+        CFStringGetCharacters(cfstr, CFRangeMake(0, length), utf16_data.data());
+        CGEventKeyboardSetUnicodeString(event, utf16_data.size(), utf16_data.data());
     }
 
     void read_keyboard_layout() {
-        // https://stackoverflow.com/questions/1918841/how-to-convert-ascii-character-to-cgkeycode
-        // https://stackoverflow.com/questions/8263618/convert-virtual-key-code-to-unicode-string
-
         auto_release keyboard = TISCopyCurrentKeyboardInputSource();
         const auto *layout_data = static_cast<CFDataRef>(
             TISGetInputSourceProperty(keyboard, kTISPropertyUnicodeKeyLayoutData));
@@ -180,7 +173,7 @@ AutoType::~AutoType() = default;
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
                                   std::optional<os_key_code_t> code, Modifier modifier) {
     auto flags = AutoTypeImpl::modifier_to_flags(modifier);
-    return impl_->key_move(character, code.value_or(0), flags, direction);
+    return impl_->key_move(direction, character, code.value_or(0), flags);
 }
 
 Modifier AutoType::get_pressed_modifiers() {
@@ -225,7 +218,7 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
     impl_->read_keyboard_layout();
     std::vector<std::optional<KeyCodeWithModifiers>> result(text.length());
     auto length = text.length();
-    for (auto i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         result[i] = impl_->char_to_key_code(text[i]);
     }
     return result;
@@ -239,31 +232,34 @@ AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
         return {};
     }
 
-    auto_release windows = CGWindowListCopyWindowInfo(
-        kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements, kCGNullWindowID);
-    if (!windows) {
-        return {};
-    }
-
     AppWindow result = {};
     result.pid = app.pid;
     result.app_name = app.name;
 
-    auto count = CFArrayGetCount(windows);
-    for (auto i = 0; i < count; i++) {
-        // std::cout << cfstring_to_string(CFCopyDescription(window)) << std::endl;
-        const auto *window = reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(windows, i));
-        auto window_pid = get_number_from_dictionary(window, kCGWindowOwnerPID);
-        if (window_pid != app.pid) {
-            continue;
+    auto_release windows = CGWindowListCopyWindowInfo(
+        kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements, kCGNullWindowID);
+    if (windows) {
+        auto count = CFArrayGetCount(windows);
+        for (auto i = 0; i < count; i++) {
+            const auto *window =
+                reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(windows, i));
+            if (get_number_from_dictionary(window, kCGWindowLayer) != 0) {
+                continue;
+            }
+            if (get_number_from_dictionary(window, kCGWindowOwnerPID) != app.pid) {
+                continue;
+            }
+            // std::cout << cfstring_to_string(CFCopyDescription(window)) << std::endl;
+
+            result.window_id = get_number_from_dictionary(window, kCGWindowNumber);
+            if (args.get_window_title) {
+                result.title = get_string_from_dictionary(window, kCGWindowName);
+            }
+            if (result.app_name.empty()) {
+                result.app_name = get_string_from_dictionary(window, kCGWindowOwnerName);
+            }
+            break;
         }
-        auto window_layer = get_number_from_dictionary(window, kCGWindowLayer);
-        if (window_layer != 0) {
-            continue;
-        }
-        result.window_id = get_number_from_dictionary(window, kCGWindowNumber);
-        result.title = get_string_from_dictionary(window, kCGWindowName);
-        // result.app_name = get_strng_from_dictionary(window, kCGWindowOwnerName);
     }
 
     if (args.get_window_title) {
@@ -288,7 +284,10 @@ AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
 }
 
 bool AutoType::show_window(const AppWindow &window) {
-    return window.pid && native_show_app(window.pid);
+    if (!window.pid) {
+        return false;
+    }
+    return native_show_app(window.pid);
 }
 
 } // namespace keyboard_auto_type
