@@ -36,17 +36,17 @@ The library is WIP, so the API is not stable now. Tests may be not complete, but
 
 ## Features
 
-|                            | macOS                      | Windows                 | Linux |
-|----------------------------|----------------------------|-------------------------|-------|
-| Sending key codes          | :white_check_mark:         | :white_check_mark:      | :x:   |
-| Typing text                | :white_check_mark:         | :white_check_mark:      | :x:   |
-| Layout-aware text entry    | :white_check_mark:         | :white_check_mark:      | :x:   |
-| Emoji and CJK characters   | :white_check_mark:         | :white_check_mark:      | :x:   |
-| Getting window information | :white_check_mark:         | :white_check_mark:      | :x:   |
-| Getting browser URL        | :eight_spoked_asterisk:    | :eight_spoked_asterisk: | :x:   |
-| Switching to an app        | :white_check_mark:         | :x:                     | :x:   |
-| Switching a given window   | :x:                        | :white_check_mark:      | :x:   |
-| Virtual desktops (spaces)  | :eight_pointed_black_star: | :white_check_mark:      | :x:   |
+|                                                              | macOS                      | Windows                 | Linux |
+|--------------------------------------------------------------|----------------------------|-------------------------|-------|
+| [Sending key codes](#sending-key-codes)                      | :white_check_mark:         | :white_check_mark:      | :x:   |
+| [Typing text](#typing-text)                                  | :white_check_mark:         | :white_check_mark:      | :x:   |
+| [Layout-aware text entry](#layout-aware-text-entry)          | :white_check_mark:         | :white_check_mark:      | :x:   |
+| [Emoji and CJK characters](#emoji-and-cjk-characters)        | :white_check_mark:         | :white_check_mark:      | :x:   |
+| [Getting window information](#getting-window-information)    | :white_check_mark:         | :white_check_mark:      | :x:   |
+| [Getting browser URL](#getting-browser-url)                  | :eight_spoked_asterisk:    | :eight_spoked_asterisk: | :x:   |
+| [Switching to an app](#switching-to-an-app-or-a-window)      | :white_check_mark:         | :x:                     | :x:   |
+| [Switching a given window](#switching-to-an-app-or-a-window) | :x:                        | :white_check_mark:      | :x:   |
+| [Virtual desktops (spaces)](#virtual-desktops-spaces)        | :eight_pointed_black_star: | :white_check_mark:      | :x:   |
 
 ### Sending key codes
 
@@ -68,7 +68,7 @@ Note the <kbd>Shift</kbd> key pressed only once and correct key codes.
 
 ### Layout-aware text entry
 
-The library checks the locale before every high-level operation (`text` method). After this it does its best to find matching keys on the keyboard. If it fails to do so, it just sends text without a key code, which also works in most of cases. The library will never switch system layouts.
+`keyboard-auto-type` checks the locale before every high-level operation (`text` method). After this it does its best to find matching keys on the keyboard. If it fails to do so, it just sends text without a key code, which also works in most of cases. The library will never switch system layouts.
 
 ### Emoji and CJK characters
 
@@ -84,7 +84,7 @@ The methos above also returns the URL if the active window is a browser. Current
 - Windows: Chrome, Firefox, Edge, Internet Explorer, other Chromium-based browsers
 - macOS: Chrome, Safari
 
-### Switching to an app or window
+### Switching to an app or a window
 
 There's a method `show_window` that activates the window using the window information obtained using `active_window`, you will find more in [Window management](#window-management). On Windows this will bring up the specific window, while on macOS it will activate the app and show its topmost window.
 
