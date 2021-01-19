@@ -185,6 +185,12 @@ TEST_F(AutoTypeKeysTest, text_two_lines) {
     typer.text(expected_text);
 }
 
+TEST_F(AutoTypeKeysTest, text_wstring) {
+    expected_text = U"AbCßµḀ";
+    kbd::AutoType typer;
+    typer.text(L"AbCßµḀ");
+}
+
 TEST_F(AutoTypeKeysTest, text_capital) {
     expected_text = U"AbC";
     kbd::AutoType typer;
@@ -292,8 +298,9 @@ TEST_F(AutoTypeKeysTest, key_press_menu) {
 }
 
 TEST_F(AutoTypeKeysTest, key_press_bad_arg) {
-    expected_text = U"";
+    expected_text = U"a";
     kbd::AutoType typer;
+    typer.text(U"a");
     ASSERT_THROW(typer.key_press(kbd::KeyCode::Undefined), std::invalid_argument);
 }
 
@@ -617,7 +624,7 @@ TEST_F(AutoTypeWindowTest, show_window) {
 
             auto shown = typer.show_window(self_window);
             ASSERT_TRUE(shown);
-            wait_millis(100);
+            wait_millis(1000);
 
             win = typer.active_window();
             ASSERT_EQ(win.pid, typer.active_pid());
@@ -625,7 +632,7 @@ TEST_F(AutoTypeWindowTest, show_window) {
 
             shown = typer.show_window(editor_window);
             ASSERT_TRUE(shown);
-            wait_millis(100);
+            wait_millis(1000);
 
             win = typer.active_window();
             ASSERT_EQ(win.pid, typer.active_pid());

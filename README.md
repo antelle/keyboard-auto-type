@@ -6,19 +6,19 @@ Cross-platform library for simulating keyboard input events.
 
 ## Status
 
-WIP, don't use it yet. Detailed status:
+The library is WIP, so the API is not stable now. Detailed feature status:
 
-|                            | macOS                   | Windows            | Linux |
-|----------------------------|-------------------------|--------------------|-------|
-| Sending key codes          | :white_check_mark:      | :white_check_mark: | :x:   |
-| Typing text                | :white_check_mark:      | :white_check_mark: | :x:   |
-| Layout-aware text entry    | :white_check_mark:      | :white_check_mark: | :x:   |
-| Emoji and CJK characters   | :white_check_mark:      | :x:                | :x:   |
-| Getting window information | :white_check_mark:      | :white_check_mark: | :x:   |
-| Getting browser URL        | :eight_spoked_asterisk: | :white_check_mark: | :x:   |
-| Switching to an app        | :white_check_mark:      | :white_check_mark: | :x:   |
-| Switching an given window  | :x:                     | :white_check_mark: | :x:   |
-| Virtual desktops (spaces)  | :x:                     | :white_check_mark: | :x:   |
+|                            | macOS                      | Windows                 | Linux |
+|----------------------------|----------------------------|-------------------------|-------|
+| Sending key codes          | :white_check_mark:         | :white_check_mark:      | :x:   |
+| Typing text                | :white_check_mark:         | :white_check_mark:      | :x:   |
+| Layout-aware text entry    | :white_check_mark:         | :white_check_mark:      | :x:   |
+| Emoji and CJK characters   | :white_check_mark:         | :x:                     | :x:   |
+| Getting window information | :white_check_mark:         | :white_check_mark:      | :x:   |
+| Getting browser URL        | :eight_spoked_asterisk:    | :eight_spoked_asterisk: | :x:   |
+| Switching to an app        | :white_check_mark:         | :white_check_mark:      | :x:   |
+| Switching a given window   | :x:                        | :white_check_mark:      | :x:   |
+| Virtual desktops (spaces)  | :eight_pointed_black_star: | :white_check_mark:      | :x:   |
 
 ## Installation
 
@@ -198,7 +198,7 @@ kbd::AutoType::show_window(window_info)
 
 ## Strings
 
-The library accepts 32-bit platform-independent wide characters in form of `std::u32string` or `char32_t`, the conversion is up to you. In some places, such as window information, it will return `std::string`, these strings are in UTF-8.
+The library accepts 32-bit platform-independent wide characters in form of `std::u32string` or `char32_t`, the conversion is up to you. If you prefer, you can also pass `std::wstring`. In some places, such as window information, it will return `std::string`, these strings are in UTF-8.
 
 ## Thread safety
 
