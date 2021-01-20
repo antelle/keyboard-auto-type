@@ -2,13 +2,13 @@
 
 # Windows NMAKE \
 !ifndef 0 # \ 
-CLEAN = for %%d in (build xcode vs) do rmdir "%%~d" /s /q # \ 
+CLEAN = rmdir build /s /q # \ 
 RUN_EXAMPLE = build\output\Debug\example.exe # \ 
 RUN_TESTS_EXCEPT = build\output\Debug\test.exe # \ 
 RUN_TESTS_NOEXCEPT = build\output\Debug\test.exe # \
 !else
 # GNU Make
-CLEAN = rm -rf build xcode vs
+CLEAN = rm -rf build xcode
 RUN_EXAMPLE = build/example/example
 RUN_TESTS_EXCEPT = build/sub/tests-except/test/test
 RUN_TESTS_NOEXCEPT = build/sub/tests-noexcept/test/test
