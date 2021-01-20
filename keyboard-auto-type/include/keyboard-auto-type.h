@@ -22,15 +22,31 @@ enum class Modifier : uint8_t {
 
     Ctrl = 0b0001,
     Control = Ctrl,
+    RightCtrl = 0b0001'0001,
+    RightControl = RightCtrl,
+    LeftCtrl = 0b0010'0001,
+    LeftControl = LeftCtrl,
 
     Alt = 0b0010,
     Option = Alt,
+    RightAlt = 0b0001'0010,
+    RightOption = RightAlt,
+    LeftAlt = 0b0010'0010,
+    LeftOption = LeftAlt,
 
     Shift = 0b0100,
+    RightShift = 0b0001'0100,
+    LeftShift = 0b0010'0100,
 
     Meta = 0b1000,
     Command = Meta,
     Win = Meta,
+    RightMeta = 0b0001'1000,
+    RightCommand = RightMeta,
+    RightWin = RightMeta,
+    LeftMeta = 0b0010'1000,
+    LeftCommand = LeftMeta,
+    LeftWin = LeftMeta,
 };
 
 constexpr Modifier operator|(Modifier lhs, Modifier rhs) {
