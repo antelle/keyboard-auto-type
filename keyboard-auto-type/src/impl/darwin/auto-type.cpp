@@ -32,6 +32,24 @@ constexpr std::array KEY_CHECK_CODES{
     std::make_pair(kVK_RightControl, kVK_Control),
 };
 
+static constexpr std::array EVENT_FLAGS_MODIFIERS{
+    std::make_pair(static_cast<uint64_t>(NX_COMMANDMASK), Modifier::Command),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICERCMDKEYMASK), Modifier::RightCommand),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICELCMDKEYMASK), Modifier::LeftCommand),
+
+    std::make_pair(static_cast<uint64_t>(NX_SHIFTMASK), Modifier::Shift),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICELSHIFTKEYMASK), Modifier::LeftShift),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICERSHIFTKEYMASK), Modifier::RightShift),
+
+    std::make_pair(static_cast<uint64_t>(NX_ALTERNATEMASK), Modifier::Option),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICELALTKEYMASK), Modifier::LeftOption),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICERALTKEYMASK), Modifier::RightOption),
+
+    std::make_pair(static_cast<uint64_t>(NX_CONTROLMASK), Modifier::Control),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICELCTLKEYMASK), Modifier::LeftControl),
+    std::make_pair(static_cast<uint64_t>(NX_DEVICERCTLKEYMASK), Modifier::RightControl),
+};
+
 class AutoType::AutoTypeImpl {
   private:
     auto_release<CGEventSourceRef> event_source_ =
@@ -157,17 +175,10 @@ class AutoType::AutoTypeImpl {
         }
 
         CGEventFlags flags = 0;
-        if ((modifier & Modifier::Command) == Modifier::Command) {
-            flags |= kCGEventFlagMaskCommand;
-        }
-        if ((modifier & Modifier::Option) == Modifier::Option) {
-            flags |= kCGEventFlagMaskAlternate;
-        }
-        if ((modifier & Modifier::Control) == Modifier::Control) {
-            flags |= kCGEventFlagMaskControl;
-        }
-        if ((modifier & Modifier::Shift) == Modifier::Shift) {
-            flags |= kCGEventFlagMaskShift;
+        for (auto [flag, mod_check] : EVENT_FLAGS_MODIFIERS) {
+            if ((modifier & mod_check) == mod_check) {
+                flags |= flag;
+            }
         }
         return flags;
     }
@@ -184,15 +195,9 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
 }
 
 Modifier AutoType::get_pressed_modifiers() {
-    static constexpr std::array FLAGS_MODIFIERS{
-        std::make_pair(kCGEventFlagMaskCommand, Modifier::Command),
-        std::make_pair(kCGEventFlagMaskShift, Modifier::Shift),
-        std::make_pair(kCGEventFlagMaskAlternate, Modifier::Option),
-        std::make_pair(kCGEventFlagMaskControl, Modifier::Control),
-    };
     auto flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
     auto pressed_modifiers = Modifier::None;
-    for (auto [flag, modifier] : FLAGS_MODIFIERS) {
+    for (auto [flag, modifier] : EVENT_FLAGS_MODIFIERS) {
         if (flags & flag) {
             pressed_modifiers = pressed_modifiers | modifier;
         }

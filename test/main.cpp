@@ -645,9 +645,7 @@ TEST_F(AutoTypeWindowTest, show_window) {
 
 class ModifierTest : public testing::Test {};
 
-TEST_F(ModifierTest, modifier_none) {
-    ASSERT_EQ(0, static_cast<uint8_t>(kbd::Modifier::None));
-}
+TEST_F(ModifierTest, modifier_none) { ASSERT_EQ(0, static_cast<uint8_t>(kbd::Modifier::None)); }
 
 TEST_F(ModifierTest, modifier_ctrl) {
     ASSERT_NE(kbd::Modifier::None, kbd::Modifier::Ctrl);

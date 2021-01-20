@@ -136,7 +136,7 @@ typer.key_press(kbd::KeyCode::BackwardDelete, kbd::Modifier::Option);
 
 ## Low-level API
 
-If you need access to a low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with right Ctrl.
+If you need access to a low-level API, there's a method `key_move` that can trigger specific individual key events, for example, using this your can trigger only `keyUp` or simulate a keypress with an unmapped key code.
 
 Other methods (`key_press`, `text`) will also press the modifier key for you, while `key_move` won't do it. However it accepts `modifier` parameter because you may need to pass it to the key event. For example, an event emitted when <kbd>A</kbd> is moved down in <kbd>⌘</kbd><kbd>A</kbd> combination, contains a flag that allows to understand that Command is now pressed.
 
@@ -216,6 +216,20 @@ which is also exposed as `shortcut` method:
 ```cpp
 typer.shortcut(kbd::KeyCode::A); // select all
 ```
+
+For each modifier there are three versions:
+- neutral: `kbd::Modifiers::Ctrl`
+- left: `kbd::Modifiers::LeftCtrl`
+- right: `kbd::Modifiers::RightCtrl`
+
+To figure out if it's <kbd>Ctrl</kbd> no matter left or right, you do:
+```cpp
+if ((modifier & kbd::Modifier::Ctrl) == kbd::Modifier::Ctrl) {
+    // that's Ctrl
+}
+```
+
+Other modifiers follow the same pattern.
 
 ## Key codes
 

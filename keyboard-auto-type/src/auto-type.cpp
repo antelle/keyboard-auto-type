@@ -7,12 +7,18 @@
 
 namespace keyboard_auto_type {
 
-constexpr std::array MODIFIERS{Modifier::Meta, Modifier::Shift, Modifier::Alt, Modifier::Ctrl};
+struct ModifierKeyCode {
+    Modifier neutral_mod;
+    Modifier right_mod;
+    KeyCode left_key;
+    KeyCode right_key;
+};
+
 constexpr std::array MODIFIERS_KEY_CODES{
-    std::make_pair(Modifier::Meta, KeyCode::Meta),
-    std::make_pair(Modifier::Shift, KeyCode::Shift),
-    std::make_pair(Modifier::Alt, KeyCode::Alt),
-    std::make_pair(Modifier::Ctrl, KeyCode::Ctrl),
+    ModifierKeyCode{Modifier::Meta, Modifier::RightMeta, KeyCode::Meta, KeyCode::RightMeta},
+    ModifierKeyCode{Modifier::Shift, Modifier::RightShift, KeyCode::Shift, KeyCode::RightShift},
+    ModifierKeyCode{Modifier::Alt, Modifier::RightAlt, KeyCode::Alt, KeyCode::RightAlt},
+    ModifierKeyCode{Modifier::Ctrl, Modifier::RightCtrl, KeyCode::Ctrl, KeyCode::RightCtrl},
 };
 
 AutoTypeResult AutoType::text(std::u32string_view str) {
@@ -46,7 +52,8 @@ AutoTypeResult AutoType::text(std::u32string_view str) {
             code = native_key_with_modifiers->code;
             modifier = native_key_with_modifiers->modifier;
 
-            for (auto mod_check : MODIFIERS) {
+            for (auto mod_key : MODIFIERS_KEY_CODES) {
+                auto mod_check = mod_key.neutral_mod;
                 auto is_pressed = (modifier & mod_check) == mod_check;
                 auto was_pressed = (pressed_modifiers & mod_check) == mod_check;
                 if (is_pressed && !was_pressed) {
@@ -135,9 +142,13 @@ AutoTypeResult AutoType::ensure_modifier_not_pressed() {
             return AutoTypeResult::Ok;
         }
         if (auto_unpress_modifiers_) {
-            for (auto modifier : MODIFIERS) {
-                if ((pressed_modifiers & modifier) == modifier) {
-                    key_move(Direction::Up, modifier);
+            for (auto mod_key : MODIFIERS_KEY_CODES) {
+                if ((pressed_modifiers & mod_key.neutral_mod) == mod_key.neutral_mod) {
+                    if ((pressed_modifiers & mod_key.right_mod) == mod_key.right_mod) {
+                        key_move(Direction::Up, mod_key.right_key);
+                    } else {
+                        key_move(Direction::Up, mod_key.left_key);
+                    }
                 }
             }
         }
@@ -174,10 +185,14 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
         return AutoTypeResult::Ok;
     }
 
-    for (auto [mod_check, key_code] : MODIFIERS_KEY_CODES) {
+    for (auto mod_key : MODIFIERS_KEY_CODES) {
         AutoTypeResult result;
-        if ((modifier & mod_check) == mod_check) {
-            result = key_move(direction, key_code);
+        if ((modifier & mod_key.neutral_mod) == mod_key.neutral_mod) {
+            if ((modifier & mod_key.right_mod) == mod_key.right_mod) {
+                result = key_move(direction, mod_key.right_key);
+            } else {
+                result = key_move(direction, mod_key.left_key);
+            }
             if (result != AutoTypeResult::Ok) {
                 return result;
             }
