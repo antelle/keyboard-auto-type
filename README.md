@@ -320,11 +320,6 @@ or, on Windows:
 nmake tests
 ```
 
-There are also tests for compilation without C++ exceptions, you can run them using `make tests-noexcept`. The following command will run the whole test suite, it's not recommended for iterative development because it rebuilds all, but good as a final or CI check:
-```sh
-make tests-all
-```
-
 ## License
 
 [MIT](LICENSE.md)

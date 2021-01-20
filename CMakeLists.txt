@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.12)
 
 project(keyboard-auto-type)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/output)
-set(LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
-
 if(KEYBOARD_AUTO_TYPE_USE_SANITIZERS AND NOT WIN32)
     add_compile_options("-fsanitize=address,undefined")
     add_link_options("-fsanitize=address,undefined")

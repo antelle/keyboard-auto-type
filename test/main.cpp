@@ -22,7 +22,7 @@ namespace keyboard_auto_type_test {
 
 class AutoTypeKeysTest : public testing::Test {
   protected:
-    const std::string file_name = "build/test/test.txt";
+    const std::string file_name = "build/test.txt";
     std::filesystem::file_time_type file_mod_time;
     std::u32string expected_text;
 
@@ -530,7 +530,7 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
 
 class AutoTypeWindowTest : public testing::Test {
   protected:
-    static constexpr std::string_view file_name = "build/test/test.txt";
+    static constexpr std::string_view file_name = "build/test.txt";
 
     // cppcheck-suppress unusedFunction
     static void SetUpTestSuite() { create_file(); }
