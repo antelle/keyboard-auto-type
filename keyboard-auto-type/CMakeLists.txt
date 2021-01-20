@@ -56,3 +56,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 list(TRANSFORM SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_custom_target(clang-tidy COMMAND clang-tidy -p build --quiet ${SOURCES})
+add_custom_target(cppcheck COMMAND cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=${CMAKE_BINARY_DIR}/compile_commands.json --suppress=unusedFunction ${SOURCES})

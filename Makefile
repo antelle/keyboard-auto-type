@@ -40,7 +40,7 @@ clang-tidy: compile-commands-for-checks
 	cmake --build build --target clang-tidy
 
 cppcheck: compile-commands-for-checks
-	cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=build/compile_commands.json --suppress=unusedFunction --suppress=missingIncludeSystem keyboard-auto-type
+	cmake --build build --target cppcheck
 
 build-tests:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
