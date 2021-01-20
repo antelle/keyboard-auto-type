@@ -18,7 +18,7 @@ std::string winapi_to_string(LPCWSTR api_str) {
     }
     std::vector<char> chars(size);
     WideCharToMultiByte(CP_UTF8, 0, api_str, -1, chars.data(), size, nullptr, nullptr);
-    return std::string(chars.begin(), chars.end());
+    return std::string(chars.data());
 }
 
 bool includes_case_insensitive(std::string_view str, std::string_view search) {
@@ -51,7 +51,7 @@ std::string native_process_main_module_name(DWORD pid) {
 }
 
 std::string native_browser_url(HWND hwnd) {
-    auto hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    auto hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (hr != S_OK && hr != S_FALSE && hr != RPC_E_CHANGED_MODE) {
         return "";
     }
@@ -59,7 +59,7 @@ std::string native_browser_url(HWND hwnd) {
     std::vector<IUnknown *> to_release;
 
     IUIAutomation *client = nullptr;
-    hr = CoCreateInstance(CLSID_CUIAutomation, NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
+    hr = CoCreateInstance(CLSID_CUIAutomation, nullptr, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
                           reinterpret_cast<void **>(&client));
     if (hr != S_OK) {
         return "";
@@ -75,7 +75,8 @@ std::string native_browser_url(HWND hwnd) {
     to_release.push_back(element);
 
     IUIAutomationCondition *condition_property = nullptr;
-    VARIANT var_type_id = {VT_I4};
+    VARIANT var_type_id{};
+    var_type_id.vt = VT_I4;
     var_type_id.uintVal = UIA_EditControlTypeId;
     hr = client->CreatePropertyCondition(UIA_ControlTypePropertyId, var_type_id,
                                          &condition_property);
@@ -86,7 +87,8 @@ std::string native_browser_url(HWND hwnd) {
     to_release.push_back(condition_property);
 
     IUIAutomationCondition *condition_value = nullptr;
-    VARIANT var_true = {VT_BOOL};
+    VARIANT var_true{};
+    var_true.vt = VT_BOOL;
     var_true.boolVal = VARIANT_TRUE;
     hr = client->CreatePropertyCondition(UIA_IsValuePatternAvailablePropertyId, var_true,
                                          &condition_value);

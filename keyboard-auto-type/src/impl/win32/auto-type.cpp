@@ -14,31 +14,37 @@ constexpr std::array BROWSER_PROCESS_NAMES{
     "chrome", "firefox", "opera", "browser", "applicationframehost", "iexplore", "edge"};
 constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
 static constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
-static const auto EXTENDED_KEYS = std::invoke([] {
-    std::array<bool, 0xFF> extended_keys{};
-    extended_keys.at(VK_MENU) = true;
-    extended_keys.at(VK_RMENU) = true;
-    extended_keys.at(VK_CONTROL) = true;
-    extended_keys.at(VK_RCONTROL) = true;
-    extended_keys.at(VK_INSERT) = true;
-    extended_keys.at(VK_DELETE) = true;
-    extended_keys.at(VK_HOME) = true;
-    extended_keys.at(VK_END) = true;
-    extended_keys.at(VK_PRIOR) = true;
-    extended_keys.at(VK_NEXT) = true;
-    extended_keys.at(VK_DOWN) = true;
-    extended_keys.at(VK_LEFT) = true;
-    extended_keys.at(VK_RIGHT) = true;
-    extended_keys.at(VK_UP) = true;
-    extended_keys.at(VK_NUMLOCK) = true;
-    extended_keys.at(VK_CANCEL) = true;
-    extended_keys.at(VK_SNAPSHOT) = true;
-    extended_keys.at(VK_DIVIDE) = true;
-    return extended_keys;
-});
 
 class AutoType::AutoTypeImpl {
+  private:
+    std::array<bool, MAXBYTE> extended_keys_{};
+
   public:
+    AutoTypeImpl() {
+        extended_keys_.at(VK_MENU) = true;
+        extended_keys_.at(VK_RMENU) = true;
+        extended_keys_.at(VK_CONTROL) = true;
+        extended_keys_.at(VK_RCONTROL) = true;
+        extended_keys_.at(VK_INSERT) = true;
+        extended_keys_.at(VK_DELETE) = true;
+        extended_keys_.at(VK_HOME) = true;
+        extended_keys_.at(VK_END) = true;
+        extended_keys_.at(VK_PRIOR) = true;
+        extended_keys_.at(VK_NEXT) = true;
+        extended_keys_.at(VK_DOWN) = true;
+        extended_keys_.at(VK_LEFT) = true;
+        extended_keys_.at(VK_RIGHT) = true;
+        extended_keys_.at(VK_UP) = true;
+        extended_keys_.at(VK_NUMLOCK) = true;
+        extended_keys_.at(VK_CANCEL) = true;
+        extended_keys_.at(VK_SNAPSHOT) = true;
+        extended_keys_.at(VK_DIVIDE) = true;
+    }
+
+    bool is_external_key(uint16_t code) {
+        return code < extended_keys_.size() && extended_keys_.at(code);
+    }
+
     static HKL active_layout() {
         return GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), nullptr));
     }
@@ -80,19 +86,31 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 AutoType::~AutoType() = default;
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
-                                  std::optional<uint16_t> code, Modifier) {
+                                  std::optional<uint16_t> code, Modifier /*unused*/) {
     auto down = direction == Direction::Down;
+
+    static constexpr auto UTF_HIGH_SURROGATE_START = 0xD800U;
+    static constexpr auto UTF_LOW_SURROGATE_START = 0xDC00U;
+    static constexpr auto UTF_LOW_SURROGATE_END = 0xDFFFU;
+    static constexpr auto UNICODE_PLANE00_END = 0xFFFFU;
+    static constexpr auto UNICODE_PLANE01_START = 0x10000UL;
+    static constexpr auto UNICODE_PLANE16_END = 0x10FFFFU;
+    static constexpr auto DIVIDE_BY = 0x400U;
 
     std::vector<WORD> chars;
     if (character) {
-        if (character > 0x10FFFF || (character >= 0xD800 && character <= 0xDFFF)) {
+        if (character > UNICODE_PLANE16_END ||
+            (character >= UTF_HIGH_SURROGATE_START && character <= UTF_LOW_SURROGATE_END)) {
             return throw_or_return(AutoTypeResult::BadArg,
                                    std::string("Bad character: ") + std::to_string(character));
-        } else if (character <= 0xFFFFU) {
+        }
+        if (character <= UNICODE_PLANE00_END) {
             chars.push_back(static_cast<WORD>(character));
         } else {
-            chars.push_back(static_cast<WORD>(((character - 0x10000UL) / 0x400U) + 0xD800U));
-            chars.push_back(static_cast<WORD>(((character - 0x10000UL) % 0x400U) + 0xDC00U));
+            chars.push_back(static_cast<WORD>(((character - UNICODE_PLANE01_START) / DIVIDE_BY) +
+                                              UTF_HIGH_SURROGATE_START));
+            chars.push_back(static_cast<WORD>(((character - UNICODE_PLANE01_START) % DIVIDE_BY) +
+                                              UTF_LOW_SURROGATE_START));
         }
     } else {
         chars.push_back(0);
@@ -107,7 +125,7 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
 
         if (code.has_value()) {
             keyboard_input.wVk = code.value();
-            if (code.value() < EXTENDED_KEYS.size() && EXTENDED_KEYS.at(code.value())) {
+            if (impl_->is_external_key(code.value())) {
                 keyboard_input.dwFlags |= KEYEVENTF_EXTENDEDKEY;
             }
             auto scan_code = MapVirtualKey(code.value(), MAPVK_VK_TO_VSC);
@@ -118,7 +136,8 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
             keyboard_input.dwFlags |= KEYEVENTF_UNICODE;
         }
 
-        INPUT input = {INPUT_KEYBOARD};
+        INPUT input = {};
+        input.type = INPUT_KEYBOARD;
         input.ki = keyboard_input;
 
         inputs.push_back(input);
@@ -170,7 +189,7 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
     auto layout = impl_->active_layout();
     std::vector<std::optional<KeyCodeWithModifiers>> result(text.length());
     auto length = text.length();
-    for (auto i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         result[i] = impl_->char_to_key_code(layout, text[i]);
     }
     return result;
@@ -191,7 +210,7 @@ AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
         return {};
     }
 
-    DWORD pid;
+    DWORD pid = 0;
     GetWindowThreadProcessId(hwnd, &pid);
 
     AppWindow result{};
@@ -208,7 +227,7 @@ AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
                                           return includes_case_insensitive(app_name, name);
                                       });
         if (!is_browser) {
-            std::array<char, BROWSER_WINDOW_CLASS.size() + 1> window_class_name;
+            std::array<char, BROWSER_WINDOW_CLASS.size() + 1> window_class_name{};
             if (GetClassNameA(hwnd, window_class_name.data(),
                               static_cast<int>(window_class_name.size()))) {
                 if (BROWSER_WINDOW_CLASS == std::string_view(window_class_name.data())) {
@@ -231,14 +250,14 @@ bool AutoType::show_window(const AppWindow &window) {
 
     auto current_window = GetForegroundWindow();
     auto current_thread_id = GetCurrentThreadId();
-    auto win_thread_id = GetWindowThreadProcessId(current_window, 0);
+    auto win_thread_id = GetWindowThreadProcessId(current_window, nullptr);
 
     if (current_thread_id != win_thread_id) {
         AttachThreadInput(current_thread_id, win_thread_id, TRUE);
 
         DWORD lock_timeout = 0;
         SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lock_timeout, 0);
-        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, 0,
+        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, nullptr,
                              SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
 
         AllowSetForegroundWindow(ASFW_ANY);
