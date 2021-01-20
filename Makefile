@@ -59,7 +59,7 @@ xcode-project:
 	cmake -G Xcode -B xcode -D CMAKE_C_COMPILER="$$(xcrun -find c++)" -D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 
 vs-project:
-	cmake -B vs -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 
 run-example: all
 	$(RUN_EXAMPLE)
