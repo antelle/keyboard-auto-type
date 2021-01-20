@@ -56,4 +56,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 list(TRANSFORM SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_custom_target(clang-tidy COMMAND clang-tidy -p build --quiet ${SOURCES})
-add_custom_target(cppcheck COMMAND cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=${CMAKE_BINARY_DIR}/compile_commands.json --suppress=unusedFunction ${SOURCES})
+
+if(WIN32)
+    get_target_property(PROJECT_BINARY_DIR ${PROJECT_NAME} BINARY_DIR)
+    set(CPPCHECK_PROJECT_NAME "${PROJECT_BINARY_DIR}/keyboard-auto-type.vcxproj")
+else()
+    set(CPPCHECK_PROJECT_NAME "${CMAKE_BINARY_DIR}/compile_commands.json")
+endif()
+add_custom_target(cppcheck COMMAND cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=${CPPCHECK_PROJECT_NAME} --suppress=unusedFunction ${SOURCES})

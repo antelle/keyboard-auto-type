@@ -18,7 +18,7 @@ std::string winapi_to_string(LPCWSTR api_str) {
     }
     std::vector<char> chars(size);
     WideCharToMultiByte(CP_UTF8, 0, api_str, -1, chars.data(), size, nullptr, nullptr);
-    return chars.data();
+    return std::string(chars.begin(), chars.end());
 }
 
 bool includes_case_insensitive(std::string_view str, std::string_view search) {
