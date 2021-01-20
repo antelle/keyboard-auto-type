@@ -284,7 +284,11 @@ The library requires C++17 or above. Tests and examples are using C++20 features
 
 ## Development
 
-You will need CMake and the standard development toolchain to build the project.
+You will need:
+- standard development toolchain
+- [CMake](https://cmake.org/)
+- [clang-tidy and clang-format](https://llvm.org/)
+- [cppcheck](http://cppcheck.sourceforge.net/)
 
 `Makefile` is provided as a convenience measure to launch `cmake` commands. There's nothing important there, however using it is easier than typing commands. If you're familiar with CMake, you can build without `make` if you prefer.
 
