@@ -28,7 +28,7 @@ if(APPLE)
         "impl/darwin/platform-util.cpp"
     )
 elseif(WIN32)
-    add_definitions(-DUNICODE -D_UNICODE -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+    add_compile_definitions(UNICODE _UNICODE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     set(SYSTEM_LIBRARIES
         "Shlwapi.lib"
     )
@@ -43,12 +43,7 @@ add_executable(${PROJECT_NAME}
     "main.cpp"
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC .)
-
-set(SANITIZER_FLAGS "")
-if(KEYBOARD_AUTO_TYPE_USE_SANITIZERS AND NOT WIN32)
-    set(SANITIZER_FLAGS "-fsanitize=address,undefined")
-endif()
+target_include_directories(${PROJECT_NAME} PRIVATE .)
 
 target_link_libraries(${PROJECT_NAME}
     keyboard-auto-type

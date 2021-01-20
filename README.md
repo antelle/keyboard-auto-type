@@ -161,10 +161,12 @@ typer.key_move(kbd::Direction::Down,
                kbd::Modifier::Alt);
 ```
 
-Additionally, this method checks if any of modifiers is currently pressed. It makes sense to call it before starting text input. This method will throw an exception if the user keeps holding a key unnaturally long (more than 10s, to be precise):
+Additionally, this method checks if any of modifiers is currently pressed. It makes sense to call it before starting text input. It will throw an exception if the user keeps holding a key unnaturally long (more than 10s, to be precise):
 ```cpp
 typer.ensure_modifier_not_pressed();
 ```
+
+It's called by default in `text` method, you can use `set_auto_unpress_modifiers` and `set_unpress_modifiers_total_wait_time` to disable or customize this behavior.
 
 And finally, if you want to mess with underlying OS key codes, there's a way to do so:
 ```cpp
@@ -316,6 +318,11 @@ make tests
 or, on Windows:
 ```sh
 nmake tests
+```
+
+There are also tests for compilation without C++ exceptions, you can run them using `make tests-noexcept`. The following command will run the whole test suite, it's not recommended for iterative development because it rebuilds all, but good as a final or CI check:
+```sh
+make tests-all
 ```
 
 ## License

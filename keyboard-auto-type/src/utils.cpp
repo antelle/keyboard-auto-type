@@ -4,7 +4,7 @@
 
 namespace keyboard_auto_type {
 
-AutoTypeResult throw_or_return(AutoTypeResult result, const std::string &message) {
+AutoTypeResult throw_or_return(AutoTypeResult result, [[maybe_unused]] const std::string &message) {
     if (result == AutoTypeResult::Ok) {
         return result;
     }

@@ -1,6 +1,7 @@
 #ifndef KEYBOARD_AUTO_TYPE_H
 #define KEYBOARD_AUTO_TYPE_H
 
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -71,8 +72,16 @@ struct KeyCodeWithModifiers {
 
 class AutoType {
   private:
+    static constexpr auto DEFAULT_UNPRESS_MODIFIERS_TOTAL_WAIT_TIME =
+        std::chrono::milliseconds(10'000);
+    static constexpr auto KEY_HOLD_LOOP_WAIT_TIME = std::chrono::milliseconds(100);
+
     class AutoTypeImpl;
     std::unique_ptr<AutoTypeImpl> impl_;
+
+    bool auto_unpress_modifiers_ = true;
+    std::chrono::milliseconds unpress_modifiers_total_wait_time_ =
+        DEFAULT_UNPRESS_MODIFIERS_TOTAL_WAIT_TIME;
 
   public:
     AutoType();
@@ -93,11 +102,15 @@ class AutoType {
 
     AutoTypeResult ensure_modifier_not_pressed();
     Modifier get_pressed_modifiers();
-    static bool can_unpress_modifier();
+    bool can_unpress_modifier();
+    void set_auto_unpress_modifiers(bool auto_unpress_modifiers);
+    void set_unpress_modifiers_total_wait_time(std::chrono::milliseconds time);
+
     AutoTypeResult key_move(Direction direction, KeyCode code, Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);
     AutoTypeResult key_move(Direction direction, char32_t character, std::optional<uint16_t> code,
                             Modifier modifier = Modifier::None);
+
     std::optional<uint16_t> os_key_code(KeyCode code);
     std::optional<KeyCodeWithModifiers> os_key_code_for_char(char32_t character);
     std::vector<std::optional<KeyCodeWithModifiers>>

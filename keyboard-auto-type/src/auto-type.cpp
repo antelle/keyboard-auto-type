@@ -7,9 +7,6 @@
 
 namespace keyboard_auto_type {
 
-constexpr int KEY_HOLD_TOTAL_WAIT_TIME_MS = 10'000;
-constexpr int KEY_HOLD_LOOP_WAIT_TIME_MS = 100;
-
 constexpr std::array MODIFIERS{Modifier::Meta, Modifier::Shift, Modifier::Alt, Modifier::Ctrl};
 constexpr std::array MODIFIERS_KEY_CODES{
     std::make_pair(Modifier::Meta, KeyCode::Meta),
@@ -130,25 +127,36 @@ AutoTypeResult AutoType::key_press(KeyCode code, Modifier modifier) {
 AutoTypeResult AutoType::shortcut(KeyCode code) { return key_press(code, shortcut_modifier()); }
 
 AutoTypeResult AutoType::ensure_modifier_not_pressed() {
-    auto total_wait_time = KEY_HOLD_TOTAL_WAIT_TIME_MS;
-    auto loop_wait_time = KEY_HOLD_LOOP_WAIT_TIME_MS;
+    auto start_time = std::chrono::system_clock::now();
 
-    while (total_wait_time > 0) {
+    while (true) {
         auto pressed_modifiers = get_pressed_modifiers();
         if (pressed_modifiers == Modifier::None) {
             return AutoTypeResult::Ok;
         }
-        if (can_unpress_modifier()) {
+        if (auto_unpress_modifiers_ && can_unpress_modifier()) {
             for (auto modifier : MODIFIERS) {
                 if ((pressed_modifiers & modifier) == modifier) {
                     key_move(Direction::Up, modifier);
                 }
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(loop_wait_time));
-        total_wait_time -= loop_wait_time;
+        std::this_thread::sleep_for(KEY_HOLD_LOOP_WAIT_TIME);
+        auto elapsed = std::chrono::system_clock::now() - start_time;
+        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+        if (elapsed_ms > unpress_modifiers_total_wait_time_) {
+            break;
+        }
     }
     return throw_or_return(AutoTypeResult::ModifierNotReleased, "Modifier key not released");
+}
+
+void AutoType::set_auto_unpress_modifiers(bool auto_unpress_modifiers) {
+    auto_unpress_modifiers_ = auto_unpress_modifiers;
+}
+
+void AutoType::set_unpress_modifiers_total_wait_time(std::chrono::milliseconds time) {
+    unpress_modifiers_total_wait_time_ = time;
 }
 
 AutoTypeResult AutoType::key_move(Direction direction, KeyCode code, Modifier modifier) {

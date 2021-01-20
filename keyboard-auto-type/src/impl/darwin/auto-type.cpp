@@ -47,7 +47,10 @@ class AutoType::AutoTypeImpl {
         auto down = direction == Direction::Down;
         auto_release event = CGEventCreateKeyboardEvent(event_source_, code, down);
         if (character) {
-            set_event_char(event, character);
+            if (!set_event_char(event, character)) {
+                return throw_or_return(AutoTypeResult::BadArg,
+                                       std::string("Bad character: ") + std::to_string(character));
+            }
         }
         if (flags) {
             CGEventSetFlags(event, flags);
@@ -81,14 +84,18 @@ class AutoType::AutoTypeImpl {
         return AutoTypeResult::Ok;
     }
 
-    static void set_event_char(CGEventRef event, char32_t character) {
+    static bool set_event_char(CGEventRef event, char32_t character) {
         auto_release cfstr =
             CFStringCreateWithBytes(kCFAllocatorDefault, reinterpret_cast<UInt8 *>(&character),
                                     sizeof(character), kCFStringEncodingUTF32LE, false);
+        if (!cfstr) {
+            return false;
+        }
         auto length = CFStringGetLength(cfstr);
         std::vector<UniChar> utf16_data(length);
         CFStringGetCharacters(cfstr, CFRangeMake(0, length), utf16_data.data());
         CGEventKeyboardSetUnicodeString(event, utf16_data.size(), utf16_data.data());
+        return true;
     }
 
     void read_keyboard_layout() {

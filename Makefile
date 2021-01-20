@@ -27,24 +27,36 @@ rebuild: clean all
 clean:
 	git clean -fxd build xcode
 
-format: configure
+format:
+	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_CLANG_FORMAT=1 .
 	cmake --build build --target clang-format
 
 check: clang-tidy cppcheck
 
-clang-tidy:
-	cmake -B build -D CMAKE_EXPORT_COMPILE_COMMANDS=1 -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+compile-commands-for-checks:
+	cmake -B build -D CMAKE_EXPORT_COMPILE_COMMANDS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+
+clang-tidy: compile-commands-for-checks
 	cmake --build build --target clang-tidy
 
-cppcheck:
-	cppcheck --enable=all --inline-suppr keyboard-auto-type
+cppcheck: compile-commands-for-checks
+	cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=build/compile_commands.json --suppress=unusedFunction --suppress=missingIncludeSystem keyboard-auto-type
 
 build-tests:
 	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
 	$(RUN_CMAKE)
 
+build-tests-noexcept:
+	cmake -B build -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 -D KEYBOARD_AUTO_TYPE_DISABLE_CPP_EXCEPTIONS=1 .
+	$(RUN_CMAKE)
+
 tests: build-tests
 	$(RUN_TESTS)
+
+tests-noexcept: build-tests-noexcept
+	$(RUN_TESTS) --gtest_filter="AutoTypeErrorsTest.*"
+
+tests-all: clean tests clean tests-noexcept
 
 xcode-project:
 	cmake -G Xcode -B xcode -D CMAKE_C_COMPILER="$$(xcrun -find c++)" -D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
