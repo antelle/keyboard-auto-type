@@ -102,7 +102,6 @@ class AutoType {
 
     AutoTypeResult ensure_modifier_not_pressed();
     Modifier get_pressed_modifiers();
-    bool can_unpress_modifier();
     void set_auto_unpress_modifiers(bool auto_unpress_modifiers);
     void set_unpress_modifiers_total_wait_time(std::chrono::milliseconds time);
 

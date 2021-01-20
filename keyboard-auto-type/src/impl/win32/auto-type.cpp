@@ -148,8 +148,6 @@ Modifier AutoType::get_pressed_modifiers() {
     return pressed_modifiers;
 }
 
-bool AutoType::can_unpress_modifier() { return false; }
-
 Modifier AutoType::shortcut_modifier() { return Modifier::Control; }
 
 std::optional<uint16_t> AutoType::os_key_code(KeyCode code) {

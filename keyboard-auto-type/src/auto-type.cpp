@@ -134,7 +134,7 @@ AutoTypeResult AutoType::ensure_modifier_not_pressed() {
         if (pressed_modifiers == Modifier::None) {
             return AutoTypeResult::Ok;
         }
-        if (auto_unpress_modifiers_ && can_unpress_modifier()) {
+        if (auto_unpress_modifiers_) {
             for (auto modifier : MODIFIERS) {
                 if ((pressed_modifiers & modifier) == modifier) {
                     key_move(Direction::Up, modifier);

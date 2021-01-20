@@ -269,9 +269,7 @@ TEST_F(AutoTypeKeysTest, text_unicode_supplementary_ideographic) {
 TEST_F(AutoTypeKeysTest, text_unpress_modifiers) {
     expected_text = U"a";
     kbd::AutoType typer;
-    if (typer.can_unpress_modifier()) {
-        typer.key_move(kbd::Direction::Down, kbd::Modifier::Shift | kbd::Modifier::Control);
-    }
+    typer.key_move(kbd::Direction::Down, kbd::Modifier::Shift | kbd::Modifier::Control);
     typer.text(U"a");
 }
 
@@ -645,7 +643,14 @@ TEST_F(AutoTypeWindowTest, show_window) {
     FAIL() << "Text editor didn't start";
 }
 
-class AutoTypeErrorsTest : public testing::Test {};
+class AutoTypeErrorsTest : public testing::Test {
+  protected:
+    // cppcheck-suppress unusedFunction
+    virtual void TearDown() {
+        kbd::AutoType typer;
+        typer.key_move(kbd::Direction::Up, kbd::Modifier::Shift);
+    }
+};
 
 #if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
 #define ASSERT_THROWS_OR_RETURNS(statement, expected_exception, expected_result)                   \
