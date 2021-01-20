@@ -2,7 +2,7 @@
 
 # Windows NMAKE \
 !ifndef 0 # \ 
-CLEAN = rmdir build /s /q # \ 
+CLEAN = if exist build rmdir build /s /q # \ 
 RUN_EXAMPLE = build\example\Debug\example.exe # \ 
 RUN_TESTS_EXCEPT = build\sub\tests-except\test\Debug\test.exe # \ 
 RUN_TESTS_NOEXCEPT = build\sub\tests-noexcept\test\Debug\test.exe # \
