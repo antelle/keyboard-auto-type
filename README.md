@@ -28,7 +28,7 @@ typer.key_press(keyboard_auto_type::KeyCode::Enter);
 typer.shortcut(keyboard_auto_type::KeyCode::A);
 ```
 
-See more in the [Usage](#usage) section.
+See more in [Usage](#usage) section.
 
 ## Status
 
