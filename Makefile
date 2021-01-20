@@ -34,7 +34,7 @@ format:
 check: clang-tidy cppcheck
 
 compile-commands-for-checks:
-	cmake -B build -D CMAKE_EXPORT_COMPILE_COMMANDS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	cmake -B build -D CMAKE_EXPORT_COMPILE_COMMANDS=1 -D KEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 
 clang-tidy: compile-commands-for-checks
 	cmake --build build --target clang-tidy

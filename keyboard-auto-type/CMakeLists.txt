@@ -55,22 +55,24 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
 list(TRANSFORM SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-if(WIN32)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        VS_GLOBAL_RunCodeAnalysis true
-        VS_GLOBAL_EnableMicrosoftCodeAnalysis true
-        VS_GLOBAL_EnableClangTidyCodeAnalysis true
-        VS_GLOBAL_ClangTidyChecks --quiet
-    )
-    add_custom_target(clang-tidy DEPENDS ${PROJECT_NAME})
-else()
-    add_custom_target(clang-tidy COMMAND clang-tidy -p build --quiet ${SOURCES})
-endif()
+if(KEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS)
+    if(WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            VS_GLOBAL_RunCodeAnalysis true
+            VS_GLOBAL_EnableMicrosoftCodeAnalysis true
+            VS_GLOBAL_EnableClangTidyCodeAnalysis true
+            VS_GLOBAL_ClangTidyChecks "-hicpp-signed-bitwise,-cppcoreguidelines-pro-type-union-access,-llvm-qualified-auto,-readability-qualified-auto"
+        )
+        add_custom_target(clang-tidy DEPENDS ${PROJECT_NAME})
+    else()
+        add_custom_target(clang-tidy COMMAND clang-tidy -p build --quiet ${SOURCES})
+    endif()
 
-if(WIN32)
-    get_target_property(PROJECT_BINARY_DIR ${PROJECT_NAME} BINARY_DIR)
-    set(CPPCHECK_PROJECT_NAME "${PROJECT_BINARY_DIR}/keyboard-auto-type.vcxproj")
-else()
-    set(CPPCHECK_PROJECT_NAME "${CMAKE_BINARY_DIR}/compile_commands.json")
+    if(WIN32)
+        get_target_property(PROJECT_BINARY_DIR ${PROJECT_NAME} BINARY_DIR)
+        set(CPPCHECK_PROJECT_NAME "${PROJECT_BINARY_DIR}/keyboard-auto-type.vcxproj")
+    else()
+        set(CPPCHECK_PROJECT_NAME "${CMAKE_BINARY_DIR}/compile_commands.json")
+    endif()
+    add_custom_target(cppcheck COMMAND cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=${CPPCHECK_PROJECT_NAME} --suppress=unusedFunction ${SOURCES})
 endif()
-add_custom_target(cppcheck COMMAND cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=${CPPCHECK_PROJECT_NAME} --suppress=unusedFunction ${SOURCES})
