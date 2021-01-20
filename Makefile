@@ -1,5 +1,8 @@
 # This makefile can be used with GNU Make and Windows NMAKE
 
+# No part of this Makefile is required to build the project
+# it's a convenience measure to launch CMake commands
+
 # Windows NMAKE \
 !ifndef 0 # \ 
 CLEAN = if exist build rmdir build /s /q # \ 
