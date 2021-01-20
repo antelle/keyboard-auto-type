@@ -55,7 +55,17 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
 list(TRANSFORM SOURCES PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-add_custom_target(clang-tidy COMMAND clang-tidy -p build --quiet ${SOURCES})
+if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        VS_GLOBAL_RunCodeAnalysis true
+        VS_GLOBAL_EnableMicrosoftCodeAnalysis true
+        VS_GLOBAL_EnableClangTidyCodeAnalysis true
+        VS_GLOBAL_ClangTidyChecks --quiet
+    )
+    add_custom_target(clang-tidy DEPENDS ${PROJECT_NAME})
+else()
+    add_custom_target(clang-tidy COMMAND clang-tidy -p build --quiet ${SOURCES})
+endif()
 
 if(WIN32)
     get_target_property(PROJECT_BINARY_DIR ${PROJECT_NAME} BINARY_DIR)
