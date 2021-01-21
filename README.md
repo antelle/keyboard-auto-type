@@ -94,7 +94,21 @@ Suppose a user has an app with windows on several virtual desktops (spaces), for
 
 ## Installation
 
-TODO
+### CMake
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    keyboard-auto-type
+    GIT_REPOSITORY https://github.com/antelle/keyboard-auto-type.git
+    GIT_TAG        v1.0.0
+)
+
+FetchContent_MakeAvailable(keyboard-auto-type)
+
+target_link_libraries(your-target PRIVATE keyboard-auto-type)
+```
 
 ## Usage
 
