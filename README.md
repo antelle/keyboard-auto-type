@@ -260,7 +260,7 @@ There are a lot of keyboard shortcuts available in operating systems and applica
 
 ## Errors
 
-By default, if exception support is enabled, auto-type methods can throw an exception. If exception support is disabled, they will just return an error code described below. You can also disable exceptions using `KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS` flag.
+By default, if exception support is enabled, auto-type methods can throw an exception. If exception support is disabled, they will just return an error code described below. You can also disable exceptions using `KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS` flag, this way the rest of your code is compiled with C++ exceptions, but `keyboard-auto-type` is instructed not to throw them.
 
 All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, there are following errors possible:
 
