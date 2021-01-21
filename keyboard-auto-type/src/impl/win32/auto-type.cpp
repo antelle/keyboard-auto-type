@@ -67,8 +67,9 @@ class AutoType::AutoTypeImpl {
 
         static constexpr std::array SHIFT_STATES_MODIFIERS{
             std::make_pair(1, Modifier::Shift),
-            std::make_pair(2, Modifier::Ctrl),
-            std::make_pair(4, Modifier::Alt),
+            // can cause issues
+            // std::make_pair(2, Modifier::Ctrl),
+            // std::make_pair(4, Modifier::Alt),
         };
 
         for (auto [shift_state_mask, modifier] : SHIFT_STATES_MODIFIERS) {
@@ -153,9 +154,14 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
 
 Modifier AutoType::get_pressed_modifiers() {
     static constexpr std::array FLAGS_MODIFIERS{
-        std::make_pair(VK_LWIN, Modifier::Command),    std::make_pair(VK_RWIN, Modifier::Command),
-        std::make_pair(VK_SHIFT, Modifier::Shift),     std::make_pair(VK_MENU, Modifier::Option),
-        std::make_pair(VK_CONTROL, Modifier::Control),
+        std::make_pair(VK_LWIN, Modifier::LeftWin),
+        std::make_pair(VK_RWIN, Modifier::RightWin),
+        std::make_pair(VK_LSHIFT, Modifier::LeftShift),
+        std::make_pair(VK_RSHIFT, Modifier::RightShift),
+        std::make_pair(VK_LMENU, Modifier::LeftAlt),
+        std::make_pair(VK_RMENU, Modifier::RightAlt),
+        std::make_pair(VK_LCONTROL, Modifier::LeftCtrl),
+        std::make_pair(VK_RCONTROL, Modifier::RightCtrl),
     };
     auto pressed_modifiers = Modifier::None;
     for (auto [key_code, modifier] : FLAGS_MODIFIERS) {
