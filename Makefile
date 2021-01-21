@@ -29,6 +29,15 @@ rebuild: clean all
 clean:
 	$(CLEAN)
 
+run-example: all
+	$(RUN_EXAMPLE)
+
+xcode-project:
+	cmake -G Xcode -B xcode -DCMAKE_C_COMPILER="$$(xcrun -find c++)" -DCMAKE_CXX_COMPILER="$$(xcrun -find cc)" -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+
+vs-project:
+	cmake -B $(BUILD_DIR) -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+
 format:
 	cmake -B $(BUILD_DIR)/sub/format -DKEYBOARD_AUTO_TYPE_WITH_CLANG_FORMAT=1 .
 	cmake --build $(BUILD_DIR)/sub/format --target clang-format
@@ -60,11 +69,22 @@ tests-noexcept: build-tests-noexcept
 
 tests: tests-except tests-noexcept
 
-xcode-project:
-	cmake -G Xcode -B xcode -DCMAKE_C_COMPILER="$$(xcrun -find c++)" -DCMAKE_CXX_COMPILER="$$(xcrun -find cc)" -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+tests-ci-macos:
+	# tests-except
+	cmake -B $(BUILD_DIR)/sub/tests-except -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
+	cmake --build $(BUILD_DIR)/sub/tests-except -j4
+	$(RUN_TESTS_EXCEPT) --gtest_filter=-AutoTypeKeysTest.text_unicode_basic
+	# tests-noexcept
+	cmake -B $(BUILD_DIR)/sub/tests-noexcept -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 -DKEYBOARD_AUTO_TYPE_DISABLE_CPP_EXCEPTIONS=1 .
+	cmake --build $(BUILD_DIR)/sub/tests-noexcept -j4
+	$(RUN_TESTS_NOEXCEPT) --gtest_filter="AutoTypeErrorsTest.*"
 
-vs-project:
-	cmake -B $(BUILD_DIR) -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
-
-run-example: all
-	$(RUN_EXAMPLE)
+tests-ci-windows:
+	# tests-except
+	cmake -B $(BUILD_DIR)/sub/tests-except -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
+	cmake --build $(BUILD_DIR)/sub/tests-except -j4
+	$(RUN_TESTS_EXCEPT) --gtest_filter=-AutoTypeKeysTest.text_wstring:-AutoTypeKeysTest.text_unicode_basic:-AutoTypeKeysTest.text_unicode_emoji:-AutoTypeKeysTest.text_unicode_supplementary_ideographic
+	# tests-noexcept
+	cmake -B $(BUILD_DIR)/sub/tests-noexcept -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 -DKEYBOARD_AUTO_TYPE_DISABLE_CPP_EXCEPTIONS=1 .
+	cmake --build $(BUILD_DIR)/sub/tests-noexcept -j4
+	$(RUN_TESTS_NOEXCEPT) --gtest_filter="AutoTypeErrorsTest.*"
