@@ -41,7 +41,7 @@ list(APPEND SOURCES ${PLATFORM_SOURCES})
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 if(APPLE)
-    target_compile_options(${PROJECT_NAME} PUBLIC "-fobjc-arc")
+    target_compile_options(${PROJECT_NAME} PRIVATE "-fobjc-arc")
     target_link_libraries(${PROJECT_NAME}
         PRIVATE
         "-framework CoreFoundation"
