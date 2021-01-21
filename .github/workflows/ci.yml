@@ -5,7 +5,7 @@ on:
       - master
   pull_request:
 jobs:
-  darwin:
+  macos:
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -14,3 +14,12 @@ jobs:
           fetch-depth: 0
       - name: Test
         run: make tests
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Test
+        run: nmake tests
