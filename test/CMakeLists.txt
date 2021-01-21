@@ -26,6 +26,10 @@ elseif(WIN32)
     set(PLATFORM_SOURCES
         "impl/win32/platform-util.cpp"
     )
+else()
+    set(PLATFORM_SOURCES
+        "impl/linux/platform-util.cpp"
+    )
 endif()
 
 add_executable(${PROJECT_NAME}

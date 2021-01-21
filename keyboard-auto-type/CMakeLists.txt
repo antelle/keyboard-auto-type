@@ -33,6 +33,11 @@ elseif(WIN32)
     )
     source_group("win32" FILES ${PLATFORM_SOURCES})
 else()
+    set(PLATFORM_SOURCES
+        "src/impl/linux/key-map.h"
+        "src/impl/linux/auto-type.cpp"
+        "src/impl/linux/key-map.cpp"
+    )
 endif()
 
 list(APPEND SOURCES ${PLATFORM_SOURCES})

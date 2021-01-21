@@ -546,7 +546,7 @@ class AutoTypeWindowTest : public testing::Test {
 
     static void create_file() {
         std::filesystem::remove(file_name);
-        std::fstream(file_name, std::ios::out).close();
+        std::fstream(std::string(file_name), std::ios::out).close();
     }
 };
 
