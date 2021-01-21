@@ -36,6 +36,10 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
+if(KEYBOARD_AUTO_TYPE_WITH_CODE_COVERAGE)
+    target_link_options(${PROJECT_NAME} PRIVATE "-fprofile-instr-generate" "-fcoverage-mapping")
+endif()
+
 target_link_libraries(${PROJECT_NAME}
     keyboard-auto-type
     gtest

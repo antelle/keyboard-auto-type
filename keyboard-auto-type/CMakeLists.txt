@@ -90,3 +90,7 @@ if(KEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS)
     endif()
     add_custom_target(cppcheck COMMAND cppcheck --enable=all --inline-suppr --error-exitcode=2 --project=${CPPCHECK_PROJECT_NAME} --suppress=unusedFunction ${SOURCES})
 endif()
+
+if(KEYBOARD_AUTO_TYPE_WITH_CODE_COVERAGE)
+    target_compile_options(${PROJECT_NAME} PRIVATE "-fprofile-instr-generate" "-fcoverage-mapping")
+endif()
