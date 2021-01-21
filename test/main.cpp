@@ -286,7 +286,7 @@ TEST_F(AutoTypeKeysTest, key_press_key_code_modifier) {
     typer.key_press(kbd::KeyCode::D1);
     typer.key_press(kbd::KeyCode::D1, kbd::Modifier::Shift);
     typer.key_press(kbd::KeyCode::C);
-    typer.key_press(kbd::KeyCode::C, kbd::Modifier::Shift);
+    typer.key_press(kbd::KeyCode::C, kbd::Modifier::RightShift);
 }
 
 TEST_F(AutoTypeKeysTest, key_press_menu) {

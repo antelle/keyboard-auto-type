@@ -136,12 +136,9 @@ class AutoType::AutoTypeImpl {
         keyboard_layout_.clear();
 
         static constexpr auto SHIFT_MASK = (static_cast<UInt32>(shiftKey) >> 8U) & 0xFFU;
-        static constexpr auto OPTION_MASK = (static_cast<UInt32>(optionKey) >> 8U) & 0xFFU;
         static constexpr std::array MODIFIER_STATES{
-            std::make_pair(0U, Modifier::None),
-            std::make_pair(SHIFT_MASK, Modifier::Shift),
-            std::make_pair(OPTION_MASK, Modifier::Option),
-            std::make_pair(SHIFT_MASK | OPTION_MASK, Modifier::Option | Modifier::Shift),
+            std::make_pair(0U, Modifier::None), std::make_pair(SHIFT_MASK, Modifier::Shift),
+            // other modifiers cause issues in Terminal and similar
         };
         for (int code = 0; code <= MAX_KEYBOARD_LAYOUT_CHAR_CODE; code++) {
             for (auto [mod_state, modifier] : MODIFIER_STATES) {
