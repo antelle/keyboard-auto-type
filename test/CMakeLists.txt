@@ -22,7 +22,7 @@ if(APPLE)
         "impl/darwin/platform-util.cpp"
     )
 elseif(WIN32)
-    add_compile_definitions(UNICODE _UNICODE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+    add_compile_definitions(_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     set(PLATFORM_SOURCES
         "impl/win32/platform-util.cpp"
     )

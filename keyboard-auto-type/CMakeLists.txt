@@ -24,7 +24,6 @@ if (APPLE)
     )
     source_group("darwin" FILES ${PLATFORM_SOURCES})
 elseif(WIN32)
-    add_compile_definitions(UNICODE _UNICODE)
     set(PLATFORM_SOURCES
         "src/impl/win32/key-map.h"
         "src/impl/win32/winapi-tools.h"

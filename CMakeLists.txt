@@ -12,6 +12,10 @@ if(MSVC)
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 endif()
 
+if(WIN32)
+    add_compile_definitions(UNICODE _UNICODE)
+endif()
+
 if(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
     add_compile_definitions(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS=1)
 endif()
