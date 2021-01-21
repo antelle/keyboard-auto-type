@@ -42,6 +42,20 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 if(APPLE)
     target_compile_options(${PROJECT_NAME} PUBLIC "-fobjc-arc")
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        "-framework CoreFoundation"
+        "-framework Carbon"
+        "-framework AppKit"
+        "-framework ScriptingBridge"
+    )
+endif()
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        "Shlwapi.lib"
+    )
 endif()
 
 if(WIN32)

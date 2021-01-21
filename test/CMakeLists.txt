@@ -18,20 +18,11 @@ set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 if(APPLE)
-    set(SYSTEM_LIBRARIES
-        "-framework CoreFoundation"
-        "-framework Carbon"
-        "-framework AppKit"
-        "-framework ScriptingBridge"
-    )
     set(PLATFORM_SOURCES
         "impl/darwin/platform-util.cpp"
     )
 elseif(WIN32)
     add_compile_definitions(UNICODE _UNICODE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
-    set(SYSTEM_LIBRARIES
-        "Shlwapi.lib"
-    )
     set(PLATFORM_SOURCES
         "impl/win32/platform-util.cpp"
     )
@@ -47,7 +38,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE .)
 
 target_link_libraries(${PROJECT_NAME}
     keyboard-auto-type
-    ${SYSTEM_LIBRARIES}
     gtest
-    ${SANITIZER_FLAGS}
 )
