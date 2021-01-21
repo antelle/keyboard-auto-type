@@ -21,7 +21,7 @@ RUN_TESTS_NOEXCEPT = $(BUILD_DIR)/sub/tests-noexcept/test/test
 !endif
 
 all:
-	cmake -B $(BUILD_DIR) -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	cmake -B $(BUILD_DIR) -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 	cmake --build $(BUILD_DIR) -j4
 
 rebuild: clean all
@@ -30,13 +30,13 @@ clean:
 	$(CLEAN)
 
 format:
-	cmake -B $(BUILD_DIR)/sub/format -D KEYBOARD_AUTO_TYPE_WITH_CLANG_FORMAT=1 .
+	cmake -B $(BUILD_DIR)/sub/format -DKEYBOARD_AUTO_TYPE_WITH_CLANG_FORMAT=1 .
 	cmake --build $(BUILD_DIR)/sub/format --target clang-format
 
 check: clang-tidy cppcheck
 
 compile-commands-for-checks:
-	cmake -B $(BUILD_DIR)/sub/checks -D CMAKE_EXPORT_COMPILE_COMMANDS=1 -D KEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	cmake -B $(BUILD_DIR)/sub/checks -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DKEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 
 clang-tidy: compile-commands-for-checks
 	cmake --build $(BUILD_DIR)/sub/checks --target clang-tidy
@@ -45,11 +45,11 @@ cppcheck: compile-commands-for-checks
 	cmake --build $(BUILD_DIR)/sub/checks --target cppcheck
 
 build-tests-except:
-	cmake -B $(BUILD_DIR)/sub/tests-except -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
+	cmake -B $(BUILD_DIR)/sub/tests-except -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 .
 	cmake --build $(BUILD_DIR)/sub/tests-except -j4
 
 build-tests-noexcept:
-	cmake -B $(BUILD_DIR)/sub/tests-noexcept -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 -D KEYBOARD_AUTO_TYPE_DISABLE_CPP_EXCEPTIONS=1 .
+	cmake -B $(BUILD_DIR)/sub/tests-noexcept -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_USE_SANITIZERS=1 -DKEYBOARD_AUTO_TYPE_DISABLE_CPP_EXCEPTIONS=1 .
 	cmake --build $(BUILD_DIR)/sub/tests-noexcept -j4
 
 tests-except: build-tests-except
@@ -61,10 +61,10 @@ tests-noexcept: build-tests-noexcept
 tests: tests-except tests-noexcept
 
 xcode-project:
-	cmake -G Xcode -B xcode -D CMAKE_C_COMPILER="$$(xcrun -find c++)" -D CMAKE_CXX_COMPILER="$$(xcrun -find cc)" -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	cmake -G Xcode -B xcode -DCMAKE_C_COMPILER="$$(xcrun -find c++)" -DCMAKE_CXX_COMPILER="$$(xcrun -find cc)" -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 
 vs-project:
-	cmake -B $(BUILD_DIR) -D KEYBOARD_AUTO_TYPE_WITH_TESTS=1 -D KEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
+	cmake -B $(BUILD_DIR) -DKEYBOARD_AUTO_TYPE_WITH_TESTS=1 -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 
 run-example: all
 	$(RUN_EXAMPLE)
