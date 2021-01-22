@@ -34,11 +34,15 @@ endif()
 
 add_executable(${PROJECT_NAME}
     ${PLATFORM_SOURCES}
-    "platform-util.h"
-    "main.cpp"
+    "include/platform-util.h"
+    "src/main.cpp"
+    "src/auto-type-keys-test.cpp"
+    "src/auto-type-window-test.cpp"
+    "src/auto-type-errors-test.cpp"
+    "src/modifier-test.cpp"
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE .)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 if(KEYBOARD_AUTO_TYPE_WITH_CODE_COVERAGE)
     target_link_options(${PROJECT_NAME} PRIVATE "-fprofile-instr-generate" "-fcoverage-mapping")

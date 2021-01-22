@@ -1,22 +1,14 @@
 #include <array>
-#include <chrono>
 #include <codecvt>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <string>
-#include <thread>
 
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
 #include "platform-util.h"
 
 namespace kbd = keyboard_auto_type;
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
 
 namespace keyboard_auto_type_test {
 
@@ -26,19 +18,15 @@ class AutoTypeKeysTest : public testing::Test {
     std::filesystem::file_time_type file_mod_time;
     std::u32string expected_text;
 
-    // cppcheck-suppress unusedFunction
     static void SetUpTestSuite() {}
 
-    // cppcheck-suppress unusedFunction
     static void TearDownTestSuite() { kill_text_editor(); }
 
-    // cppcheck-suppress unusedFunction
     virtual void SetUp() {
         expected_text = U"";
         open_text_editor();
     }
 
-    // cppcheck-suppress unusedFunction
     virtual void TearDown() {
         save_text();
         wait_for_file_save();
@@ -526,249 +514,6 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
     // hide all possible menus
     typer.key_press(kbd::KeyCode::Escape);
     wait_millis(100);
-}
-
-class AutoTypeWindowTest : public testing::Test {
-  protected:
-    static constexpr std::string_view file_name = "build/test.txt";
-
-    // cppcheck-suppress unusedFunction
-    static void SetUpTestSuite() { create_file(); }
-
-    // cppcheck-suppress unusedFunction
-    virtual void SetUp() {
-        kill_text_editor();
-        wait_millis(100);
-    }
-
-    // cppcheck-suppress unusedFunction
-    virtual void TearDown() { kill_text_editor(); }
-
-    static void create_file() {
-        std::filesystem::remove(file_name);
-        std::fstream(std::string(file_name), std::ios::out).close();
-    }
-};
-
-TEST_F(AutoTypeWindowTest, active_pid) {
-    kbd::AutoType typer;
-
-    auto pid = typer.active_pid();
-    ASSERT_NE(0, pid);
-
-    launch_text_editor(file_name);
-    for (auto i = 0; i < 100; i++) {
-        wait_millis(100);
-        auto active_pid = typer.active_pid();
-        if (pid != active_pid) {
-            return;
-        }
-    }
-
-    FAIL() << "active_pid didn't change";
-}
-
-TEST_F(AutoTypeWindowTest, active_window) {
-    kbd::AutoType typer;
-
-    auto pid = typer.active_pid();
-
-    launch_text_editor(file_name);
-    for (auto i = 0; i < 100; i++) {
-        wait_millis(100);
-        auto active_pid = typer.active_pid();
-        if (pid != active_pid) {
-            wait_millis(1000);
-
-            auto win = typer.active_window();
-            ASSERT_EQ(active_pid, win.pid);
-            ASSERT_TRUE(win.window_id);
-            ASSERT_FALSE(win.app_name.empty());
-            ASSERT_TRUE(win.title.empty());
-            ASSERT_TRUE(win.url.empty());
-
-            win = typer.active_window({.get_window_title = true, .get_browser_url = true});
-            ASSERT_EQ(active_pid, win.pid);
-            ASSERT_TRUE(win.window_id);
-            ASSERT_FALSE(win.app_name.empty());
-            ASSERT_FALSE(win.title.empty());
-            ASSERT_TRUE(win.url.empty());
-
-            return;
-        }
-    }
-
-    FAIL() << "Text editor didn't start";
-}
-
-TEST_F(AutoTypeWindowTest, show_window) {
-    kbd::AutoType typer;
-
-    auto self_window = typer.active_window();
-    ASSERT_EQ(self_window.pid, typer.active_pid());
-    ASSERT_NE(0, self_window.pid);
-
-    launch_text_editor(file_name);
-    for (auto i = 0; i < 100; i++) {
-        wait_millis(100);
-        auto editor_window = typer.active_window();
-        ASSERT_EQ(editor_window.pid, typer.active_pid());
-        if (editor_window.pid != self_window.pid) {
-            wait_millis(1000);
-
-            auto win = typer.active_window();
-            ASSERT_EQ(win.pid, typer.active_pid());
-            ASSERT_EQ(editor_window.pid, win.pid);
-
-            auto shown = typer.show_window(self_window);
-            ASSERT_TRUE(shown);
-            wait_millis(1000);
-
-            win = typer.active_window();
-            ASSERT_EQ(win.pid, typer.active_pid());
-            ASSERT_EQ(self_window.pid, win.pid);
-
-            shown = typer.show_window(editor_window);
-            ASSERT_TRUE(shown);
-            wait_millis(1000);
-
-            win = typer.active_window();
-            ASSERT_EQ(win.pid, typer.active_pid());
-            ASSERT_EQ(editor_window.pid, win.pid);
-
-            return;
-        }
-    }
-
-    FAIL() << "Text editor didn't start";
-}
-
-class ModifierTest : public testing::Test {};
-
-TEST_F(ModifierTest, modifier_none) { ASSERT_EQ(0, static_cast<uint8_t>(kbd::Modifier::None)); }
-
-TEST_F(ModifierTest, modifier_ctrl) {
-    ASSERT_NE(kbd::Modifier::None, kbd::Modifier::Ctrl);
-    ASSERT_EQ(kbd::Modifier::Ctrl, kbd::Modifier::Control);
-
-    ASSERT_NE(kbd::Modifier::Ctrl, kbd::Modifier::LeftCtrl);
-    ASSERT_EQ(kbd::Modifier::LeftCtrl, kbd::Modifier::LeftControl);
-    ASSERT_EQ(kbd::Modifier::Ctrl, kbd::Modifier::LeftCtrl & kbd::Modifier::Ctrl);
-
-    ASSERT_NE(kbd::Modifier::Ctrl, kbd::Modifier::RightCtrl);
-    ASSERT_EQ(kbd::Modifier::RightCtrl, kbd::Modifier::RightControl);
-    ASSERT_EQ(kbd::Modifier::Ctrl, kbd::Modifier::RightCtrl & kbd::Modifier::Ctrl);
-
-    ASSERT_NE(kbd::Modifier::RightCtrl, kbd::Modifier::LeftCtrl);
-}
-
-TEST_F(ModifierTest, modifier_alt) {
-    ASSERT_NE(kbd::Modifier::None, kbd::Modifier::Alt);
-    ASSERT_EQ(kbd::Modifier::Alt, kbd::Modifier::Option);
-
-    ASSERT_NE(kbd::Modifier::Alt, kbd::Modifier::LeftAlt);
-    ASSERT_EQ(kbd::Modifier::LeftAlt, kbd::Modifier::LeftOption);
-    ASSERT_EQ(kbd::Modifier::Alt, kbd::Modifier::LeftAlt & kbd::Modifier::Alt);
-
-    ASSERT_NE(kbd::Modifier::Alt, kbd::Modifier::RightAlt);
-    ASSERT_EQ(kbd::Modifier::RightAlt, kbd::Modifier::RightOption);
-    ASSERT_EQ(kbd::Modifier::Alt, kbd::Modifier::RightAlt & kbd::Modifier::Alt);
-
-    ASSERT_NE(kbd::Modifier::RightAlt, kbd::Modifier::LeftAlt);
-}
-
-TEST_F(ModifierTest, modifier_shift) {
-    ASSERT_NE(kbd::Modifier::None, kbd::Modifier::Shift);
-
-    ASSERT_NE(kbd::Modifier::Shift, kbd::Modifier::LeftShift);
-    ASSERT_EQ(kbd::Modifier::Shift, kbd::Modifier::LeftShift & kbd::Modifier::Shift);
-
-    ASSERT_NE(kbd::Modifier::Shift, kbd::Modifier::RightShift);
-    ASSERT_EQ(kbd::Modifier::Shift, kbd::Modifier::RightShift & kbd::Modifier::Shift);
-
-    ASSERT_NE(kbd::Modifier::RightShift, kbd::Modifier::LeftShift);
-}
-
-TEST_F(ModifierTest, modifier_meta) {
-    ASSERT_NE(kbd::Modifier::None, kbd::Modifier::Meta);
-    ASSERT_EQ(kbd::Modifier::Meta, kbd::Modifier::Command);
-    ASSERT_EQ(kbd::Modifier::Meta, kbd::Modifier::Win);
-
-    ASSERT_NE(kbd::Modifier::Meta, kbd::Modifier::LeftMeta);
-    ASSERT_EQ(kbd::Modifier::LeftMeta, kbd::Modifier::LeftCommand);
-    ASSERT_EQ(kbd::Modifier::LeftMeta, kbd::Modifier::LeftWin);
-    ASSERT_EQ(kbd::Modifier::Meta, kbd::Modifier::LeftMeta & kbd::Modifier::Meta);
-
-    ASSERT_NE(kbd::Modifier::Meta, kbd::Modifier::RightMeta);
-    ASSERT_EQ(kbd::Modifier::RightMeta, kbd::Modifier::RightCommand);
-    ASSERT_EQ(kbd::Modifier::RightMeta, kbd::Modifier::RightWin);
-    ASSERT_EQ(kbd::Modifier::Meta, kbd::Modifier::RightMeta & kbd::Modifier::Meta);
-
-    ASSERT_NE(kbd::Modifier::RightMeta, kbd::Modifier::LeftMeta);
-}
-
-TEST_F(ModifierTest, modifier_or) {
-    auto mod = kbd::Modifier::Ctrl | kbd::Modifier::Alt;
-    ASSERT_EQ(kbd::Modifier::Alt, mod & kbd::Modifier::Alt);
-    ASSERT_EQ(kbd::Modifier::Ctrl, mod & kbd::Modifier::Ctrl);
-    ASSERT_EQ(kbd::Modifier::None, mod & kbd::Modifier::Shift);
-    ASSERT_EQ(kbd::Modifier::None, mod & kbd::Modifier::Meta);
-}
-
-class AutoTypeErrorsTest : public testing::Test {
-  protected:
-    // cppcheck-suppress unusedFunction
-    virtual void TearDown() {
-        kbd::AutoType typer;
-        typer.key_move(kbd::Direction::Up, kbd::Modifier::Shift);
-    }
-};
-
-#if __cpp_exceptions && !defined(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
-#define ASSERT_THROWS_OR_RETURNS(statement, expected_exception, expected_result)                   \
-    ASSERT_THROW(statement, expected_exception)
-#else
-#define ASSERT_THROWS_OR_RETURNS(statement, expected_exception, expected_result)                   \
-    ASSERT_EQ(expected_result, statement)
-#endif
-
-TEST_F(AutoTypeErrorsTest, key_press_undefined) {
-    kbd::AutoType typer;
-    ASSERT_THROWS_OR_RETURNS(typer.key_press(kbd::KeyCode::Undefined), std::invalid_argument,
-                             kbd::AutoTypeResult::BadArg);
-}
-
-TEST_F(AutoTypeErrorsTest, key_press_bad_key) {
-    kbd::AutoType typer;
-    ASSERT_THROWS_OR_RETURNS(typer.key_press(kbd::KeyCode::KeyCodeCount), std::invalid_argument,
-                             kbd::AutoTypeResult::BadArg);
-}
-
-TEST_F(AutoTypeErrorsTest, text_null_char) {
-    kbd::AutoType typer;
-    std::u32string str{U'\0'};
-    ASSERT_THROWS_OR_RETURNS(typer.text(str), std::invalid_argument, kbd::AutoTypeResult::BadArg);
-}
-
-TEST_F(AutoTypeErrorsTest, text_modifier_not_released) {
-    kbd::AutoType typer;
-    typer.set_auto_unpress_modifiers(false);
-    typer.set_unpress_modifiers_total_wait_time(std::chrono::milliseconds(0));
-    typer.key_move(kbd::Direction::Down, kbd::Modifier::Shift);
-    ASSERT_THROWS_OR_RETURNS(typer.text(U"a"), std::runtime_error,
-                             kbd::AutoTypeResult::ModifierNotReleased);
-}
-
-TEST_F(AutoTypeErrorsTest, key_move_bad_key) {
-    kbd::AutoType typer;
-    ASSERT_THROWS_OR_RETURNS(typer.key_move(kbd::Direction::Down, kbd::KeyCode::KeyCodeCount),
-                             std::invalid_argument, kbd::AutoTypeResult::BadArg);
-}
-
-TEST_F(AutoTypeErrorsTest, key_move_bad_utf_surrogate) {
-    kbd::AutoType typer;
-    ASSERT_THROWS_OR_RETURNS(typer.key_move(kbd::Direction::Down, 0xD801, std::nullopt),
-                             std::invalid_argument, kbd::AutoTypeResult::BadArg);
 }
 
 } // namespace keyboard_auto_type_test
