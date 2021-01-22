@@ -96,13 +96,15 @@ Suppose a user has an app with windows on several virtual desktops (spaces), for
 
 ### CMake
 
+In the following snippets `0.0.0` stands for the version you need, or a commit hash (where applicable). Replace it with the latest version that can be found in [Releases](http://github.com/antelle/keyboard-auto-type/releases/latest).
+
 ```cmake
 include(FetchContent)
 
 FetchContent_Declare(
     keyboard-auto-type
     GIT_REPOSITORY https://github.com/antelle/keyboard-auto-type.git
-    GIT_TAG        v1.0.0
+    GIT_TAG        0.0.0
 )
 
 FetchContent_MakeAvailable(keyboard-auto-type)
@@ -184,12 +186,14 @@ It's called by default in `text` method, you can use `set_auto_unpress_modifiers
 
 And finally, if you want to mess with underlying OS key codes, there's a way to do so:
 ```cpp
-// get a system key code, type varies per OS
+// get a system key code, type length varies per OS
+// keep in mind that zero is a valid key code, hence std::optional
+// not all keys exist on all operating systems
 auto key_code = typer.os_key_code(kbd::KeyCode::A)
 
 // using the current locale, find its key by character
 auto key = typer.os_key_code_for_char(character)
-// the result is not guaranteed to exist, so it's optional
+// the result is not guaranteed to exist, so it's std::optional
 // e.g. there's no key combination for "★"
 key->code     // key code that represents the character
 key->modifier // modifier required to get the desired result
