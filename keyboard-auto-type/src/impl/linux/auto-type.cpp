@@ -1,4 +1,6 @@
 #include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/extensions/XTest.h>
 
 #include <iostream>
@@ -8,28 +10,31 @@
 #include "key-map.h"
 #include "keyboard-auto-type.h"
 #include "utils.h"
+#include "x11-helpers.h"
 
 namespace keyboard_auto_type {
 
 class AutoType::AutoTypeImpl {
   private:
-    Display *display = XOpenDisplay(0);
+    Display *display_ = XOpenDisplay(0);
 
   public:
     ~AutoTypeImpl() {
-        if (display) {
-            XCloseDisplay(display);
+        if (display_) {
+            XCloseDisplay(display_);
         }
     }
+
+    Display *display() { return display_; }
 
     AutoTypeResult key_move(Direction direction, os_key_code_t code) {
         if (!code) {
             return throw_or_return(AutoTypeResult::BadArg, "Empty key code");
         }
-        if (!display) {
+        if (!display_) {
             return throw_or_return(AutoTypeResult::OsError, "Cannot open display");
         }
-        auto keycode = XKeysymToKeycode(display, code);
+        auto keycode = XKeysymToKeycode(display_, code);
         if (!keycode) {
             return throw_or_return(AutoTypeResult::BadArg,
                                    std::string("Bad key code: ") + std::to_string(code));
@@ -38,7 +43,7 @@ class AutoType::AutoTypeImpl {
         std::cout << "M" << (down ? '+' : '-') << " " << code << " => " << static_cast<int>(keycode)
                   << std::endl;
         // TODOL query if the extension is available
-        auto res = XTestFakeKeyEvent(display, keycode, down, CurrentTime);
+        auto res = XTestFakeKeyEvent(display_, keycode, down, CurrentTime);
         if (!res) {
             return throw_or_return(AutoTypeResult::OsError, "Failed to send an event");
         }
@@ -50,8 +55,8 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 
 AutoType::~AutoType() = default;
 
-AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
-                                  std::optional<os_key_code_t> code, Modifier modifier) {
+AutoTypeResult AutoType::key_move(Direction direction, char32_t, std::optional<os_key_code_t> code,
+                                  Modifier) {
     return impl_->key_move(direction, code.value_or(0));
 }
 
@@ -102,9 +107,29 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
 
 pid_t AutoType::active_pid() { return 0; }
 
-AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
-    return {};
-    // XGetInputFocus(display, &window, &revert);
+AppWindow AutoType::active_window(ActiveWindowArgs args) {
+    auto display = impl_->display();
+    if (!display) {
+        return {};
+    }
+
+    Window window = 0;
+    int revert;
+    if (!XGetInputFocus(display, &window, &revert) || !window || window == BadWindow) {
+        return {};
+    }
+
+    AppWindow result;
+    result.window_id = window;
+
+    if (args.get_window_title) {
+        result.title = x11_window_string_prop(display, window, "_NET_WM_NAME");
+        if (result.title.empty()) {
+            result.title = x11_window_string_prop(display, window, "WM_NAME");
+        }
+    }
+
+    return result;
 }
 
 bool AutoType::show_window(const AppWindow &window) {

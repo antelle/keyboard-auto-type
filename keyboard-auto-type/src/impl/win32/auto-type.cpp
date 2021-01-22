@@ -212,7 +212,7 @@ pid_t AutoType::active_pid() {
     return pid;
 }
 
-AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
+AppWindow AutoType::active_window(ActiveWindowArgs args) {
     auto hwnd = GetForegroundWindow();
     if (!hwnd) {
         return {};

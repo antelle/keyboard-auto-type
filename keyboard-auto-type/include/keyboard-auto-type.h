@@ -75,7 +75,7 @@ enum class AutoTypeResult {
 
 struct AppWindow {
     pid_t pid = 0;
-    void *window_id = nullptr;
+    uint64_t window_id = 0;
     std::string app_name;
     std::string title;
     std::string url;
@@ -136,9 +136,9 @@ class AutoType {
     std::vector<std::optional<KeyCodeWithModifiers>>
     os_key_codes_for_chars(std::u32string_view text);
 
-    static pid_t active_pid();
-    static AppWindow active_window(const ActiveWindowArgs &args = {});
-    static bool show_window(const AppWindow &window);
+    pid_t active_pid();
+    AppWindow active_window(ActiveWindowArgs args = {});
+    bool show_window(const AppWindow &window);
 };
 
 } // namespace keyboard_auto_type

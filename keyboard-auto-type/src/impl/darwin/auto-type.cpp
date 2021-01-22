@@ -233,7 +233,7 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
 
 pid_t AutoType::active_pid() { return native_frontmost_app_pid(); }
 
-AppWindow AutoType::active_window(const ActiveWindowArgs &args) {
+AppWindow AutoType::active_window(ActiveWindowArgs args) {
     auto app = native_frontmost_app();
     if (!app.pid) {
         return {};
