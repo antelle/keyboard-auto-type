@@ -53,13 +53,23 @@ if(APPLE)
         "-framework AppKit"
         "-framework ScriptingBridge"
     )
-endif()
-
-if(WIN32)
+elseif(WIN32)
     target_link_libraries(${PROJECT_NAME}
         PRIVATE
         "Shlwapi.lib"
     )
+else()
+    include(FindX11)
+    if(X11_FOUND)
+        include_directories(${X11_INCLUDE_DIR})
+        target_link_libraries(${PROJECT_NAME}
+            PRIVATE
+            ${X11_LIBRARIES}
+            Xtst
+        )
+    else()
+        message(FATAL_ERROR "X11 is not found, please install xorg-dev")
+    endif()
 endif()
 
 if(WIN32)

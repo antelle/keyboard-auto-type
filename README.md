@@ -322,6 +322,8 @@ You will need:
 - [clang-tidy and clang-format](https://llvm.org/)
 - [cppcheck](http://cppcheck.sourceforge.net/)
 
+On linux, install `xorg-dev` package.
+
 `Makefile` is provided as a convenience measure to launch `cmake` commands. There's nothing important there, however using it is easier than typing commands. If you're familiar with CMake, you can build without `make` if you prefer.
 
 Build the library:
