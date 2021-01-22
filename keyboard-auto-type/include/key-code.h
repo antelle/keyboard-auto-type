@@ -3,6 +3,10 @@
 
 namespace keyboard_auto_type {
 
+// Cross-platform key codes
+// Similar to:
+// https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
+
 enum class KeyCode {
     Undefined,
 
@@ -148,7 +152,6 @@ enum class KeyCode {
     Escape,
     ForwardDelete,
     Help,
-    ISO_Section,
     Mute,
     PrintScreen,
     Snapshot = PrintScreen,

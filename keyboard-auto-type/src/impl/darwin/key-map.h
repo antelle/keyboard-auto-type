@@ -4,6 +4,6 @@
 
 namespace keyboard_auto_type {
 
-uint16_t map_key_code(KeyCode code);
+os_key_code_t map_key_code(KeyCode code);
 
 } // namespace keyboard_auto_type

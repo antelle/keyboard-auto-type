@@ -6,7 +6,7 @@
 
 namespace keyboard_auto_type {
 
-constexpr std::array<uint16_t, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
+constexpr std::array<os_key_code_t, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     0,
 
     // numbers
@@ -54,7 +54,7 @@ constexpr std::array<uint16_t, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_M
 
     // actions
     0, // ContextMenu
-    kVK_Delete, kVK_Escape, kVK_ForwardDelete, kVK_Help, kVK_ISO_Section, kVK_Mute,
+    kVK_Delete, kVK_Escape, kVK_ForwardDelete, kVK_Help, kVK_Mute,
     0, // PrintScreen
     kVK_Return, kVK_Space, kVK_Tab, kVK_VolumeDown, kVK_VolumeUp,
     0, // ControlBreak
@@ -62,7 +62,7 @@ constexpr std::array<uint16_t, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_M
     0, // Sleep
 };
 
-uint16_t map_key_code(KeyCode code) {
+os_key_code_t map_key_code(KeyCode code) {
     auto code_byte = static_cast<uint8_t>(code);
     if (code_byte >= KEY_MAP.size()) {
         return 0;

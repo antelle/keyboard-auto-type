@@ -13,8 +13,13 @@
 
 namespace keyboard_auto_type {
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if __APPLE__
+using os_key_code_t = uint16_t;
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 using pid_t = unsigned long;
+using os_key_code_t = uint16_t;
+#else
+using os_key_code_t = uint32_t;
 #endif
 
 enum class Modifier : uint8_t {
@@ -82,7 +87,7 @@ struct ActiveWindowArgs {
 };
 
 struct KeyCodeWithModifiers {
-    uint16_t code;
+    os_key_code_t code;
     Modifier modifier;
 };
 
@@ -123,10 +128,10 @@ class AutoType {
 
     AutoTypeResult key_move(Direction direction, KeyCode code, Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);
-    AutoTypeResult key_move(Direction direction, char32_t character, std::optional<uint16_t> code,
-                            Modifier modifier = Modifier::None);
+    AutoTypeResult key_move(Direction direction, char32_t character,
+                            std::optional<os_key_code_t> code, Modifier modifier = Modifier::None);
 
-    std::optional<uint16_t> os_key_code(KeyCode code);
+    std::optional<os_key_code_t> os_key_code(KeyCode code);
     std::optional<KeyCodeWithModifiers> os_key_code_for_char(char32_t character);
     std::vector<std::optional<KeyCodeWithModifiers>>
     os_key_codes_for_chars(std::u32string_view text);

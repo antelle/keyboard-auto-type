@@ -4,6 +4,8 @@
 
 namespace keyboard_auto_type {
 
+// https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+
 constexpr std::array<BYTE, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     0,
 
@@ -140,7 +142,6 @@ constexpr std::array<BYTE, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     VK_ESCAPE,
     VK_DELETE, // ForwardDelete
     VK_HELP,
-    0, // ISO_Section
     VK_VOLUME_MUTE,
     VK_SNAPSHOT, // PrintScreen
     VK_RETURN,
