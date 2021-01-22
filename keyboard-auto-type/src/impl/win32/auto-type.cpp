@@ -222,7 +222,7 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
     GetWindowThreadProcessId(hwnd, &pid);
 
     AppWindow result{};
-    result.window_id = hwnd;
+    result.window_id = HandleToULong(hwnd);
     result.pid = pid;
 
     result.app_name = native_process_main_module_name(pid);
@@ -271,7 +271,8 @@ bool AutoType::show_window(const AppWindow &window) {
         AllowSetForegroundWindow(ASFW_ANY);
     }
 
-    auto result = SetForegroundWindow(static_cast<HWND>(window.window_id));
+    auto result = SetForegroundWindow(static_cast<HWND>(
+        ULongToHandle(static_cast<unsigned long>(window.window_id)))); // NOLINT(google-runtime-int)
 
     if (current_thread_id != win_thread_id) {
         DWORD lock_timeout = 0;
