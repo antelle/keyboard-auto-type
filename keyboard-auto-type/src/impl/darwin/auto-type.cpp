@@ -258,8 +258,7 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
             }
             // std::cout << cfstring_to_string(CFCopyDescription(window)) << std::endl;
 
-            result.window_id =
-                reinterpret_cast<void *>(get_number_from_dictionary(window, kCGWindowNumber));
+            result.window_id = get_number_from_dictionary(window, kCGWindowNumber);
             if (args.get_window_title) {
                 result.title = get_string_from_dictionary(window, kCGWindowName);
             }
