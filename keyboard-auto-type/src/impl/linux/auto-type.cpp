@@ -11,6 +11,7 @@
 #include "keyboard-auto-type.h"
 #include "utils.h"
 #include "x11-helpers.h"
+#include "x11-keysym-map.h"
 
 namespace keyboard_auto_type {
 
@@ -95,23 +96,13 @@ std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
 }
 
 std::optional<KeyCodeWithModifiers> AutoType::os_key_code_for_char(char32_t character) {
-    if (character == U'e') {
-        KeyCodeWithModifiers kc{};
-        kc.code = map_key_code(KeyCode::E);
-        return kc;
+    auto keysym = char_to_keysym(character);
+    if (!keysym) {
+        return std::nullopt;
     }
-    if (character == U'H') {
-        KeyCodeWithModifiers kc{};
-        kc.code = map_key_code(KeyCode::H);
-        kc.modifier = Modifier::Shift;
-        return kc;
-    }
-    if (character == U'y') {
-        KeyCodeWithModifiers kc{};
-        kc.code = map_key_code(KeyCode::Y);
-        return kc;
-    }
-    return std::nullopt;
+    KeyCodeWithModifiers kc{};
+    kc.code = keysym;
+    return kc;
 }
 
 std::vector<std::optional<KeyCodeWithModifiers>>
