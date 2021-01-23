@@ -36,9 +36,11 @@ else()
     set(PLATFORM_SOURCES
         "src/impl/linux/key-map.h"
         "src/impl/linux/x11-helpers.h"
+        "src/impl/linux/x11-keysym-map.h"
         "src/impl/linux/auto-type.cpp"
         "src/impl/linux/key-map.cpp"
         "src/impl/linux/x11-helpers.cpp"
+        "src/impl/linux/x11-keysym-map.cpp"
     )
 endif()
 
