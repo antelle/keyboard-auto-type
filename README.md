@@ -268,10 +268,10 @@ By default, if exception support is enabled, auto-type methods can throw an exce
 
 All functions return `AutoTypeResult`. If it's not `AutoTypeResult::Ok`, there are following errors possible:
 
-- `AutoTypeResult::BadArg`: bad argument
+- `AutoTypeResult::BadArg`: bad argument, for example, this key code is not supported
 - `AutoTypeResult::ModifierNotReleased`: the user is holding a modifier key, simulating keystrokes in this state can have unexpected consequences
 - `AutoTypeResult::KeyPressFailed`: we have sent a keypress event, however it didn't have any effect
-- `AutoTypeResult::NotSupported`: the given key code is not supported on this operating system
+- `AutoTypeResult::NotSupported`: auto-typing is not supported on this operating system
 - `AutoTypeResult::OsError`: opereating system reported an error during simulating keyboard input
 
 ## Window management

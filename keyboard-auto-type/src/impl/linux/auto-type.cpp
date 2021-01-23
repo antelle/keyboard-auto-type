@@ -16,7 +16,8 @@ namespace keyboard_auto_type {
 
 class AutoType::AutoTypeImpl {
   private:
-    Display *display_;
+    Display *display_ = nullptr;
+    std::optional<bool> is_supported_;
 
   public:
     ~AutoTypeImpl() {
@@ -32,9 +33,23 @@ class AutoType::AutoTypeImpl {
         return display_;
     }
 
+    bool is_supported() {
+        if (display()) {
+            int i = 0;
+            is_supported_ = XTestQueryExtension(display(), &i, &i, &i, &i) &&
+                            XkbQueryExtension(display(), &i, &i, &i, &i, &i);
+        } else {
+            is_supported_ = false;
+        }
+        return is_supported_.value();
+    }
+
     AutoTypeResult key_move(Direction direction, os_key_code_t code) {
         if (!code) {
             return throw_or_return(AutoTypeResult::BadArg, "Empty key code");
+        }
+        if (!is_supported()) {
+            return throw_or_return(AutoTypeResult::NotSupported, "Not supported");
         }
         if (!display_) {
             return throw_or_return(AutoTypeResult::OsError, "Cannot open display");
@@ -47,7 +62,6 @@ class AutoType::AutoTypeImpl {
         auto down = direction == Direction::Down;
         std::cout << "M" << (down ? '+' : '-') << " " << code << " => " << static_cast<int>(keycode)
                   << std::endl;
-        // TODOL query if the extension is available
         auto res = XTestFakeKeyEvent(display_, keycode, down, CurrentTime);
         if (!res) {
             return throw_or_return(AutoTypeResult::OsError, "Failed to send an event");
