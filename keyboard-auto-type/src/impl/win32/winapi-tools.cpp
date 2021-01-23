@@ -21,9 +21,7 @@ std::string winapi_to_string(LPCWSTR api_str) {
     return std::string(chars.data());
 }
 
-bool includes_case_insensitive(std::string_view str, std::string_view search) {
-    return StrStrIA(str.data(), search.data());
-}
+bool includes_case_insensitive(LPCSTR str, LPCSTR search) { return StrStrIA(str, search); }
 
 std::string native_window_text(HWND hwnd) {
     auto length = GetWindowTextLength(hwnd);

@@ -232,7 +232,7 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
     if (args.get_browser_url) {
         auto is_browser = std::any_of(BROWSER_PROCESS_NAMES.begin(), BROWSER_PROCESS_NAMES.end(),
                                       [&app_name = result.app_name](auto name) {
-                                          return includes_case_insensitive(app_name, name);
+                                          return includes_case_insensitive(app_name.c_str(), name);
                                       });
         if (!is_browser) {
             std::array<char, BROWSER_WINDOW_CLASS.size() + 1> window_class_name{};
