@@ -61,8 +61,6 @@ class AutoType::AutoTypeImpl {
                                    std::string("Bad key code: ") + std::to_string(code));
         }
         auto down = direction == Direction::Down;
-        std::cout << "M" << (down ? '+' : '-') << " " << code << " => " << static_cast<int>(keycode)
-                  << std::endl;
         auto res = XTestFakeKeyEvent(display_, keycode, down, CurrentTime);
         if (!res) {
             return throw_or_return(AutoTypeResult::OsError, "Failed to send an event");

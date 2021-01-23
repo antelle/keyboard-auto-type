@@ -124,7 +124,7 @@ function printSymbolMap({ plus1M, mapped }) {
 function generateCode(template, mapped, special) {
     const charMap16Code = [...mapped]
         .sort(([cp1], [cp2]) => cp1 - cp2)
-        .map(([codePoint, keySym]) => `0x${wordHex(codePoint)}'${wordHex(keySym)}`)
+        .map(([codePoint, keySym]) => `0x${wordHex(codePoint)}'${wordHex(keySym)}U`)
         .join(', ');
     let result = template.replace(/CHAR_MAP_16\s*\{[\s\S]*?\}/, () => {
         found = true;
@@ -136,7 +136,7 @@ function generateCode(template, mapped, special) {
 
     const charMap32Code = [...special]
         .sort(([cp1], [cp2]) => cp1 - cp2)
-        .map(([codePoint, keySym]) => `0x${dwordHex(codePoint)}'${dwordHex(keySym)}`)
+        .map(([codePoint, keySym]) => `0x${dwordHex(codePoint)}'${dwordHex(keySym)}U`)
         .join(', ');
     result = result.replace(/CHAR_MAP_32\s*\{[\s\S]*?\}/, () => {
         found = true;
