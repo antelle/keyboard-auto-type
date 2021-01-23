@@ -9,6 +9,9 @@
 
 namespace keyboard_auto_type {
 
-std::string x11_window_string_prop(Display *display, Window window, std::string_view prop);
+std::string x11_window_prop_string(Display *display, Window window, const char *prop);
+unsigned long x11_window_prop_ulong(Display *display, Window window, const char *prop);
+std::string x11_window_prop_app_cls(Display *display, Window window);
+Window x11_get_active_window(Display *display);
 
 } // namespace keyboard_auto_type

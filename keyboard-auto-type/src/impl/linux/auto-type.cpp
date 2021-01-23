@@ -16,7 +16,7 @@ namespace keyboard_auto_type {
 
 class AutoType::AutoTypeImpl {
   private:
-    Display *display_ = XOpenDisplay(0);
+    Display *display_;
 
   public:
     ~AutoTypeImpl() {
@@ -25,7 +25,12 @@ class AutoType::AutoTypeImpl {
         }
     }
 
-    Display *display() { return display_; }
+    Display *display() {
+        if (!display_) {
+            display_ = XOpenDisplay(0);
+        }
+        return display_;
+    }
 
     AutoTypeResult key_move(Direction direction, os_key_code_t code) {
         if (!code) {
@@ -105,7 +110,19 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
     return result;
 }
 
-pid_t AutoType::active_pid() { return 0; }
+pid_t AutoType::active_pid() {
+    auto display = impl_->display();
+    if (!display) {
+        return {};
+    }
+
+    Window window = x11_get_active_window(display);
+    if (!window) {
+        return {};
+    }
+
+    return static_cast<pid_t>(x11_window_prop_ulong(display, window, "_NET_WM_PID"));
+}
 
 AppWindow AutoType::active_window(ActiveWindowArgs args) {
     auto display = impl_->display();
@@ -113,19 +130,20 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
         return {};
     }
 
-    Window window = 0;
-    int revert;
-    if (!XGetInputFocus(display, &window, &revert) || !window || window == BadWindow) {
+    Window window = x11_get_active_window(display);
+    if (!window) {
         return {};
     }
 
-    AppWindow result;
+    AppWindow result{};
     result.window_id = window;
+    result.pid = static_cast<pid_t>(x11_window_prop_ulong(display, window, "_NET_WM_PID"));
+    result.app_name = x11_window_prop_app_cls(display, window);
 
     if (args.get_window_title) {
-        result.title = x11_window_string_prop(display, window, "_NET_WM_NAME");
+        result.title = x11_window_prop_string(display, window, "_NET_WM_NAME");
         if (result.title.empty()) {
-            result.title = x11_window_string_prop(display, window, "WM_NAME");
+            result.title = x11_window_prop_string(display, window, "WM_NAME");
         }
     }
 

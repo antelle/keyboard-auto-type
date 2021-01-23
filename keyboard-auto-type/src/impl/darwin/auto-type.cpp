@@ -274,8 +274,8 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
     }
 
     if (args.get_browser_url && !app.bundle_id.empty()) {
-        bool is_browser =
-            std::find(BROWSER_APP_BUNDLE_IDS.begin(), BROWSER_APP_BUNDLE_IDS.end(), app.bundle_id);
+        bool is_browser = std::find(BROWSER_APP_BUNDLE_IDS.begin(), BROWSER_APP_BUNDLE_IDS.end(),
+                                    app.bundle_id) != BROWSER_APP_BUNDLE_IDS.end();
         if (is_browser) {
             auto native_win_info = native_window_info(app.pid);
             if (args.get_window_title && result.title.empty() && !native_win_info.title.empty()) {
