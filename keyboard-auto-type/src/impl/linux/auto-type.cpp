@@ -16,13 +16,13 @@
 
 namespace keyboard_auto_type {
 
+struct KeyCodeWithShiftLevel {
+    int key_code;
+    int shift_level;
+};
+
 class AutoType::AutoTypeImpl {
   private:
-    struct KeyCodeWithShiftLevel {
-        int key_code;
-        int shift_level;
-    };
-
     Display *display_ = nullptr;
     std::optional<bool> is_supported_;
     std::optional<uint8_t> active_layout_;
@@ -122,6 +122,28 @@ class AutoType::AutoTypeImpl {
 
         XkbFreeKeyboard(kbd, kbd_components, True);
     }
+
+    std::optional<KeyCodeWithShiftLevel> key_code_from_layout(KeySym key_sym) {
+        auto found = keyboard_layout_.find(key_sym);
+        if (found == keyboard_layout_.end()) {
+            return std::nullopt;
+        }
+        return found->second;
+    }
+
+    std::optional<KeyCodeWithModifiers> os_key_code_from_char(char32_t character) {
+        auto key_sym = char_to_keysym(character);
+        if (!key_sym) {
+            return std::nullopt;
+        }
+        KeyCodeWithModifiers kc{};
+        kc.code = key_sym;
+        auto layout_key = key_code_from_layout(key_sym);
+        if (layout_key.has_value() && layout_key->shift_level) {
+            kc.modifier = Modifier::Shift;
+        }
+        return kc;
+    }
 };
 
 AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
@@ -156,13 +178,7 @@ std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
 
 std::optional<KeyCodeWithModifiers> AutoType::os_key_code_for_char(char32_t character) {
     impl_->read_keyboard_layout();
-    auto keysym = char_to_keysym(character);
-    if (!keysym) {
-        return std::nullopt;
-    }
-    KeyCodeWithModifiers kc{};
-    kc.code = keysym;
-    return kc;
+    return impl_->os_key_code_from_char(character);
 }
 
 std::vector<std::optional<KeyCodeWithModifiers>>
@@ -171,12 +187,7 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
     std::vector<std::optional<KeyCodeWithModifiers>> result(text.length());
     auto length = text.length();
     for (size_t i = 0; i < length; i++) {
-        auto keysym = char_to_keysym(text[i]);
-        if (keysym) {
-            KeyCodeWithModifiers kc{};
-            kc.code = keysym;
-            result[i] = kc;
-        }
+        result[i] = impl_->os_key_code_from_char(text[i]);
     }
     return result;
 }
