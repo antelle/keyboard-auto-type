@@ -32,7 +32,7 @@ constexpr std::array KEY_CHECK_CODES{
     std::make_pair(kVK_RightControl, kVK_Control),
 };
 
-static constexpr std::array EVENT_FLAGS_MODIFIERS{
+constexpr std::array EVENT_FLAGS_MODIFIERS{
     std::make_pair(static_cast<uint64_t>(NX_COMMANDMASK), Modifier::Command),
     std::make_pair(static_cast<uint64_t>(NX_DEVICERCMDKEYMASK), Modifier::RightCommand),
     std::make_pair(static_cast<uint64_t>(NX_DEVICELCMDKEYMASK), Modifier::LeftCommand),

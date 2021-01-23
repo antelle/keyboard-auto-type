@@ -9,7 +9,7 @@ namespace keyboard_auto_type {
 // Format: 0xXXXX'YYYYU where
 //    XXXX = Unicode code point
 //    YYYY = KeySym
-static constexpr std::array CHAR_MAP_16{
+constexpr std::array CHAR_MAP_16{
     0x0020'0020U, 0x0021'0021U, 0x0022'0022U, 0x0023'0023U, 0x0024'0024U, 0x0025'0025U,
     0x0026'0026U, 0x0027'0027U, 0x0028'0028U, 0x0029'0029U, 0x002a'002aU, 0x002b'002bU,
     0x002c'002cU, 0x002d'002dU, 0x002e'0abdU, 0x002f'002fU, 0x0030'0030U, 0x0031'0031U,
@@ -172,7 +172,7 @@ static constexpr std::array CHAR_MAP_16{
 // Format: 0xXXXXXXXX'YYYYYYYYU where
 //    XXXXXXXX = Unicode code point
 //    YYYYYYYY = KeySym
-static constexpr std::array CHAR_MAP_32{0x00002245'01002248U};
+constexpr std::array CHAR_MAP_32{0x00002245'01002248U};
 
 constexpr auto MIN_CHAR_IN_CHAR_MAP_16 = CHAR_MAP_16.front() >> 16;
 constexpr auto MAX_CHAR_IN_CHAR_MAP_16 = CHAR_MAP_16.back() >> 16;

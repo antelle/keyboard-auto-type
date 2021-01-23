@@ -15,7 +15,7 @@ namespace keyboard_auto_type {
 constexpr std::array BROWSER_PROCESS_NAMES{
     "chrome", "firefox", "opera", "browser", "applicationframehost", "iexplore", "edge"};
 constexpr std::string_view BROWSER_WINDOW_CLASS = "Chrome_WidgetWin_1";
-static constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
+constexpr SHORT SHORT_MSB = static_cast<SHORT>(0b10000000'00000000);
 
 class AutoType::AutoTypeImpl {
   private:
