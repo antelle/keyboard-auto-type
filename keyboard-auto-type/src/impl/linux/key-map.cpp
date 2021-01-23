@@ -35,11 +35,12 @@ constexpr std::array<os_key_code_t, static_cast<size_t>(KeyCode::KeyCodeCount)> 
     XK_braceright, XK_semicolon, XK_slash,
 
     // modifiers
-    XK_Meta_L, // or is it XK_Super_L?
+    XK_Super_L, // Meta
     XK_Control_L,
     0, // Function
-    XK_Alt_L, XK_Shift_L, XK_Meta_R, XK_Control_R, XK_Alt_R, XK_Shift_R, XK_Caps_Lock, XK_Num_Lock,
-    XK_Scroll_Lock,
+    XK_Alt_L, XK_Shift_L,
+    XK_Super_R, // RightMeta
+    XK_Control_R, XK_Alt_R, XK_Shift_R, XK_Caps_Lock, XK_Num_Lock, XK_Scroll_Lock,
 
     // arrows
     XK_Down, XK_Left, XK_Right, XK_Up,
