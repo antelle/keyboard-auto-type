@@ -180,7 +180,7 @@ class AutoType::AutoTypeImpl {
         XFree(layout_name);
 #endif
 
-        for (auto key_code = kbd->min_key_code; key_code <= kbd->max_key_code; key_code++) {
+        for (uint16_t key_code = kbd->min_key_code; key_code <= kbd->max_key_code; key_code++) {
             if (key_code == empty_key_code_) {
                 continue;
             }
