@@ -19,18 +19,15 @@
 
 namespace keyboard_auto_type {
 
-struct KeyCodeWithShiftLevel {
+struct KeyCodeWithMask {
     uint8_t key_code = 0;
     uint8_t group = 0;
-    uint8_t shift_level = 0;
+    uint8_t mod_mask = 0;
 };
 
-constexpr std::array SHIFT_LEVELS_MODIFIERS = {
+constexpr std::array SHIFT_LEVELS_MODIFIERS{
     std::make_pair(ShiftMask, Modifier::Shift),
-    std::make_pair(LockMask, Modifier::Alt),
 };
-
-static constexpr auto MAX_SHIFT_LEVELS_COUNT = static_cast<uint8_t>((ShiftMask | LockMask) + 1);
 
 static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(200);
 
@@ -39,7 +36,7 @@ class AutoType::AutoTypeImpl {
     Display *display_ = nullptr;
     std::optional<bool> is_supported_;
     std::optional<uint8_t> active_keyboard_group_; // aka "layout" or "input language"
-    std::unordered_map<KeySym, KeyCodeWithShiftLevel> keyboard_layout_ = {};
+    std::unordered_map<KeySym, KeyCodeWithMask> keyboard_layout_ = {};
     uint8_t empty_key_code_ = 0xcc; // for debugging! revert me
     KeySym empty_key_code_key_sym_ = 0;
     bool in_batch_text_entry_ = false;
@@ -92,7 +89,7 @@ class AutoType::AutoTypeImpl {
         }
 
         auto layout_entry = keyboard_layout_.find(code);
-        KeyCodeWithShiftLevel key{};
+        KeyCodeWithMask key{};
         if (layout_entry == keyboard_layout_.end()) {
             if (XKeysymToString(code)) {
                 key = add_extra_key_mapping(code);
@@ -114,9 +111,16 @@ class AutoType::AutoTypeImpl {
                 return throw_or_return(AutoTypeResult::OsError, "Failed to change keyboard layout");
             }
         }
-        if (key.shift_level) {
-            if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.shift_level, 1)) {
-                return throw_or_return(AutoTypeResult::OsError, "Failed to lock modifiers");
+        XkbStateRec kbd_state{};
+        if (key.mod_mask) {
+            if (XkbGetState(display(), XkbModifierLockMask, &kbd_state)) {
+                return throw_or_return(AutoTypeResult::OsError,
+                                       "Failed to get lock modifiers state");
+            }
+            if (kbd_state.locked_mods != key.mod_mask) {
+                if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.mod_mask, key.mod_mask)) {
+                    return throw_or_return(AutoTypeResult::OsError, "Failed to lock modifiers");
+                }
             }
         }
 
@@ -124,8 +128,9 @@ class AutoType::AutoTypeImpl {
             return throw_or_return(AutoTypeResult::OsError, "Failed to send key event");
         }
 
-        if (key.shift_level) {
-            if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.shift_level, 0)) {
+        if (key.mod_mask && kbd_state.locked_mods != key.mod_mask) {
+            if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.mod_mask,
+                                  kbd_state.locked_mods)) {
                 return throw_or_return(AutoTypeResult::OsError, "Failed to unlock modifiers");
             }
         }
@@ -170,7 +175,16 @@ class AutoType::AutoTypeImpl {
             auto is_empty = true;
             for (auto group = 0; group < key_groups_num; group++) {
                 auto shift_levels_count = XkbKeyGroupWidth(kbd, key_code, group);
-                shift_levels_count = std::min(shift_levels_count, MAX_SHIFT_LEVELS_COUNT);
+                if (shift_levels_count > 1) {
+                    auto key_type = XkbKeyKeyType(kbd, key_code, group);
+                    if (key_type->map_count > 0 && key_type->map[0].mods.mask == ShiftMask) {
+                        // for most of keys we consider two states
+                        shift_levels_count = 2;
+                    } else {
+                        // all other modifiers are ignored for now
+                        shift_levels_count = 1;
+                    }
+                }
                 for (auto shift_level = 0; shift_level < shift_levels_count; shift_level++) {
                     auto sym = XkbKeySymEntry(kbd, key_code, shift_level, group);
                     if (sym) {
@@ -186,11 +200,13 @@ class AutoType::AutoTypeImpl {
                                 continue;
                             }
                         }
-                        KeyCodeWithShiftLevel key_code_with_shift_level{};
-                        key_code_with_shift_level.key_code = key_code;
-                        key_code_with_shift_level.group = group;
-                        key_code_with_shift_level.shift_level = shift_level;
-                        keyboard_layout_.insert_or_assign(sym, key_code_with_shift_level);
+                        KeyCodeWithMask kc{};
+                        kc.key_code = key_code;
+                        kc.group = group;
+                        if (shift_level > 0) {
+                            kc.mod_mask = ShiftMask;
+                        }
+                        keyboard_layout_.insert_or_assign(sym, kc);
                     }
                     if (sym) {
                         is_empty = false;
@@ -207,7 +223,7 @@ class AutoType::AutoTypeImpl {
         XkbFreeKeyboard(kbd, kbd_components, True);
     }
 
-    KeyCodeWithShiftLevel add_extra_key_mapping(KeySym key_sym) {
+    KeyCodeWithMask add_extra_key_mapping(KeySym key_sym) {
         if (!empty_key_code_) {
             return {};
         }
@@ -222,7 +238,7 @@ class AutoType::AutoTypeImpl {
             wait_for_key_mapping_propagation();
         }
 
-        KeyCodeWithShiftLevel key{};
+        KeyCodeWithMask key{};
         key.key_code = empty_key_code_;
 
         KeySym key_sym_lower = 0;
@@ -230,7 +246,7 @@ class AutoType::AutoTypeImpl {
         XConvertCase(key_sym, &key_sym_lower, &key_sym_upper);
 
         if (key_sym_lower != key_sym && key_sym_upper == key_sym) {
-            key.shift_level = ShiftMask;
+            key.mod_mask = ShiftMask;
         }
 
         empty_key_code_key_sym_ = key_sym;
@@ -261,7 +277,7 @@ class AutoType::AutoTypeImpl {
         std::this_thread::sleep_for(KEY_MAPPING_PROPAGATION_DELAY);
     }
 
-    std::optional<KeyCodeWithShiftLevel> key_code_from_layout(KeySym key_sym) {
+    std::optional<KeyCodeWithMask> key_code_from_layout(KeySym key_sym) {
         auto found = keyboard_layout_.find(key_sym);
         if (found == keyboard_layout_.end()) {
             return std::nullopt;
@@ -277,10 +293,10 @@ class AutoType::AutoTypeImpl {
         KeyCodeWithModifiers kc{};
         kc.code = key_sym;
         auto layout_key = key_code_from_layout(key_sym);
-        auto shift_level = layout_key.has_value() ? layout_key->shift_level : 0;
-        if (shift_level) {
+        auto mod_mask = layout_key.has_value() ? layout_key->mod_mask : 0;
+        if (mod_mask) {
             for (auto [mask, modifier] : SHIFT_LEVELS_MODIFIERS) {
-                if (shift_level & mask) {
+                if (mod_mask & mask) {
                     kc.modifier = kc.modifier | modifier;
                 }
             }

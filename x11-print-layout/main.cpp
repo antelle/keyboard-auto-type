@@ -45,13 +45,38 @@ int main() {
                       << std::endl;
             for (auto shift_level = 0; shift_level < shift_levels_count; shift_level++) {
                 auto sym = XkbKeySymEntry(kbd, key_code, shift_level, group);
-                std::cout << "    Shift level " << static_cast<int>(shift_level) << ": 0x"
-                          << static_cast<int>(sym);
+                std::cout << "    Shift level " << static_cast<int>(shift_level) << " ("
+                          << atom_str(key_type->level_names[shift_level]) << ")"
+                          << ": 0x" << static_cast<int>(sym);
                 if (sym) {
                     std::cout << " (XK_" << XKeysymToString(sym) << ")";
                 }
                 std::cout << std::endl;
             }
+            std::cout << "  Modifiers: ";
+            for (auto i = 0; i < key_type->map_count; i++) {
+                auto map_item = key_type->map[i];
+                if (i > 0) {
+                    std::cout << ", ";
+                }
+                std::cout << std::hex << "R" << static_cast<int>(map_item.mods.real_mods) << "V"
+                          << static_cast<int>(map_item.mods.vmods) << "M"
+                          << static_cast<int>(map_item.mods.mask) << " => L"
+                          << static_cast<int>(map_item.level);
+                if (!map_item.active) {
+                    std::cout << " (inactive)";
+                }
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    std::cout << std::endl << "Virtual modifiers" << std::endl;
+    for (auto i = 0; i < 16; i++) {
+        auto vmod = kbd->server->vmods[i];
+        auto name = kbd->names->vmods[i];
+        if (vmod) {
+            std::cout << "  " << atom_str(name) << ": " << static_cast<int>(vmod) << std::endl;
         }
     }
 
