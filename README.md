@@ -38,8 +38,8 @@ The library is WIP, so the API is not stable now. Tests may be not complete, but
 
 |                                                           | macOS                      | Windows                    | Linux              |
 |-----------------------------------------------------------|----------------------------|----------------------------|--------------------|
-| [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
+| [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :x:                |
+| [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :x:                |
 | [Layout-aware text entry](#layout-aware-text-entry)       | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :x:                |
 | [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
