@@ -2,10 +2,11 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XTest.h>
-#include <unistd.h>
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
+#include <thread>
 #include <vector>
 
 // #define KEYBOART_AUTO_TYPE_DEBUG_LAYOUTS
@@ -38,6 +39,8 @@ constexpr std::array SHIFT_LEVELS_MODIFIERS = {
 
 static constexpr auto MAX_SHIFT_LEVELS_COUNT =
     static_cast<uint8_t>((ShiftMask | LockMask | ControlMask) + 1);
+
+static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(200);
 
 class AutoType::AutoTypeImpl {
   private:
@@ -293,7 +296,7 @@ class AutoType::AutoTypeImpl {
         // 1. between adding a new key mapping and its usage
         // 2. after using and before removing a key mapping
         // We need this delay to make sure the target app has processesed the remapping event
-        usleep(200'000);
+        std::this_thread::sleep_for(KEY_MAPPING_PROPAGATION_DELAY);
     }
 
     std::optional<KeyCodeWithShiftLevel> key_code_from_layout(KeySym key_sym) {
