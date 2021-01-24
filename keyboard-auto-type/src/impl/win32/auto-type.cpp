@@ -283,4 +283,6 @@ bool AutoType::show_window(const AppWindow &window) {
     return result;
 }
 
+AutoTypeTextTransaction AutoType::begin_batch_text_entry() { return AutoTypeTextTransaction(); }
+
 } // namespace keyboard_auto_type

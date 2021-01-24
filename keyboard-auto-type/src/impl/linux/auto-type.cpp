@@ -43,10 +43,11 @@ class AutoType::AutoTypeImpl {
   private:
     Display *display_ = nullptr;
     std::optional<bool> is_supported_;
-    std::optional<uint8_t> active_keyboard_group_;
+    std::optional<uint8_t> active_keyboard_group_; // aka "layout" or "input language"
     std::unordered_map<KeySym, KeyCodeWithShiftLevel> keyboard_layout_ = {};
     uint8_t empty_key_code_ = 0xcc; // for debugging! revert me
     KeySym empty_key_code_key_sym_ = 0;
+    bool in_batch_text_entry_ = false;
 #ifdef KEYBOART_AUTO_TYPE_DEBUG_LAYOUTS
     std::ofstream layout_fs = std::ofstream("tmp/layout.txt");
 #endif
@@ -91,7 +92,9 @@ class AutoType::AutoTypeImpl {
             return throw_or_return(AutoTypeResult::OsError, "Cannot open display");
         }
 
-        read_keyboard_layout();
+        if (!in_batch_text_entry_) {
+            read_keyboard_layout();
+        }
         if (!active_keyboard_group_.has_value()) {
             return throw_or_return(AutoTypeResult::OsError, "Keyboard layout was not read");
         }
@@ -185,17 +188,8 @@ class AutoType::AutoTypeImpl {
             layout_fs << "Key 0x" << std::hex << static_cast<int>(key_code) << std::endl;
             layout_fs << "  key_groups_num=" << key_groups_num << std::endl;
 #endif
-            std::vector<uint8_t> sorted_key_groups;
-            if (active_group < key_groups_num) {
-                sorted_key_groups.push_back(active_group);
-            }
-            for (auto gr = 0; gr < key_groups_num; gr++) {
-                if (gr != active_group) {
-                    sorted_key_groups.push_back(gr);
-                }
-            }
             auto is_empty = true;
-            for (auto group : sorted_key_groups) {
+            for (auto group = 0; group < key_groups_num; group++) {
                 auto shift_levels_count = XkbKeyGroupWidth(kbd, key_code, group);
 #ifdef KEYBOART_AUTO_TYPE_DEBUG_LAYOUTS
                 auto kt = XkbKeyKeyType(kbd, key_code, group);
@@ -274,6 +268,8 @@ class AutoType::AutoTypeImpl {
             key.shift_level = ShiftMask;
         }
 
+        empty_key_code_key_sym_ = key_sym;
+
         return key;
     }
 
@@ -281,13 +277,24 @@ class AutoType::AutoTypeImpl {
         if (!empty_key_code_ || !empty_key_code_key_sym_) {
             return;
         }
+
+        // The key has been just used, let the app process it
         wait_for_key_mapping_propagation();
+
         KeySym key_sym[] = {0};
         XChangeKeyboardMapping(display(), empty_key_code_, 1, key_sym, 1);
         XSync(display(), False);
+
+        empty_key_code_key_sym_ = 0;
     }
 
-    void wait_for_key_mapping_propagation() { usleep(300'000); }
+    void wait_for_key_mapping_propagation() {
+        // This is called:
+        // 1. between adding a new key mapping and its usage
+        // 2. after using and before removing a key mapping
+        // We need this delay to make sure the target app has processesed the remapping event
+        usleep(200'000);
+    }
 
     std::optional<KeyCodeWithShiftLevel> key_code_from_layout(KeySym key_sym) {
         auto found = keyboard_layout_.find(key_sym);
@@ -314,6 +321,14 @@ class AutoType::AutoTypeImpl {
             }
         }
         return kc;
+    }
+
+    [[nodiscard]] AutoTypeTextTransaction begin_batch_text_entry() {
+        in_batch_text_entry_ = true;
+        return AutoTypeTextTransaction([this] {
+            in_batch_text_entry_ = false;
+            remove_extra_key_mapping();
+        });
     }
 };
 
@@ -407,6 +422,10 @@ bool AutoType::show_window(const AppWindow &window) {
         return false;
     }
     return false;
+}
+
+AutoTypeTextTransaction AutoType::begin_batch_text_entry() {
+    return impl_->begin_batch_text_entry();
 }
 
 } // namespace keyboard_auto_type

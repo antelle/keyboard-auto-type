@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -91,6 +92,21 @@ struct KeyCodeWithModifiers {
     Modifier modifier;
 };
 
+class AutoTypeTextTransaction {
+  private:
+    std::function<void()> end_callback_;
+
+  public:
+    explicit AutoTypeTextTransaction(std::function<void()> end_callback = nullptr);
+    ~AutoTypeTextTransaction();
+    AutoTypeTextTransaction(const AutoTypeTextTransaction &) = delete;
+    AutoTypeTextTransaction &operator=(const AutoTypeTextTransaction &) = delete;
+    AutoTypeTextTransaction(AutoTypeTextTransaction &&) = delete;
+    AutoTypeTextTransaction &operator=(AutoTypeTextTransaction &&) = delete;
+
+    void done() noexcept;
+};
+
 class AutoType {
   private:
     static constexpr auto DEFAULT_UNPRESS_MODIFIERS_TOTAL_WAIT_TIME =
@@ -135,6 +151,7 @@ class AutoType {
     std::optional<KeyCodeWithModifiers> os_key_code_for_char(char32_t character);
     std::vector<std::optional<KeyCodeWithModifiers>>
     os_key_codes_for_chars(std::u32string_view text);
+    [[nodiscard]] AutoTypeTextTransaction begin_batch_text_entry();
 
     pid_t active_pid();
     AppWindow active_window(ActiveWindowArgs args = {});

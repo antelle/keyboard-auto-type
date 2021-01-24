@@ -36,6 +36,8 @@ AutoTypeResult AutoType::text(std::u32string_view str) {
 
     auto pressed_modifiers = Modifier::None;
 
+    auto tx = begin_batch_text_entry();
+
     for (size_t i = 0; i < length; i++) {
         auto character = str[i];
         if (!character) {
@@ -92,6 +94,8 @@ AutoTypeResult AutoType::text(std::u32string_view str) {
             return result;
         }
     }
+
+    tx.done();
 
     return AutoTypeResult::Ok;
 }
@@ -200,6 +204,25 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
     }
 
     return AutoTypeResult::Ok;
+}
+
+AutoTypeTextTransaction::AutoTypeTextTransaction(std::function<void()> end_callback)
+    : end_callback_(std::move(end_callback)) {}
+
+AutoTypeTextTransaction::~AutoTypeTextTransaction() { done(); }
+
+void AutoTypeTextTransaction::done() noexcept {
+    if (end_callback_) {
+#if __cpp_exceptions
+        try {
+#endif
+            end_callback_();
+#if __cpp_exceptions
+        } catch (...) {
+        }
+#endif
+        end_callback_ = nullptr;
+    }
 }
 
 } // namespace keyboard_auto_type
