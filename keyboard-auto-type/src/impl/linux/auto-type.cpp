@@ -19,8 +19,8 @@
 namespace keyboard_auto_type {
 
 struct KeyCodeWithShiftLevel {
-    unsigned int key_code;
-    int shift_level;
+    uint8_t key_code = 0;
+    int shift_level = 0;
 };
 
 constexpr std::array SHIFT_LEVELS_MODIFIERS = {
@@ -38,11 +38,13 @@ class AutoType::AutoTypeImpl {
     std::optional<bool> is_supported_;
     std::optional<uint8_t> active_layout_;
     std::unordered_map<KeySym, KeyCodeWithShiftLevel> keyboard_layout_ = {};
-    unsigned int empty_key_code_ = 0;
+    uint8_t empty_key_code_ = 0xcc; // for debugging! revert me
+    KeySym empty_key_code_key_sym_ = 0;
 
   public:
     ~AutoTypeImpl() {
         if (display_) {
+            remove_extra_key_mapping();
             XCloseDisplay(display_);
         }
     }
@@ -55,6 +57,9 @@ class AutoType::AutoTypeImpl {
     }
 
     bool is_supported() {
+        if (is_supported_.has_value()) {
+            return is_supported_.value();
+        }
         if (display()) {
             int i = 0;
             is_supported_ = XTestQueryExtension(display(), &i, &i, &i, &i) &&
@@ -80,7 +85,7 @@ class AutoType::AutoTypeImpl {
         unsigned int key_code = 0;
         if (layout_entry == keyboard_layout_.end()) {
             if (XKeysymToString(code)) {
-                key_code = add_key_mapping(code);
+                key_code = add_extra_key_mapping(code);
                 if (!key_code) {
                     return throw_or_return(AutoTypeResult::OsError, "Failed to add key mapping");
                 }
@@ -94,10 +99,12 @@ class AutoType::AutoTypeImpl {
         }
 
         auto down = direction == Direction::Down;
+        //std::cout << "K" << (down ? "D" : "U") << " " << std::hex << static_cast<int>(key_code) << std::endl;
         auto res = XTestFakeKeyEvent(display(), key_code, down, CurrentTime);
         if (!res) {
             return throw_or_return(AutoTypeResult::OsError, "Failed to send an event");
         }
+        XSync(display(), False);
         return AutoTypeResult::Ok;
     }
 
@@ -116,14 +123,13 @@ class AutoType::AutoTypeImpl {
         }
 
         keyboard_layout_.clear();
-        empty_key_code_ = 0;
 
         std::ofstream layout_fs;
         if (debug_mode_) {
-            layout_fs.open("layout.txt");
+            layout_fs.open("tmp/layout.txt");
         }
 
-        auto kbd_components = XkbCompatMapMask | XkbGeometryMask; // XkbAllComponentsMask;
+        auto kbd_components = XkbCompatMapMask | XkbGeometryMask;
         if (layout_fs.is_open()) {
             kbd_components |= XkbNamesMask;
         }
@@ -139,6 +145,9 @@ class AutoType::AutoTypeImpl {
         }
 
         for (auto key_code = kbd->min_key_code; key_code < kbd->max_key_code; key_code++) {
+            if (key_code == empty_key_code_) {
+                continue;
+            }
             auto key_groups_num = XkbKeyNumGroups(kbd, key_code);
             layout_fs << "Key 0x" << std::hex << static_cast<int>(key_code) << std::endl;
             layout_fs << "  key_groups_num=" << key_groups_num << std::endl;
@@ -173,6 +182,7 @@ class AutoType::AutoTypeImpl {
                           << "  name=" << XGetAtomName(display(), kt->name) << std::endl;
             }
             shift_levels_count = std::min(shift_levels_count, MAX_SHIFT_LEVELS_COUNT);
+            auto is_empty = true;
             for (auto shift_level = 0; shift_level < shift_levels_count; shift_level++) {
                 auto sym = XkbKeySymEntry(kbd, key_code, shift_level, active_group);
                 if (sym && !keyboard_layout_.count(sym)) {
@@ -184,7 +194,22 @@ class AutoType::AutoTypeImpl {
                               << static_cast<int>(sym) << " (" << XKeysymToString(sym) << ")"
                               << std::endl;
                 }
-                if (!sym && !shift_level && !empty_key_code_) {
+                if (sym) {
+                    is_empty = false;
+                }
+            }
+            if (is_empty && !empty_key_code_) {
+                for (auto grp = 0; grp < key_groups_num && is_empty; grp++) {
+                    auto shift_count = XkbKeyGroupWidth(kbd, key_code, grp);
+                    for (auto shift = 0; shift < shift_count; shift++) {
+                        auto sym = XkbKeySymEntry(kbd, key_code, shift, grp);
+                        if (sym) {
+                            is_empty = false;
+                            break;
+                        }
+                    }
+                }
+                if (is_empty) {
                     empty_key_code_ = key_code;
                 }
             }
@@ -195,27 +220,31 @@ class AutoType::AutoTypeImpl {
         XkbFreeKeyboard(kbd, kbd_components, True);
     }
 
-    unsigned int add_key_mapping(KeySym) {
+    uint8_t add_extra_key_mapping(KeySym key_sym) {
         if (!empty_key_code_) {
             return 0;
         }
-        // auto key_code = empty_key_code_;
-        auto key_code = 0xCA;
-        /*if (XChangeKeyboardMapping(display(), key_code, 1, &key_sym, 1)) {
+        if (empty_key_code_key_sym_ == key_sym) {
+            return empty_key_code_;
+        }
+        std::cout << "ADD " << std::hex << static_cast<int>(empty_key_code_) << " => "
+                  << static_cast<int>(key_sym) << std::endl;
+        if (XChangeKeyboardMapping(display(), empty_key_code_, 1, &key_sym, 1)) {
             return 0;
-        }*/
-        // XSync(display(), False);
-        // active_layout_ = std::nullopt;
-        // read_keyboard_layout();
-        // auto kk = key_code_from_layout(key_sym);
-        // remove_key_mapping(key_code);
-        return key_code;
+        }
+        XSync(display(), False);
+        empty_key_code_key_sym_ = key_sym;
+        return empty_key_code_;
     }
 
-    void remove_key_mapping(unsigned int) {
-        // KeySym key_sym[] = {0};
-        // XChangeKeyboardMapping(display(), key_code, 1, key_sym, 1);
-        // XFlush(display());
+    void remove_extra_key_mapping() {
+        if (!empty_key_code_ || !empty_key_code_key_sym_) {
+            return;
+        }
+        std::cout << "DEL " << std::hex << static_cast<int>(empty_key_code_) << std::endl;
+        KeySym key_sym[] = {0};
+        XChangeKeyboardMapping(display(), empty_key_code_, 1, key_sym, 1);
+        XSync(display(), False);
     }
 
     std::optional<KeyCodeWithShiftLevel> key_code_from_layout(KeySym key_sym) {
