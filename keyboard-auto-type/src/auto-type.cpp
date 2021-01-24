@@ -21,8 +21,6 @@ constexpr std::array MODIFIERS_KEY_CODES{
     ModifierKeyCode{Modifier::Ctrl, Modifier::RightCtrl, KeyCode::Ctrl, KeyCode::RightCtrl},
 };
 
-bool AutoType::debug_mode_ = false;
-
 AutoTypeResult AutoType::text(std::u32string_view str) {
     if (str.length() == 0) {
         return AutoTypeResult::Ok;
@@ -203,7 +201,5 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
 
     return AutoTypeResult::Ok;
 }
-
-void AutoType::set_debug_mode(bool debug_mode) { debug_mode_ = debug_mode; }
 
 } // namespace keyboard_auto_type

@@ -104,8 +104,6 @@ class AutoType {
     std::chrono::milliseconds unpress_modifiers_total_wait_time_ =
         DEFAULT_UNPRESS_MODIFIERS_TOTAL_WAIT_TIME;
 
-    static bool debug_mode_;
-
   public:
     AutoType();
     ~AutoType();
@@ -141,8 +139,6 @@ class AutoType {
     pid_t active_pid();
     AppWindow active_window(ActiveWindowArgs args = {});
     bool show_window(const AppWindow &window);
-
-    static void set_debug_mode(bool debug_mode);
 };
 
 } // namespace keyboard_auto_type
