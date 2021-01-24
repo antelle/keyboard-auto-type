@@ -113,6 +113,8 @@ AutoTypeResult AutoType::key_press(KeyCode code, Modifier modifier) {
                                                            " not supported");
     }
 
+    auto tx = begin_batch_text_entry();
+
     auto result = key_move(Direction::Down, modifier);
     if (result != AutoTypeResult::Ok) {
         return result;
@@ -132,6 +134,8 @@ AutoTypeResult AutoType::key_press(KeyCode code, Modifier modifier) {
         return result;
     }
 
+    tx.done();
+
     return AutoTypeResult::Ok;
 }
 
@@ -139,6 +143,8 @@ AutoTypeResult AutoType::shortcut(KeyCode code) { return key_press(code, shortcu
 
 AutoTypeResult AutoType::ensure_modifier_not_pressed() {
     auto start_time = std::chrono::system_clock::now();
+
+    auto tx = begin_batch_text_entry();
 
     while (true) {
         auto pressed_modifiers = get_pressed_modifiers();
@@ -163,6 +169,9 @@ AutoTypeResult AutoType::ensure_modifier_not_pressed() {
             break;
         }
     }
+
+    tx.done();
+
     return throw_or_return(AutoTypeResult::ModifierNotReleased, "Modifier key not released");
 }
 
