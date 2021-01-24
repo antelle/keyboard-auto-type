@@ -327,6 +327,9 @@ class AutoType::AutoTypeImpl {
     }
 
     [[nodiscard]] AutoTypeTextTransaction begin_batch_text_entry() {
+        if (in_batch_text_entry_) {
+            return AutoTypeTextTransaction();
+        }
         in_batch_text_entry_ = true;
         return AutoTypeTextTransaction([this] {
             in_batch_text_entry_ = false;
