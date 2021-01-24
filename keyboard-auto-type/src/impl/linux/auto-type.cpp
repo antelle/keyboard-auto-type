@@ -34,11 +34,9 @@ struct KeyCodeWithShiftLevel {
 constexpr std::array SHIFT_LEVELS_MODIFIERS = {
     std::make_pair(ShiftMask, Modifier::Shift),
     std::make_pair(LockMask, Modifier::Alt),
-    std::make_pair(ControlMask, Modifier::Ctrl),
 };
 
-static constexpr auto MAX_SHIFT_LEVELS_COUNT =
-    static_cast<uint8_t>((ShiftMask | LockMask | ControlMask) + 1);
+static constexpr auto MAX_SHIFT_LEVELS_COUNT = static_cast<uint8_t>((ShiftMask | LockMask) + 1);
 
 static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(200);
 
@@ -88,11 +86,11 @@ class AutoType::AutoTypeImpl {
         if (!code) {
             return throw_or_return(AutoTypeResult::BadArg, "Empty key code");
         }
-        if (!is_supported()) {
-            return throw_or_return(AutoTypeResult::NotSupported, "Not supported");
-        }
         if (!display()) {
             return throw_or_return(AutoTypeResult::OsError, "Cannot open display");
+        }
+        if (!is_supported()) {
+            return throw_or_return(AutoTypeResult::NotSupported, "Not supported");
         }
 
         if (!in_batch_text_entry_) {
@@ -152,7 +150,7 @@ class AutoType::AutoTypeImpl {
     }
 
     void read_keyboard_layout() {
-        if (!display()) {
+        if (!is_supported()) {
             return;
         }
 
@@ -182,7 +180,7 @@ class AutoType::AutoTypeImpl {
         XFree(layout_name);
 #endif
 
-        for (auto key_code = kbd->min_key_code; key_code < kbd->max_key_code; key_code++) {
+        for (auto key_code = kbd->min_key_code; key_code <= kbd->max_key_code; key_code++) {
             if (key_code == empty_key_code_) {
                 continue;
             }
@@ -208,9 +206,12 @@ class AutoType::AutoTypeImpl {
                     if (sym) {
                         auto existing_mapping = keyboard_layout_.find(sym);
                         if (existing_mapping != keyboard_layout_.end()) {
+                            // active group always has priority
+                            // so that we press "heZ" in German layout to get "heY"
                             if (group != active_group) {
                                 continue;
                             }
+                            // inside the active group, the first key has priority
                             if (existing_mapping->second.group == active_group) {
                                 continue;
                             }
@@ -309,7 +310,7 @@ class AutoType::AutoTypeImpl {
 
     std::optional<KeyCodeWithModifiers> os_key_code_from_char(char32_t character) {
         auto key_sym = char_to_keysym(character);
-        if (!key_sym) {
+        if (!key_sym || !XKeysymToString(key_sym)) {
             return std::nullopt;
         }
         KeyCodeWithModifiers kc{};
@@ -328,6 +329,7 @@ class AutoType::AutoTypeImpl {
 
     [[nodiscard]] AutoTypeTextTransaction begin_batch_text_entry() {
         if (in_batch_text_entry_) {
+            // for convenience, allow nested transactions, but don't do anything
             return AutoTypeTextTransaction();
         }
         in_batch_text_entry_ = true;
@@ -363,8 +365,11 @@ std::optional<os_key_code_t> AutoType::os_key_code(KeyCode code) {
     if (code == KeyCode::Undefined) {
         return std::nullopt;
     }
-    auto native_key_code = map_key_code(code);
-    return native_key_code;
+    auto key_sym = map_key_code(code);
+    if (!key_sym) {
+        return std::nullopt;
+    }
+    return key_sym;
 }
 
 std::optional<KeyCodeWithModifiers> AutoType::os_key_code_for_char(char32_t character) {
