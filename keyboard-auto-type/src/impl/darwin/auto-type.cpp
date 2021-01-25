@@ -50,6 +50,10 @@ constexpr std::array EVENT_FLAGS_MODIFIERS{
     std::make_pair(static_cast<uint64_t>(NX_DEVICERCTLKEYMASK), Modifier::RightControl),
 };
 
+constexpr std::array SPECIAL_CHARACTERS_TO_KEYCODES{
+    std::make_pair(U'\n', kVK_Return),
+};
+
 class AutoType::AutoTypeImpl {
   private:
     auto_release<CGEventSourceRef> event_source_ =
@@ -152,6 +156,14 @@ class AutoType::AutoTypeImpl {
                     code_with_modifier.modifier = modifier;
                     keyboard_layout_.emplace(ch, code_with_modifier);
                 }
+            }
+        }
+
+        for (auto [character, code] : SPECIAL_CHARACTERS_TO_KEYCODES) {
+            if (!keyboard_layout_.count(character)) {
+                KeyCodeWithModifiers kc{};
+                kc.code = code;
+                keyboard_layout_.emplace(character, kc);
             }
         }
 

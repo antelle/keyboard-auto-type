@@ -129,8 +129,7 @@ class AutoType::AutoTypeImpl {
         }
 
         if (key.mod_mask && kbd_state.locked_mods != key.mod_mask) {
-            if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.mod_mask,
-                                  kbd_state.locked_mods)) {
+            if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.mod_mask, kbd_state.locked_mods)) {
                 return throw_or_return(AutoTypeResult::OsError, "Failed to unlock modifiers");
             }
         }
