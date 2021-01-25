@@ -213,13 +213,24 @@ TEST_F(AutoTypeKeysTest, text_wstring) {
     typer.text(L"AbCßµḀ");
 }
 
+TEST_F(AutoTypeKeysTest, text_whitespace) {
+    expected_text = U" \t";
+    expected_events = {
+        "keydown 0 - Space standard", "keypress 32 - Space standard", "keyup 0 - Space standard",
+        "keydown 0 - Tab standard",   "keyup 0 - Tab standard",
+    };
+
+    kbd::AutoType typer;
+    typer.text(expected_text);
+}
+
 TEST_F(AutoTypeKeysTest, text_unicode_basic) {
     kbd::AutoType typer;
     expected_text = U"";
 
     constexpr std::array char_ranges{
         // basic latin
-        std::pair{U' ', U'/'},
+        std::pair{U'!', U'/'},
         std::pair{U'0', U'1'},
         std::pair{U':', U'@'},
         std::pair{U'A', U'C'},
