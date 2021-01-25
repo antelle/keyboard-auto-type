@@ -22,7 +22,6 @@ if(APPLE)
         "impl/darwin/platform-util.cpp"
     )
 elseif(WIN32)
-    add_compile_definitions(_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
     set(PLATFORM_SOURCES
         "impl/win32/platform-util.cpp"
     )
@@ -35,11 +34,13 @@ endif()
 add_executable(${PROJECT_NAME}
     ${PLATFORM_SOURCES}
     "include/platform-util.h"
+    "include/test-util.h"
     "src/main.cpp"
     "src/auto-type-keys-test.cpp"
     "src/auto-type-window-test.cpp"
     "src/auto-type-errors-test.cpp"
     "src/modifier-test.cpp"
+    "impl/test-util.cpp"
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)

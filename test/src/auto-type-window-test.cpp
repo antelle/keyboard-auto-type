@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
 #include "platform-util.h"
+#include "test-util.h"
 
 namespace kbd = keyboard_auto_type;
 
@@ -12,21 +13,11 @@ namespace keyboard_auto_type_test {
 
 class AutoTypeWindowTest : public testing::Test {
   protected:
-    static constexpr std::string_view file_name = "build/test.txt";
+    static void SetUpTestSuite() {}
 
-    static void SetUpTestSuite() { create_file(); }
+    virtual void SetUp() {}
 
-    virtual void SetUp() {
-        kill_text_editor();
-        wait_millis(100);
-    }
-
-    virtual void TearDown() { kill_text_editor(); }
-
-    static void create_file() {
-        std::filesystem::remove(file_name);
-        std::fstream(std::string(file_name), std::ios::out).close();
-    }
+    virtual void TearDown() { save_text_and_close_test_app(); }
 };
 
 TEST_F(AutoTypeWindowTest, active_pid) {
@@ -35,11 +26,11 @@ TEST_F(AutoTypeWindowTest, active_pid) {
     auto pid = typer.active_pid();
     ASSERT_NE(0, pid);
 
-    launch_text_editor(file_name);
+    open_test_app();
     for (auto i = 0; i < 100; i++) {
         wait_millis(100);
         auto active_pid = typer.active_pid();
-        if (pid != active_pid) {
+        if (pid != active_pid && is_test_app_active()) {
             return;
         }
     }
@@ -52,7 +43,7 @@ TEST_F(AutoTypeWindowTest, active_window) {
 
     auto pid = typer.active_pid();
 
-    launch_text_editor(file_name);
+    open_test_app();
     for (auto i = 0; i < 100; i++) {
         wait_millis(100);
         auto active_pid = typer.active_pid();
@@ -87,7 +78,7 @@ TEST_F(AutoTypeWindowTest, show_window) {
     ASSERT_EQ(self_window.pid, typer.active_pid());
     ASSERT_NE(0, self_window.pid);
 
-    launch_text_editor(file_name);
+    open_test_app();
     for (auto i = 0; i < 100; i++) {
         wait_millis(100);
         auto editor_window = typer.active_window();

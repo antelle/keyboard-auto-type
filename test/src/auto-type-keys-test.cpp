@@ -1,12 +1,13 @@
 #include <array>
-#include <codecvt>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
 #include "platform-util.h"
+#include "test-util.h"
 
 namespace kbd = keyboard_auto_type;
 
@@ -14,88 +15,78 @@ namespace keyboard_auto_type_test {
 
 class AutoTypeKeysTest : public testing::Test {
   protected:
-    const std::string file_name = "build/test.txt";
-    std::filesystem::file_time_type file_mod_time;
+    static constexpr std::string_view file_name = "build/test.txt";
     std::u32string expected_text;
+    std::vector<std::string> expected_events;
 
     static void SetUpTestSuite() {}
 
-    static void TearDownTestSuite() { kill_text_editor(); }
+    static void TearDownTestSuite() {}
 
     virtual void SetUp() {
         expected_text = U"";
-        open_text_editor();
+        expected_events.clear();
+        open_test_app();
     }
 
     virtual void TearDown() {
-        save_text();
-        wait_for_file_save();
-        kill_text_editor();
+        save_text_and_close_test_app();
         check_expected_text();
     }
 
   private:
-    void open_text_editor() {
-        create_file();
-        kill_text_editor();
-        wait_millis(100);
-        launch_text_editor(file_name);
-        wait_text_editor_window();
-    }
-
-    void wait_text_editor_window() {
-        kbd::AutoType typer;
-        for (auto i = 0; i < 100; i++) {
-            wait_millis(100);
-            auto active_window = typer.active_window();
-            if (is_text_editor_app_name(active_window.app_name)) {
-                wait_millis(1000);
-                return;
-            }
-        }
-        FAIL() << "Text editor didn't appear";
-    }
-
-    void create_file() {
-        std::filesystem::remove(file_name);
-        std::fstream fstream(file_name, std::ios::out);
-        // fstream << "\xEF\xBB\xBF";
-        fstream.close();
-
-        file_mod_time = std::filesystem::last_write_time(file_name);
-    }
-
-    void save_text() {
-        kbd::AutoType typer;
-        wait_millis(10);
-        auto active_window = typer.active_window();
-        if (is_text_editor_app_name(active_window.app_name)) {
-            typer.key_press(kbd::KeyCode::S, typer.shortcut_modifier());
-            typer.key_press(kbd::KeyCode::Q, typer.shortcut_modifier());
-        } else {
-            FAIL() << "Active app is not a text editor, failed to save";
-        }
-    }
-
-    void wait_for_file_save() {
-        for (auto i = 0; i < 100; i++) {
-            auto last_mod_time = std::filesystem::last_write_time(file_name);
-            wait_millis(100);
-            if (last_mod_time > file_mod_time) {
-                return;
-            }
-        }
-        FAIL() << "File date didn't change";
-    }
-
     void check_expected_text() {
-        std::ifstream ifs(file_name);
-        std::string data((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        constexpr std::string_view TEXT_LINE_START = "text ";
+        constexpr std::string_view EVENT_LINE_START = "event ";
+        constexpr std::string_view DONE_LINE = "done";
 
-        std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
-        std::u32string actual_text = converter.from_bytes(data);
+        std::string text;
+        std::vector<std::string> events;
+        bool finished = false;
 
-        ASSERT_EQ(expected_text, actual_text);
+        for (auto i = 0; i < 50; i++) {
+            events.clear();
+            std::string line;
+            std::ifstream ifs(file_name);
+            while (std::getline(ifs, line)) {
+                if (line.starts_with(EVENT_LINE_START)) {
+                    auto event = line.substr(EVENT_LINE_START.length());
+                    events.push_back(event);
+                } else if (line.starts_with(TEXT_LINE_START)) {
+                    text = line.substr(TEXT_LINE_START.length());
+                } else if (line == DONE_LINE) {
+                    finished = true;
+                    break;
+                }
+            }
+            if (finished) {
+                break;
+            }
+            wait_millis(100);
+        }
+
+        ASSERT_TRUE(finished) << "File is not complete: 'done' was not found";
+
+        std::istringstream text_stream(text);
+
+        for (size_t i = 0; i < expected_text.length(); i++) {
+            uint32_t char_code = 0;
+            ASSERT_FALSE(text_stream.eof()) << "Actual text is too short";
+            text_stream >> char_code;
+            auto expected_char = static_cast<uint32_t>(expected_text[i]);
+            ASSERT_EQ(expected_char, char_code)
+                << std::string("Character at index ") + std::to_string(i) + " is different";
+        }
+
+        ASSERT_TRUE(text_stream.eof()) << "Actual text is too long";
+
+        if (expected_events.size()) {
+            ASSERT_GE(events.size(), expected_events.size()) << "Not enough key events";
+            for (auto i = 0; i < expected_events.size(); i++) {
+                ASSERT_EQ(expected_events[i], events[i])
+                    << std::string("Event with index ") + std::to_string(i) + " doesn't match";
+            }
+        }
     }
 
     void open_edit_menu() {
@@ -157,32 +148,66 @@ class AutoTypeKeysTest : public testing::Test {
 
 TEST_F(AutoTypeKeysTest, text_letter) {
     expected_text = U"a";
+    expected_events = {
+        "keydown 0 - KeyA standard",
+        "keypress 97 - KeyA standard",
+        "keyup 0 - KeyA standard",
+    };
+
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
 TEST_F(AutoTypeKeysTest, text_two_letters) {
     expected_text = U"ab";
+    expected_events = {
+        "keydown 0 - KeyA standard", "keypress 97 - KeyA standard", "keyup 0 - KeyA standard",
+        "keydown 0 - KeyB standard", "keypress 98 - KeyB standard", "keyup 0 - KeyB standard",
+    };
+
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
 TEST_F(AutoTypeKeysTest, text_two_lines) {
     expected_text = U"ab\ncd";
+    expected_events = {
+        "keydown 0 - KeyA standard",  "keypress 97 - KeyA standard",  "keyup 0 - KeyA standard",
+        "keydown 0 - KeyB standard",  "keypress 98 - KeyB standard",  "keyup 0 - KeyB standard",
+        "keydown 0 - Enter standard", "keypress 13 - Enter standard", "keyup 0 - Enter standard",
+        "keydown 0 - KeyC standard",  "keypress 99 - KeyC standard",  "keyup 0 - KeyC standard",
+        "keydown 0 - KeyD standard",  "keypress 100 - KeyD standard", "keyup 0 - KeyD standard",
+    };
+
+    kbd::AutoType typer;
+    typer.text(expected_text);
+}
+
+TEST_F(AutoTypeKeysTest, text_capital) {
+    expected_text = U"AbCD!e";
+    expected_events = {
+        "keydown 0 shift ShiftLeft left",    "keydown 0 shift KeyA standard",
+        "keypress 65 shift KeyA standard",   "keyup 0 shift KeyA standard",
+        "keyup 0 - ShiftLeft left",          "keydown 0 - KeyB standard",
+        "keypress 98 - KeyB standard",       "keyup 0 - KeyB standard",
+        "keydown 0 shift ShiftLeft left",    "keydown 0 shift KeyC standard",
+        "keypress 67 shift KeyC standard",   "keyup 0 shift KeyC standard",
+        "keydown 0 shift KeyD standard",     "keypress 68 shift KeyD standard",
+        "keyup 0 shift KeyD standard",       "keydown 0 shift Digit1 standard",
+        "keypress 33 shift Digit1 standard", "keyup 0 shift Digit1 standard",
+        "keyup 0 - ShiftLeft left",          "keydown 0 - KeyE standard",
+        "keypress 101 - KeyE standard",      "keyup 0 - KeyE standard",
+    };
+
     kbd::AutoType typer;
     typer.text(expected_text);
 }
 
 TEST_F(AutoTypeKeysTest, text_wstring) {
     expected_text = U"AbCßµḀ";
+
     kbd::AutoType typer;
     typer.text(L"AbCßµḀ");
-}
-
-TEST_F(AutoTypeKeysTest, text_capital) {
-    expected_text = U"AbC";
-    kbd::AutoType typer;
-    typer.text(expected_text);
 }
 
 TEST_F(AutoTypeKeysTest, text_unicode_basic) {
@@ -371,6 +396,16 @@ TEST_F(AutoTypeKeysTest, key_move_shift) {
 
 TEST_F(AutoTypeKeysTest, key_move_right_shift) {
     expected_text = U"aABb";
+    expected_events = {
+        "keydown 0 - KeyA standard",       "keypress 97 - KeyA standard",
+        "keyup 0 - KeyA standard",         "keydown 0 shift ShiftRight right",
+        "keydown 0 shift KeyA standard",   "keypress 65 shift KeyA standard",
+        "keyup 0 shift KeyA standard",     "keydown 0 shift KeyB standard",
+        "keypress 66 shift KeyB standard", "keyup 0 shift KeyB standard",
+        "keyup 0 - ShiftRight right",      "keydown 0 - KeyB standard",
+        "keypress 98 - KeyB standard",     "keyup 0 - KeyB standard",
+    };
+
     kbd::AutoType typer;
 
     typer.key_move(kbd::Direction::Down, kbd::KeyCode::A);

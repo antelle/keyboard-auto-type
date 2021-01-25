@@ -1,0 +1,14 @@
+{
+  "name": "test-keys-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "author": "Antelle",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^11.2.1"
+  }
+}
