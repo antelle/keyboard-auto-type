@@ -108,7 +108,14 @@ class AutoTypeKeysTest : public testing::Test {
         // open the menu
         typer.key_press(kbd::KeyCode::DownArrow);
 #else
-        FAIL() << "open_edit_menu not implemented";
+        // highlight the first menu ("File")
+        typer.key_press(kbd::KeyCode::Alt);
+        wait_millis(1000);
+        // go to "Edit" menu
+        typer.key_press(kbd::KeyCode::RightArrow);
+        // open the menu
+        typer.key_press(kbd::KeyCode::DownArrow);
+        wait_millis(1000);
 #endif
     }
 
@@ -119,7 +126,7 @@ class AutoTypeKeysTest : public testing::Test {
 #if __APPLE__
         typer.key_press(kbd::KeyCode::S);
         typer.key_press(kbd::KeyCode::Enter);
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#else
         typer.key_press(kbd::KeyCode::S);
 #endif
     }
@@ -131,7 +138,7 @@ class AutoTypeKeysTest : public testing::Test {
         typer.key_press(kbd::KeyCode::C);
         typer.key_press(kbd::KeyCode::U);
         typer.key_press(kbd::KeyCode::Enter);
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#else
         typer.key_press(kbd::KeyCode::DownArrow);
         typer.key_press(kbd::KeyCode::DownArrow);
         typer.key_press(kbd::KeyCode::DownArrow);
