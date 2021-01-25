@@ -16,9 +16,7 @@ void open_test_app() {
 bool is_test_app_active() {
     kbd::AutoType typer;
     auto active_window = typer.active_window({.get_window_title = true});
-    auto is_electron = active_window.app_name.ends_with("Electron") ||
-                       active_window.app_name.ends_with("electron.exe");
-    return is_electron && active_window.title == "Test keys app";
+    return active_window.title == "Test keys app";
 }
 
 void wait_test_app_window() {
