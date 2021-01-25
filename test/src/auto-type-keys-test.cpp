@@ -453,7 +453,7 @@ TEST_F(AutoTypeKeysTest, key_move_right_shift) {
 }
 
 TEST_F(AutoTypeKeysTest, key_move_all_keys) {
-    expected_text = U"0123456789 abcdefghijklmnopqrstuvwxyz\t0123456789\n/-*+\n\\,=`[-.'];/";
+    expected_text = U"0123456789 abcdefghijklmnopqrstuvwxyz\n0123456789/-*+\n\\,=`[-.'];/\t";
     kbd::AutoType typer;
 
     static constexpr std::array ALL_KEYS{
@@ -497,7 +497,7 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         kbd::KeyCode::Y,
         kbd::KeyCode::Z,
 
-        kbd::KeyCode::Tab,
+        kbd::KeyCode::Return,
 
         kbd::KeyCode::Keypad0,
         kbd::KeyCode::Keypad1,
@@ -509,8 +509,6 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         kbd::KeyCode::Keypad7,
         kbd::KeyCode::Keypad8,
         kbd::KeyCode::Keypad9,
-
-        kbd::KeyCode::Return,
 
         kbd::KeyCode::KeypadDivide,
         kbd::KeyCode::KeypadMinus,
@@ -547,19 +545,16 @@ TEST_F(AutoTypeKeysTest, key_move_all_keys) {
         kbd::KeyCode::LeftArrow,
         kbd::KeyCode::ForwardDelete,
 
+        kbd::KeyCode::Tab,
+
         kbd::KeyCode::Ctrl,
-        kbd::KeyCode::Function,
         kbd::KeyCode::Shift,
         kbd::KeyCode::Option,
-        kbd::KeyCode::Meta,
-        kbd::KeyCode::Meta,
         kbd::KeyCode::Escape,
 
         kbd::KeyCode::RightControl,
         kbd::KeyCode::RightShift,
         kbd::KeyCode::RightOption,
-        kbd::KeyCode::RightMeta,
-        kbd::KeyCode::RightMeta,
         kbd::KeyCode::Escape,
     };
 
