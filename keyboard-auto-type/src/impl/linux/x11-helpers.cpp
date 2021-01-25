@@ -52,6 +52,7 @@ std::string x11_window_prop_string(Display *display, Window window, const char *
             value = reinterpret_cast<char *>(xprop.value);
         }
         XFree(xprop.value);
+        XFree(type);
     }
 
     return value;

@@ -31,6 +31,8 @@ constexpr std::array SHIFT_LEVELS_MODIFIERS{
 
 static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(200);
 
+static constexpr auto MAX_KEYSYM = 0x0110FFFFU;
+
 static constexpr uint8_t EMPTY_KEY_CODE_FOR_DEBUGGING = 0xcc;
 
 class AutoType::AutoTypeImpl {
@@ -89,7 +91,7 @@ class AutoType::AutoTypeImpl {
             return throw_or_return(AutoTypeResult::NotSupported, "Not supported");
         }
 
-        if (!in_batch_text_entry_) {
+        if (!in_batch_text_entry_ || !active_keyboard_group_.has_value()) {
             read_keyboard_layout();
         }
         if (!active_keyboard_group_.has_value()) {
@@ -98,8 +100,10 @@ class AutoType::AutoTypeImpl {
 
         auto layout_entry = keyboard_layout_.find(code);
         KeyCodeWithMask key{};
+        KeySym key_sym_lower = 0, key_sym_upper = 0;
+        XConvertCase(code, &key_sym_lower, &key_sym_upper);
         if (layout_entry == keyboard_layout_.end()) {
-            if (XKeysymToString(code)) {
+            if (is_valid_key_sym(code)) {
                 key = add_extra_key_mapping(code);
                 if (!key.key_code) {
                     return throw_or_return(AutoTypeResult::OsError, "Failed to add key mapping");
@@ -297,7 +301,7 @@ class AutoType::AutoTypeImpl {
 
     std::optional<KeyCodeWithModifiers> os_key_code_from_char(char32_t character) {
         auto key_sym = char_to_keysym(character);
-        if (!key_sym || !XKeysymToString(key_sym)) {
+        if (!key_sym || !is_valid_key_sym(key_sym)) {
             return std::nullopt;
         }
         KeyCodeWithModifiers kc{};
@@ -312,6 +316,13 @@ class AutoType::AutoTypeImpl {
             }
         }
         return kc;
+    }
+
+    bool is_valid_key_sym(KeySym key_sym) {
+        // this can be better checked with XKeysymToString but the memory sanitizer says
+        // it still leaks if it's called with valid Unocide code points not defined as KeySym
+        // see https://bugs.freedesktop.org/show_bug.cgi?id=7100
+        return key_sym > 0 && key_sym <= MAX_KEYSYM;
     }
 
     [[nodiscard]] AutoTypeTextTransaction begin_batch_text_entry() {
