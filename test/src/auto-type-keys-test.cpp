@@ -15,7 +15,7 @@ namespace keyboard_auto_type_test {
 
 class AutoTypeKeysTest : public testing::Test {
   protected:
-    static constexpr std::string_view file_name = "build/test.txt";
+    const std::string file_name = "build/test.txt";
     std::u32string expected_text;
     std::vector<std::string> expected_events;
 
