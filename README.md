@@ -321,6 +321,7 @@ You will need:
 - [CMake](https://cmake.org/)
 - [clang-tidy and clang-format](https://llvm.org/)
 - [cppcheck](http://cppcheck.sourceforge.net/)
+- [node.js](https://nodejs.org/)
 
 On linux, install `xorg-dev` package.
 
