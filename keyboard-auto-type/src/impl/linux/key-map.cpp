@@ -31,8 +31,8 @@ constexpr std::array<os_key_code_t, static_cast<size_t>(KeyCode::KeyCodeCount)> 
     XK_KP_Add,
 
     // others
-    XK_backslash, XK_comma, XK_equal, XK_grave, XK_braceleft, XK_minus, XK_period, XK_apostrophe,
-    XK_braceright, XK_semicolon, XK_slash,
+    XK_backslash, XK_comma, XK_equal, XK_grave, XK_bracketleft, XK_minus, XK_period, XK_apostrophe,
+    XK_bracketright, XK_semicolon, XK_slash,
 
     // modifiers
     XK_Super_L, // Meta
