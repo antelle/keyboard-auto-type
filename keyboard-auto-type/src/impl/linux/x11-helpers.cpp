@@ -12,8 +12,8 @@ namespace keyboard_auto_type {
 
 struct X11WindowProp {
     void *value = nullptr;
-    unsigned long nitems = 0;
-    unsigned long bytes_after = 0;
+    unsigned long nitems = 0;      // NOLINT (google-runtime-int)
+    unsigned long bytes_after = 0; // NOLINT (google-runtime-int)
     int format = 0;
     Atom prop_type = 0;
 };
@@ -46,7 +46,7 @@ std::string x11_window_prop_string(Display *display, Window window, const char *
     static constexpr std::array STRING_PROP_TYPES{"STRING", "UTF8_STRING"};
 
     if (xprop.value) {
-        auto type = XGetAtomName(display, xprop.prop_type);
+        auto *type = XGetAtomName(display, xprop.prop_type);
         if (std::find(STRING_PROP_TYPES.begin(), STRING_PROP_TYPES.end(), std::string_view(type)) !=
             STRING_PROP_TYPES.end()) {
             value = reinterpret_cast<char *>(xprop.value);
@@ -57,13 +57,13 @@ std::string x11_window_prop_string(Display *display, Window window, const char *
     return value;
 }
 
-unsigned long x11_window_prop_ulong(Display *display, Window window, const char *prop) {
+uint64_t x11_window_prop_ulong(Display *display, Window window, const char *prop) {
     auto prop_type_cardinal = XInternAtom(display, "CARDINAL", False);
     auto xprop = x11_window_prop(display, window, prop, prop_type_cardinal);
 
-    unsigned long value = 0;
+    uint64_t value = 0;
     if (xprop.value) {
-        value = *reinterpret_cast<unsigned long *>(xprop.value);
+        value = *reinterpret_cast<unsigned long *>(xprop.value); // NOLINT (google-runtime-int)
         XFree(xprop.value);
     }
 

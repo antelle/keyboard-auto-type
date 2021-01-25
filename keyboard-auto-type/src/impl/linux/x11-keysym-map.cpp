@@ -179,20 +179,22 @@ constexpr auto MAX_CHAR_IN_CHAR_MAP_16 = CHAR_MAP_16.back() >> 16;
 constexpr auto MIN_CHAR_IN_CHAR_MAP_32 = CHAR_MAP_32.front() >> 32;
 constexpr auto MAX_CHAR_IN_CHAR_MAP_32 = CHAR_MAP_32.back() >> 32;
 constexpr auto ADD_CODEPOINT = 0x1'000'000;
+constexpr auto SHIFT_WORD = 16;
+constexpr auto SHIFT_DWORD = 32;
 
 uint32_t char_to_keysym(char32_t ch) {
     if (ch >= MIN_CHAR_IN_CHAR_MAP_32 && ch <= MAX_CHAR_IN_CHAR_MAP_32) {
-        auto found_in_32 = std::find_if(CHAR_MAP_32.begin(), CHAR_MAP_32.end(),
-                                        [ch](auto val) { return val >> 32 == ch; });
-        if (found_in_32 != CHAR_MAP_32.end() && *found_in_32 >> 32 == ch) {
+        const auto *found_in_32 = std::find_if(CHAR_MAP_32.begin(), CHAR_MAP_32.end(),
+                                               [ch](auto val) { return val >> SHIFT_DWORD == ch; });
+        if (found_in_32 != CHAR_MAP_32.end() && *found_in_32 >> SHIFT_DWORD == ch) {
             return *found_in_32 & std::numeric_limits<uint32_t>::max();
         }
     }
 
     if (ch >= MIN_CHAR_IN_CHAR_MAP_16 && ch <= MAX_CHAR_IN_CHAR_MAP_16) {
-        auto search_val = ch << 16;
-        auto found = std::upper_bound(CHAR_MAP_16.begin(), CHAR_MAP_16.end(), search_val);
-        if (found != CHAR_MAP_16.end() && *found >> 16 == ch) {
+        auto search_val = ch << SHIFT_WORD;
+        const auto *found = std::upper_bound(CHAR_MAP_16.begin(), CHAR_MAP_16.end(), search_val);
+        if (found != CHAR_MAP_16.end() && *found >> SHIFT_WORD == ch) {
             return *found & std::numeric_limits<uint16_t>::max();
         }
     }

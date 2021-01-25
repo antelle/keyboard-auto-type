@@ -95,7 +95,7 @@ if(KEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS)
             VS_GLOBAL_RunCodeAnalysis true
             VS_GLOBAL_EnableMicrosoftCodeAnalysis true
             VS_GLOBAL_EnableClangTidyCodeAnalysis true
-            VS_GLOBAL_ClangTidyChecks "-hicpp-signed-bitwise,-cppcoreguidelines-pro-type-union-access,-llvm-qualified-auto,-readability-qualified-auto"
+            VS_GLOBAL_ClangTidyChecks "-cppcoreguidelines-pro-type-union-access,-llvm-qualified-auto,-readability-qualified-auto"
         )
         add_custom_target(clang-tidy DEPENDS ${PROJECT_NAME})
     else()

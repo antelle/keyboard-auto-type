@@ -31,17 +31,25 @@ constexpr std::array SHIFT_LEVELS_MODIFIERS{
 
 static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(200);
 
+static constexpr uint8_t EMPTY_KEY_CODE_FOR_DEBUGGING = 0xcc;
+
 class AutoType::AutoTypeImpl {
   private:
     Display *display_ = nullptr;
     std::optional<bool> is_supported_;
     std::optional<uint8_t> active_keyboard_group_; // aka "layout" or "input language"
     std::unordered_map<KeySym, KeyCodeWithMask> keyboard_layout_ = {};
-    uint8_t empty_key_code_ = 0xcc; // for debugging! revert me
+    uint8_t empty_key_code_ = EMPTY_KEY_CODE_FOR_DEBUGGING;
     KeySym empty_key_code_key_sym_ = 0;
     bool in_batch_text_entry_ = false;
 
   public:
+    AutoTypeImpl() = default;
+    AutoTypeImpl(const AutoTypeImpl &) = delete;
+    AutoTypeImpl &operator=(const AutoTypeImpl &) = delete;
+    AutoTypeImpl(AutoTypeImpl &&) = delete;
+    AutoTypeImpl &operator=(AutoTypeImpl &&) = delete;
+
     ~AutoTypeImpl() {
         if (display_) {
             remove_extra_key_mapping();
@@ -51,7 +59,7 @@ class AutoType::AutoTypeImpl {
 
     Display *display() {
         if (!display_) {
-            display_ = XOpenDisplay(0);
+            display_ = XOpenDisplay(nullptr);
         }
         return display_;
     }
@@ -161,7 +169,7 @@ class AutoType::AutoTypeImpl {
         keyboard_layout_.clear();
 
         auto kbd_components = XkbCompatMapMask | XkbGeometryMask;
-        auto kbd = XkbGetKeyboard(display(), kbd_components, XkbUseCoreKbd);
+        auto *kbd = XkbGetKeyboard(display(), kbd_components, XkbUseCoreKbd);
         if (!kbd) {
             return;
         }
@@ -173,9 +181,11 @@ class AutoType::AutoTypeImpl {
             auto key_groups_num = XkbKeyNumGroups(kbd, key_code);
             auto is_empty = true;
             for (auto group = 0; group < key_groups_num; group++) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
                 auto shift_levels_count = XkbKeyGroupWidth(kbd, key_code, group);
                 if (shift_levels_count > 1) {
-                    auto key_type = XkbKeyKeyType(kbd, key_code, group);
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+                    auto *key_type = XkbKeyKeyType(kbd, key_code, group);
                     if (key_type->map_count > 0 && key_type->map[0].mods.mask == ShiftMask) {
                         // for most of keys we consider two states
                         shift_levels_count = 2;
@@ -185,6 +195,7 @@ class AutoType::AutoTypeImpl {
                     }
                 }
                 for (auto shift_level = 0; shift_level < shift_levels_count; shift_level++) {
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     auto sym = XkbKeySymEntry(kbd, key_code, shift_level, group);
                     if (sym) {
                         auto existing_mapping = keyboard_layout_.find(sym);
@@ -261,8 +272,8 @@ class AutoType::AutoTypeImpl {
         // The key has been just used, let the app process it
         wait_for_key_mapping_propagation();
 
-        KeySym key_sym[] = {0};
-        XChangeKeyboardMapping(display(), empty_key_code_, 1, key_sym, 1);
+        KeySym key_sym = 0;
+        XChangeKeyboardMapping(display(), empty_key_code_, 1, &key_sym, 1);
         XSync(display(), False);
 
         empty_key_code_key_sym_ = 0;
@@ -321,7 +332,7 @@ AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
 AutoType::~AutoType() = default;
 
 AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
-                                  std::optional<os_key_code_t> code, Modifier) {
+                                  std::optional<os_key_code_t> code, Modifier /*unused*/) {
     if (!code.has_value()) {
         auto msg = std::string("Character ") + std::to_string(static_cast<uint32_t>(character)) +
                    " not supported";
@@ -365,7 +376,7 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
 }
 
 pid_t AutoType::active_pid() {
-    auto display = impl_->display();
+    auto *display = impl_->display();
     if (!display) {
         return {};
     }
@@ -379,7 +390,7 @@ pid_t AutoType::active_pid() {
 }
 
 AppWindow AutoType::active_window(ActiveWindowArgs args) {
-    auto display = impl_->display();
+    auto *display = impl_->display();
     if (!display) {
         return {};
     }

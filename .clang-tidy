@@ -8,6 +8,7 @@ Checks: >-
     -readability-convert-member-functions-to-static,
     -cppcoreguidelines-pro-type-reinterpret-cast,
     -llvm-header-guard,
+    -hicpp-signed-bitwise
 WarningsAsErrors: '*'
 CheckOptions:
   - key:             readability-identifier-naming.VariableCase
