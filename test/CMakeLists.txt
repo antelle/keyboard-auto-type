@@ -19,15 +19,15 @@ FetchContent_MakeAvailable(googletest)
 
 if(APPLE)
     set(PLATFORM_SOURCES
-        "impl/darwin/platform-util.cpp"
+        "src/utils/darwin/platform-util.cpp"
     )
 elseif(WIN32)
     set(PLATFORM_SOURCES
-        "impl/win32/platform-util.cpp"
+        "src/utils/win32/platform-util.cpp"
     )
 else()
     set(PLATFORM_SOURCES
-        "impl/linux/platform-util.cpp"
+        "src/utils/linux/platform-util.cpp"
     )
 endif()
 
@@ -40,7 +40,7 @@ add_executable(${PROJECT_NAME}
     "src/auto-type-window-test.cpp"
     "src/auto-type-errors-test.cpp"
     "src/modifier-test.cpp"
-    "impl/test-util.cpp"
+    "src/utils/test-util.cpp"
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
