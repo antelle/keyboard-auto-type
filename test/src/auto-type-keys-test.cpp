@@ -120,7 +120,7 @@ class AutoTypeKeysTest : public testing::Test {
         typer.key_press(kbd::KeyCode::S);
         typer.key_press(kbd::KeyCode::Enter);
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        typer.key_press(kbd::KeyCode::A);
+        typer.key_press(kbd::KeyCode::S);
 #endif
     }
 
@@ -132,7 +132,10 @@ class AutoTypeKeysTest : public testing::Test {
         typer.key_press(kbd::KeyCode::U);
         typer.key_press(kbd::KeyCode::Enter);
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-        typer.key_press(kbd::KeyCode::T);
+        typer.key_press(kbd::KeyCode::DownArrow);
+        typer.key_press(kbd::KeyCode::DownArrow);
+        typer.key_press(kbd::KeyCode::DownArrow);
+        typer.key_press(kbd::KeyCode::Enter);
 #endif
     }
 

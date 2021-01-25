@@ -16,7 +16,9 @@ void open_test_app() {
 bool is_test_app_active() {
     kbd::AutoType typer;
     auto active_window = typer.active_window({.get_window_title = true});
-    return active_window.app_name == "Electron" && active_window.title == "Test keys app";
+    auto is_electron = active_window.app_name.ends_with("Electron") ||
+                       active_window.app_name.ends_with("electron.exe");
+    return is_electron && active_window.title == "Test keys app";
 }
 
 void wait_test_app_window() {
@@ -37,7 +39,7 @@ void save_text_and_close_test_app() {
         typer.shortcut(kbd::KeyCode::S);
         wait_millis(500);
     } else {
-        FAIL() << "Active app is not a text editor, failed to save";
+        FAIL() << "Active app is not a test app, failed to save";
     }
 }
 

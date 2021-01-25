@@ -6,7 +6,8 @@ if (!fs.existsSync(path.join(__dirname, 'node_modules', 'electron'))) {
     spawnSync('npm', ['ci'], { cwd: __dirname });
 }
 
-const ps = spawn('npm', ['start'], { cwd: __dirname, detached: true });
+const electron = require('electron');
+const ps = spawn(electron, ['.'], { cwd: __dirname, detached: true });
 ps.unref();
 
 process.exit(0);
