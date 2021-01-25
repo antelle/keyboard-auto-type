@@ -1,5 +1,7 @@
 #include "x11-keysym-map.h"
 
+#include <X11/keysym.h>
+
 #include <algorithm>
 #include <array>
 
@@ -174,6 +176,12 @@ constexpr std::array CHAR_MAP_16{
 //    YYYYYYYY = KeySym
 constexpr std::array CHAR_MAP_32{0x00002245'01002248U};
 
+// Special printable characters in 0x00 .. 0x1F range
+constexpr std::array CHAR_MAP_LOW{
+    std::make_pair(U'\n', XK_Return),
+    std::make_pair(U'\t', XK_Tab),
+};
+
 constexpr auto MIN_CHAR_IN_CHAR_MAP_16 = CHAR_MAP_16.front() >> 16;
 constexpr auto MAX_CHAR_IN_CHAR_MAP_16 = CHAR_MAP_16.back() >> 16;
 constexpr auto MIN_CHAR_IN_CHAR_MAP_32 = CHAR_MAP_32.front() >> 32;
@@ -197,6 +205,15 @@ uint32_t char_to_keysym(char32_t ch) {
         if (found != CHAR_MAP_16.end() && *found >> SHIFT_WORD == ch) {
             return *found & std::numeric_limits<uint16_t>::max();
         }
+    }
+
+    if (ch < MIN_CHAR_IN_CHAR_MAP_16) {
+        for (auto [char_code, key_sym] : CHAR_MAP_LOW) {
+            if (ch == char_code) {
+                return key_sym;
+            }
+        }
+        return 0;
     }
 
     return ADD_CODEPOINT + ch;
