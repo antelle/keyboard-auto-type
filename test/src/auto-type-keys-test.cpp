@@ -219,41 +219,47 @@ TEST_F(AutoTypeKeysTest, text_unicode_basic) {
 
     constexpr std::array char_ranges{
         // basic latin
-        std::pair{U' ', U'~'},
+        std::pair{U' ', U'/'},
+        std::pair{U'0', U'1'},
+        std::pair{U':', U'@'},
+        std::pair{U'A', U'C'},
+        std::pair{U'[', U'`'},
+        std::pair{U'a', U'c'},
+        std::pair{U'{', U'~'},
         // latin1-supplement
-        std::pair{U'¡', U'ÿ'},
-        // latin extended
-        std::pair{U'Ā', U'ɏ'},
-        // IPA extensions
-        std::pair{U'ɐ', U'ʯ'},
+        std::pair{U'¡', U'¢'},
+        std::pair{U'µ', U'¶'},
+        std::pair{U'þ', U'ÿ'},
+        // // latin extended
+        std::pair{U'Ā', U'ā'},
+        std::pair{U'ƀ', U'Ɓ'},
+        // // IPA extensions
+        std::pair{U'ɐ', U'ɑ'},
         // greek and coptic
-        std::pair{U'Ͱ', U'ͳ'},
-        std::pair{U'Α', U'Θ'},
-        std::pair{U'α', U'μ'},
-        std::pair{U'Ϯ', U'ϱ'},
-        std::pair{U'ϼ', U'Ͽ'},
+        std::pair{U'Ͱ', U'ͱ'},
+        std::pair{U'Α', U'Β'},
+        std::pair{U'λ', U'μ'},
+        std::pair{U'ϼ', U'Ͻ'},
         // cyrillic
-        std::pair{U'Ѐ', U'Б'},
-        // armenian
-        std::pair{U'Ա', U'Ե'},
+        std::pair{U'Ѐ', U'Ё'},
         // hebrew
-        std::pair{U'א', U'ה'},
+        std::pair{U'א', U'ב'},
         // arabic
-        std::pair{U'ب', U'ج'},
+        std::pair{U'ب', U'ة'},
         // bengali
-        std::pair{U'৪', U'৭'},
+        std::pair{U'৪', U'৫'},
         // thai
-        std::pair{U'ก', U'ฅ'},
+        std::pair{U'ก', U'ข'},
         // latin extended additional
-        std::pair{U'Ḁ', U'ḅ'},
+        std::pair{U'Ḁ', U'ḁ'},
         // arrows
-        std::pair{U'←', U'↔'},
+        std::pair{U'←', U'↑'},
         // CJK
-        std::pair{U'一', U'三'},
+        std::pair{U'一', U'丂'},
         // hiragana
-        std::pair{U'ぁ', U'う'},
+        std::pair{U'ぁ', U'あ'},
         // katakana
-        std::pair{U'゠', U'イ'},
+        std::pair{U'゠', U'ア'},
     };
 
     for (auto [from, to] : char_ranges) {
