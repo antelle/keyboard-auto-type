@@ -18,6 +18,8 @@ RUN_TESTS_NOEXCEPT = build/sub/tests-noexcept/test/test
 # \
 !endif
 
+gtest_filter = *
+
 all:
 	cmake -B build -DKEYBOARD_AUTO_TYPE_WITH_EXAMPLE=1 .
 	cmake --build build -j4
@@ -60,7 +62,7 @@ build-tests-noexcept:
 	cmake --build build/sub/tests-noexcept -j4
 
 tests-except: build-tests-except
-	$(RUN_TESTS_EXCEPT)
+	$(RUN_TESTS_EXCEPT) --gtest_filter="$(gtest_filter)"
 
 tests-noexcept: build-tests-noexcept
 	$(RUN_TESTS_NOEXCEPT) --gtest_filter="AutoTypeErrorsTest.*"
