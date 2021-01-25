@@ -21,8 +21,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 location
             );
 
-            if (e.type === 'keydown' && e.code === 'Tab') {
-                textarea.value += '\t';
+            if (e.code === 'Tab' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+                e.preventDefault();
+                if (e.type === 'keydown') {
+                    textarea.value += '\t';
+                }
                 textarea.focus();
             }
 
