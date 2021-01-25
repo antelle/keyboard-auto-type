@@ -41,7 +41,7 @@ The library is WIP, so the API is not stable now. Tests may be not complete, but
 | [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Layout-aware text entry](#layout-aware-text-entry)       | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :x:                |
+| [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Getting browser URL](#getting-browser-url)               | :eight_pointed_black_star: | :eight_pointed_black_star: | :x:                |
 | [Switching to an app](#switching-to-an-app-or-a-window)   | :white_check_mark:         | :x:                        | :x:                |
