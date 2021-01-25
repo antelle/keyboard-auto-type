@@ -57,7 +57,7 @@ constexpr std::array<os_key_code_t, static_cast<size_t>(KeyCode::KeyCodeCount)> 
     kVK_Delete, kVK_Escape, kVK_ForwardDelete, kVK_Help, kVK_Mute,
     0, // PrintScreen
     kVK_Return, kVK_Space, kVK_Tab, kVK_VolumeDown, kVK_VolumeUp,
-    0, // ControlBreak
+    0, // Pause
     0, // Insert
     0, // Sleep
 };

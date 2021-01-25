@@ -149,7 +149,7 @@ constexpr std::array<BYTE, static_cast<size_t>(KeyCode::KeyCodeCount)> KEY_MAP{
     VK_TAB,
     VK_VOLUME_DOWN,
     VK_VOLUME_UP,
-    VK_CANCEL, // ControlBreak
+    VK_PAUSE,
     VK_INSERT,
     VK_SLEEP,
 };

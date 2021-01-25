@@ -53,11 +53,10 @@ constexpr std::array<os_key_code_t, static_cast<size_t>(KeyCode::KeyCodeCount)> 
     0, // Mute
     0, // PrintScreen
     XK_Return, XK_space, XK_Tab,
-    0,         // VolumeDown
-    0,         // VolumeUp
-    XK_Cancel, // or is it XK_Break?
-    XK_Insert,
-    0, // Sleep,
+    0, // VolumeDown
+    0, // VolumeUp
+    XK_Pause, XK_Insert,
+    0, // Sleep
 };
 
 os_key_code_t map_key_code(KeyCode code) {
