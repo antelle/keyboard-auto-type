@@ -1,5 +1,11 @@
 const { ipcRenderer } = require('electron');
 
+const CodeMap = {
+    // "`" is actually "IntlBackslash" on macOS, but not always:
+    // https://www.w3.org/TR/uievents-code/#keyboard-102
+    IntlBackslash: 'Backquote'
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     const [textarea] = document.getElementsByTagName('textarea');
     for (const evt of ['keypress', 'keyup', 'keydown']) {
@@ -10,6 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const location = ['standard', 'left', 'right', 'numpad']
                 .filter(loc => e.location === KeyboardEvent[`DOM_KEY_LOCATION_${loc.toUpperCase()}`])
                 .join('');
+            const code = CodeMap[e.code] || e.code;
             ipcRenderer.invoke('log',
                 'event',
                 e.type,
@@ -17,7 +24,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 // e.keyCode,
                 modifiers,
                 // e.key,
-                e.code,
+                code,
                 location
             );
 

@@ -235,18 +235,10 @@ TEST_F(AutoTypeKeysTest, text_latin1) {
     expected_text = U"1!2@3#4$5%6^7&8*9(0)-_=+[{]};:'\"\\|,<.>/?`~"
                     U"aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ";
 
-#if __APPLE__
-    // "`" is actually "IntlBackslash" on macOS:
-    // https://www.w3.org/TR/uievents-code/#keyboard-102
-    constexpr auto BACKQUOTE_KEY = "IntlBackslash";
-#else
-    constexpr auto BACKQUOTE_KEY = "Backquote";
-#endif
-
     std::array event_keys{
         "Digit1",    "Digit2", "Digit3",    "Digit4", "Digit5", "Digit6",      "Digit7",
         "Digit8",    "Digit9", "Digit0",    "Minus",  "Equal",  "BracketLeft", "BracketRight",
-        "Semicolon", "Quote",  "Backslash", "Comma",  "Period", "Slash",       BACKQUOTE_KEY,
+        "Semicolon", "Quote",  "Backslash", "Comma",  "Period", "Slash",       "Backquote",
         "KeyA",      "KeyB",   "KeyC",      "KeyD",   "KeyE",   "KeyF",        "KeyG",
         "KeyH",      "KeyI",   "KeyJ",      "KeyK",   "KeyL",   "KeyM",        "KeyN",
         "KeyO",      "KeyP",   "KeyQ",      "KeyR",   "KeyS",   "KeyT",        "KeyU",
