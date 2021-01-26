@@ -3,7 +3,7 @@ const path = require('path');
 const { spawnSync, spawn } = require('child_process');
 
 if (!fs.existsSync(path.join(__dirname, 'node_modules', 'electron'))) {
-    spawnSync('npm', ['ci'], { cwd: __dirname });
+    spawnSync('npm', ['ci'], { cwd: __dirname, shell: true });
 }
 
 const electron = require('electron');
