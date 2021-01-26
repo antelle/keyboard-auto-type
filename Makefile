@@ -78,7 +78,7 @@ run-x11-print-layout:
 	build/x11-print-layout/x11-print-layout > tmp/layout.txt
 
 build-test-keys-app:
-	npm i --prefix=test-keys-app
+	cd test-keys-app && npm ci
 
 run-test-keys-app:
 	node test-keys-app/start.js
