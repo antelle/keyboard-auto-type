@@ -98,9 +98,13 @@ function buildSymbolMap(contents) {
             if (codePointMatch) {
                 const codePoint = parseInt(codePointMatch[1], 16);
                 if (keySym === 0x1_000_000 + codePoint) {
-                    plus1M.set(codePoint, keySym);
-                } else if (!mapped[codePoint]) {
-                    mapped.set(codePoint, keySym);
+                    if (!plus1M.has(codePoint)) {
+                        plus1M.set(codePoint, keySym);
+                    }
+                } else {
+                    if (!mapped.has(codePoint)) {
+                        mapped.set(codePoint, keySym);
+                    }
                 }
             }
         }
