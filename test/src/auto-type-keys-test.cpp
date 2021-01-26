@@ -231,19 +231,51 @@ TEST_F(AutoTypeKeysTest, text_whitespace) {
     typer.text(expected_text);
 }
 
+TEST_F(AutoTypeKeysTest, text_latin1) {
+    expected_text = U"1!2@3#4$5%6^7&8*9(0)-_=+[{]};:'\"\\|,<.>/?`~"
+                    U"aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ";
+
+#if __APPLE__
+    // "`" is actually "IntlBackslash" on macOS:
+    // https://www.w3.org/TR/uievents-code/#keyboard-102
+    constexpr auto BACKQUOTE_KEY = "IntlBackslash";
+#else
+    constexpr auto BACKQUOTE_KEY = "Backquote";
+#endif
+
+    std::array event_keys{
+        "Digit1",    "Digit2", "Digit3",    "Digit4", "Digit5", "Digit6",      "Digit7",
+        "Digit8",    "Digit9", "Digit0",    "Minus",  "Equal",  "BracketLeft", "BracketRight",
+        "Semicolon", "Quote",  "Backslash", "Comma",  "Period", "Slash",       BACKQUOTE_KEY,
+        "KeyA",      "KeyB",   "KeyC",      "KeyD",   "KeyE",   "KeyF",        "KeyG",
+        "KeyH",      "KeyI",   "KeyJ",      "KeyK",   "KeyL",   "KeyM",        "KeyN",
+        "KeyO",      "KeyP",   "KeyQ",      "KeyR",   "KeyS",   "KeyT",        "KeyU",
+        "KeyV",      "KeyW",   "KeyX",      "KeyY",   "KeyZ"};
+    auto ix = 0;
+    for (auto event_key : event_keys) {
+        auto key1 = std::to_string(expected_text[ix++]);
+        auto key2 = std::to_string(expected_text[ix++]);
+        expected_events.push_back(std::string("keydown 0 - ") + event_key + " standard");
+        expected_events.push_back(std::string("keypress ") + key1 + " - " + event_key +
+                                  " standard");
+        expected_events.push_back(std::string("keyup 0 - ") + event_key + " standard");
+        expected_events.push_back(std::string("keydown 0 shift ShiftLeft left"));
+        expected_events.push_back(std::string("keydown 0 shift ") + event_key + " standard");
+        expected_events.push_back(std::string("keypress ") + key2 + " shift " + event_key +
+                                  " standard");
+        expected_events.push_back(std::string("keyup 0 shift ") + event_key + " standard");
+        expected_events.push_back(std::string("keyup 0 - ShiftLeft left"));
+    }
+
+    kbd::AutoType typer;
+    typer.text(expected_text);
+}
+
 TEST_F(AutoTypeKeysTest, text_unicode_basic) {
     kbd::AutoType typer;
     expected_text = U"";
 
     constexpr std::array char_ranges{
-        // basic latin
-        std::pair{U'!', U'/'},
-        std::pair{U'0', U'1'},
-        std::pair{U':', U'@'},
-        std::pair{U'A', U'C'},
-        std::pair{U'[', U'`'},
-        std::pair{U'a', U'c'},
-        std::pair{U'{', U'~'},
         // latin1-supplement
         std::pair{U'¡', U'¢'},
         std::pair{U'µ', U'¶'},
