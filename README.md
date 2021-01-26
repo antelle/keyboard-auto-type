@@ -32,7 +32,7 @@ See more in [Usage](#usage) section.
 
 ## Status
 
-The library is WIP, so the API is not stable now. Tests may be not complete, but basic stuff on macOS and Windows should work, Linux is coming soon.
+The library is ready and tests are passing, so basic stuff should work. Not tested in production yet, there may be issues, reports are very welcome!
 
 ## Features
 
