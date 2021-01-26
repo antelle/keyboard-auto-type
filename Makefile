@@ -82,3 +82,5 @@ build-test-keys-app:
 
 run-test-keys-app:
 	node test-keys-app/start.js
+
+ci: build-test-keys-app tests
