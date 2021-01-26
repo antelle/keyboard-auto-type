@@ -100,6 +100,7 @@ class AutoTypeKeysTest : public testing::Test {
         typer.key_press(kbd::KeyCode::RightArrow);
         // open the menu
         typer.key_press(kbd::KeyCode::DownArrow);
+        wait_millis(1000);
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         // highlight the first menu ("File")
         typer.key_press(kbd::KeyCode::Alt);
@@ -107,6 +108,7 @@ class AutoTypeKeysTest : public testing::Test {
         typer.key_press(kbd::KeyCode::RightArrow);
         // open the menu
         typer.key_press(kbd::KeyCode::DownArrow);
+        wait_millis(1000);
 #else
         // highlight the first menu ("File")
         typer.key_press(kbd::KeyCode::Alt);
@@ -370,11 +372,13 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
 
     // type "hello"
     typer.text(U"hello");
+    wait_millis(1000);
     // "hello"
 
     // select all
     typer.shortcut(kbd::KeyCode::A);
     typer.shortcut(kbd::KeyCode::C);
+    wait_millis(1000);
     // "[hello]"
 
     // paste at the end
@@ -382,6 +386,7 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     typer.text(U" ");
     typer.shortcut(kbd::KeyCode::V);
     typer.text(U" ");
+    wait_millis(1000);
     // "hello hello "
 
     // cut "hell"
@@ -392,6 +397,7 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
         typer.key_press(kbd::KeyCode::LeftArrow, kbd::Modifier::Shift);
     }
     typer.shortcut(kbd::KeyCode::X);
+    wait_millis(1000);
     // "hello [hell]o "
 
     // paste at the end
@@ -399,6 +405,7 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.shortcut(kbd::KeyCode::V);
+    wait_millis(1000);
     // "hello o hell"
 }
 
