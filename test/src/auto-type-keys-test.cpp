@@ -71,14 +71,14 @@ class AutoTypeKeysTest : public testing::Test {
 
         for (size_t i = 0; i < expected_text.length(); i++) {
             uint32_t char_code = 0;
-            ASSERT_FALSE(text_stream.eof()) << "Actual text is too short";
+            ASSERT_FALSE(text_stream.eof()) << "Actual text is too short: " + text;
             text_stream >> char_code;
             auto expected_char = static_cast<uint32_t>(expected_text[i]);
-            ASSERT_EQ(expected_char, char_code)
-                << std::string("Character at index ") + std::to_string(i) + " is different";
+            ASSERT_EQ(expected_char, char_code) << std::string("Character at index ") +
+                                                       std::to_string(i) + " is different: " + text;
         }
 
-        ASSERT_TRUE(text_stream.eof()) << "Actual text is too long";
+        ASSERT_TRUE(text_stream.eof()) << "Actual text is too long: " + text;
 
         if (expected_events.size()) {
             ASSERT_GE(events.size(), expected_events.size()) << "Not enough key events";
