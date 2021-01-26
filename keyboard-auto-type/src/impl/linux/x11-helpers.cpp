@@ -105,4 +105,28 @@ Window x11_get_active_window(Display *display) {
     return window;
 }
 
+bool x11_send_client_message(Display *display, Window window, Window send_to_window,
+                             const char *type, uint64_t lparam) {
+    auto type_atom = XInternAtom(display, type, False);
+    if (!type_atom) {
+        return false;
+    }
+
+    XEvent event{};
+
+    constexpr auto MESSAGE_FORMAT = 32;
+
+    event.type = ClientMessage;
+    event.xclient.display = display;
+    event.xclient.window = window;
+    event.xclient.message_type = type_atom;
+    event.xclient.format = MESSAGE_FORMAT;
+    event.xclient.data.l[0] = lparam;      // NOLINT(cppcoreguidelines-pro-type-union-access)
+    event.xclient.data.l[1] = CurrentTime; // NOLINT(cppcoreguidelines-pro-type-union-access)
+
+    auto ret = XSendEvent(display, send_to_window, False,
+                          SubstructureNotifyMask | SubstructureRedirectMask, &event);
+    return ret != 0;
+}
+
 } // namespace keyboard_auto_type

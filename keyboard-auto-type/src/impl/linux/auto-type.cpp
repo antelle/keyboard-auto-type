@@ -467,10 +467,42 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
 }
 
 bool AutoType::show_window(const AppWindow &window) {
-    if (!window.pid) {
+    if (!window.pid || !window.window_id) {
         return false;
     }
-    return false;
+    auto *display = impl_->display();
+    if (!display) {
+        return false;
+    }
+
+    XWindowAttributes window_attr{};
+    if (!XGetWindowAttributes(display, window.window_id, &window_attr)) {
+        return false;
+    }
+    auto root = window_attr.root;
+
+    auto window_desktop = x11_window_prop_ulong(display, window.window_id, "_NET_WM_DESKTOP");
+    auto current_desktop = x11_window_prop_ulong(display, root, "_NET_CURRENT_DESKTOP");
+    if (window_desktop != current_desktop) {
+        if (!x11_send_client_message(display, root, root, "_NET_CURRENT_DESKTOP", window_desktop)) {
+            return false;
+        }
+    }
+
+    constexpr auto WINDOW_MESSAGE_FROM_WINDOW_PAGER = 2;
+    if (!x11_send_client_message(display, window.window_id, root, "_NET_ACTIVE_WINDOW",
+                                 WINDOW_MESSAGE_FROM_WINDOW_PAGER)) {
+        return false;
+    }
+
+    XSync(display, False);
+
+    XMapRaised(display, window.window_id);
+    XSetInputFocus(display, window.window_id, RevertToParent, CurrentTime);
+
+    XSync(display, False);
+
+    return true;
 }
 
 AutoTypeTextTransaction AutoType::begin_batch_text_entry() {

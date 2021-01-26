@@ -14,5 +14,7 @@ std::string x11_window_prop_string(Display *display, Window window, const char *
 uint64_t x11_window_prop_ulong(Display *display, Window window, const char *prop);
 std::string x11_window_prop_app_cls(Display *display, Window window);
 Window x11_get_active_window(Display *display);
+bool x11_send_client_message(Display *display, Window window, Window send_to_window,
+                             const char *type, uint64_t lparam);
 
 } // namespace keyboard_auto_type
