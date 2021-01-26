@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <climits>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -25,8 +26,19 @@ struct KeyCodeWithMask {
     uint8_t mod_mask = 0;
 };
 
-constexpr std::array SHIFT_LEVELS_MODIFIERS{
+constexpr std::array OS_KEY_CODE_SUPPORTED_MODIFIERS_MASKS{
     std::make_pair(ShiftMask, Modifier::Shift),
+};
+
+constexpr std::array KEY_CODES_MODIFIERS{
+    std::make_pair(XK_Shift_L, Modifier::LeftShift),
+    std::make_pair(XK_Shift_R, Modifier::RightShift),
+    std::make_pair(XK_Control_L, Modifier::LeftCtrl),
+    std::make_pair(XK_Control_R, Modifier::RightCtrl),
+    std::make_pair(XK_Alt_L, Modifier::LeftAlt),
+    std::make_pair(XK_Alt_R, Modifier::RightAlt),
+    std::make_pair(XK_Super_L, Modifier::LeftMeta),
+    std::make_pair(XK_Super_R, Modifier::RightMeta),
 };
 
 static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(200);
@@ -100,7 +112,8 @@ class AutoType::AutoTypeImpl {
 
         auto layout_entry = keyboard_layout_.find(code);
         KeyCodeWithMask key{};
-        KeySym key_sym_lower = 0, key_sym_upper = 0;
+        KeySym key_sym_lower = 0;
+        KeySym key_sym_upper = 0;
         XConvertCase(code, &key_sym_lower, &key_sym_upper);
         if (layout_entry == keyboard_layout_.end()) {
             if (is_valid_key_sym(code)) {
@@ -125,9 +138,8 @@ class AutoType::AutoTypeImpl {
         }
         XkbStateRec kbd_state{};
         if (key.mod_mask) {
-            if (XkbGetState(display(), XkbModifierLockMask, &kbd_state)) {
-                return throw_or_return(AutoTypeResult::OsError,
-                                       "Failed to get lock modifiers state");
+            if (XkbGetState(display(), XkbUseCoreKbd, &kbd_state)) {
+                return throw_or_return(AutoTypeResult::OsError, "Failed to get modifiers state");
             }
             if (kbd_state.locked_mods != key.mod_mask) {
                 if (!XkbLockModifiers(display(), XkbUseCoreKbd, key.mod_mask, key.mod_mask)) {
@@ -309,7 +321,7 @@ class AutoType::AutoTypeImpl {
         auto layout_key = key_code_from_layout(key_sym);
         auto mod_mask = layout_key.has_value() ? layout_key->mod_mask : 0;
         if (mod_mask) {
-            for (auto [mask, modifier] : SHIFT_LEVELS_MODIFIERS) {
+            for (auto [mask, modifier] : OS_KEY_CODE_SUPPORTED_MODIFIERS_MASKS) {
                 if (mod_mask & mask) {
                     kc.modifier = kc.modifier | modifier;
                 }
@@ -353,7 +365,35 @@ AutoTypeResult AutoType::key_move(Direction direction, char32_t character,
 }
 
 Modifier AutoType::get_pressed_modifiers() {
+    auto *display = impl_->display();
+    if (!display) {
+        return Modifier::None;
+    }
+
+    static constexpr auto KEYMAP_SIZE = 32;
+
+    std::array<char, KEYMAP_SIZE> keymap{};
+    if (!XQueryKeymap(display, keymap.data())) {
+        return Modifier::None;
+    }
+
     auto pressed_modifiers = Modifier::None;
+
+    for (auto [key_sym, modifier] : KEY_CODES_MODIFIERS) {
+        auto key_code = XKeysymToKeycode(display, key_sym);
+        if (!key_code) {
+            continue;
+        }
+
+        auto key_offsets = std::div(key_code, CHAR_BIT);
+        auto key_ix_in_keymap = key_offsets.quot;
+        auto key_bit_offset = key_offsets.rem;
+        auto key_bit_mask = 1 << key_bit_offset;
+        if (keymap.at(key_ix_in_keymap) & key_bit_mask) {
+            pressed_modifiers = pressed_modifiers | modifier;
+        }
+    }
+
     return pressed_modifiers;
 }
 
