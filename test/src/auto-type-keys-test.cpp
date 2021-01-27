@@ -373,14 +373,17 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     // "hello"
 
     // select all
+    wait_millis(500);
     typer.shortcut(kbd::KeyCode::A);
     typer.shortcut(kbd::KeyCode::C);
+    wait_millis(500);
     // "[hello]"
 
     // paste at the end
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.text(U" ");
     typer.shortcut(kbd::KeyCode::V);
+    wait_millis(500);
     typer.text(U" ");
     // "hello hello "
 
@@ -391,14 +394,18 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     for (int i = 0; i < 4; i++) {
         typer.key_press(kbd::KeyCode::LeftArrow, kbd::Modifier::Shift);
     }
+    wait_millis(500);
     typer.shortcut(kbd::KeyCode::X);
+    wait_millis(500);
     // "hello [hell]o "
 
     // paste at the end
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.key_press(kbd::KeyCode::RightArrow);
+    wait_millis(500);
     typer.shortcut(kbd::KeyCode::V);
+    wait_millis(500);
     // "hello o hell"
 }
 

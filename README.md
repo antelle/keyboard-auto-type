@@ -4,6 +4,9 @@ Cross-platform library for simulating keyboard input events.
 
 <kbd>K</kbd><kbd>E</kbd><kbd>Y</kbd><kbd>B</kbd><kbd>O</kbd><kbd>A</kbd><kbd>R</kbd><kbd>D</kbd><kbd>-</kbd><kbd>A</kbd><kbd>U</kbd><kbd>T</kbd><kbd>O</kbd><kbd>-</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>P</kbd><kbd>E</kbd>
 
+![Tests](https://github.com/antelle/keyboard-auto-type/workflows/Tests/badge.svg) 
+![Lint](https://github.com/antelle/keyboard-auto-type/workflows/Lint/badge.svg)
+
 ## Intro
 
 This library allows you to send keystrokes to different applications as if they were typed by the user. It provides both simple and low-level API consistent across platforms. It can be useful in password managers, automation, testing software, and everywhere else where you need to simulate user input.
@@ -322,7 +325,7 @@ You will need:
 - [cppcheck](http://cppcheck.sourceforge.net/)
 - [node.js](https://nodejs.org/)
 
-On linux, install `xorg-dev` package.
+On linux, install `xorg-dev` and `libxtst-dev` packages.
 
 `Makefile` is provided as a convenience measure to launch `cmake` commands. There's nothing important there, however using it is easier than typing commands. If you're familiar with CMake, you can build without `make` if you prefer.
 
