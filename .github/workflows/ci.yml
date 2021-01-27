@@ -70,7 +70,7 @@ jobs:
         # https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
         run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
       - name: Install dependencies
-        run: sudo apt-get install -y libxtst-dev
+        run: sudo apt-get install -y libxtst-dev clang-tidy cppcheck
       - name: Build
         # Not sure how to make tests work in this setup
         run: make build-tests-except
