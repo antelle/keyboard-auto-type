@@ -1,0 +1,36 @@
+name: Tests
+on:
+  push:
+    branches:
+      - ci
+  pull_request:
+
+jobs:
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Build test-keys-app
+        run: make build-test-keys-app
+      - name: Test
+        # AutoTypeKeysTest.key_press_menu doesn't pass because it needs accessibility access
+        run: make tests gtest_filter=-AutoTypeKeysTest.key_press_menu
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Enable Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Build test-keys-app
+        run: nmake build-test-keys-app
+      - name: Test
+        # AutoTypeKeysTest.key_press_menu doesn't pass in CI on Windows too
+        run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu

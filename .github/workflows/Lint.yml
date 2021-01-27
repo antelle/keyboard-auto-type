@@ -1,0 +1,61 @@
+name: Lint
+on:
+  push:
+    branches:
+      - ci
+  pull_request:
+
+jobs:
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Symlink clang-tidy
+        run: ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
+      - name: Install cppcheck
+        run: brew install cppcheck
+      - name: Check violations
+        run: make check
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Enable Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install cppcheck
+        run: choco install cppcheck
+      - name: Check violations
+        # this should be: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
+        run: |
+          $env:Path += ";C:\Program Files\Cppcheck"
+          nmake check
+
+  ubuntu:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install build dependencies
+        run: sudo apt-get install -y libxtst-dev
+      - name: Build
+        run: make build-tests-except
+        env:
+          CC: gcc-10
+          CXX: g++-10
+      - name: Install check dependencies
+        run: sudo apt-get install -y clang-tidy cppcheck
+      - name: Check violations
+        run: make check
+        env:
+          CC: gcc-10
+          CXX: g++-10
