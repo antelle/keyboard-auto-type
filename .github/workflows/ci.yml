@@ -30,46 +30,46 @@ jobs:
   #     - name: Check violations
   #       run: make check
 
-  windows:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
-    steps:
-      - name: Enable Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Build test-keys-app
-        run: nmake build-test-keys-app
-      - name: Test
-        # AutoTypeKeysTest.key_press_menu doesn't pass in CI on Windows too
-        run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu
-      - name: Install cppcheck
-        run: choco install --trace cppcheck
-      - name: Check violations
-        # this should be: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
-        run: |
-          $env:Path += ";C:\Program Files\Cppcheck"
-          nmake check
-
-  # ubuntu:
+  # windows:
   #   runs-on: ${{ matrix.os }}
   #   strategy:
   #     matrix:
-  #       os: [ubuntu-latest]
-  #       # os: [ubuntu-20.04, ubuntu-18.04, ubuntu-16.04]
+  #       os: [windows-latest]
   #   steps:
+  #     - name: Enable Developer Command Prompt
+  #       uses: ilammy/msvc-dev-cmd@v1
   #     - name: Checkout
   #       uses: actions/checkout@v2
   #       with:
   #         fetch-depth: 0
-  #     - name: Configure Xvfb
-  #       # https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
-  #       run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
   #     - name: Build test-keys-app
-  #       run: make build-test-keys-app
+  #       run: nmake build-test-keys-app
   #     - name: Test
-  #       run: make tests
+  #       # AutoTypeKeysTest.key_press_menu doesn't pass in CI on Windows too
+  #       run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu
+  #     - name: Install cppcheck
+  #       run: choco install cppcheck
+  #     - name: Check violations
+  #       # this should be: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
+  #       run: |
+  #         $env:Path += ";C:\Program Files\Cppcheck"
+  #         nmake check
+
+  ubuntu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        # os: [ubuntu-20.04, ubuntu-18.04, ubuntu-16.04]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Configure Xvfb
+        # https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
+        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      - name: Build test-keys-app
+        run: make build-test-keys-app
+      - name: Test
+        run: make tests
