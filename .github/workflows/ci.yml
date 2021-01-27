@@ -25,7 +25,7 @@ jobs:
       - name: List
         run: ls -l ~/Desktop
       - name: Upload screenshots
-        uses: actions/checkout@v2
+        uses: actions/upload-artifact@v2
         with:
           name: Screenshots
           path: ~/Desktop/*.png
