@@ -21,14 +21,14 @@ jobs:
         # run: make ci
         run:
           # make build-test-keys-app
-          make tests gtest_filter=AutoTypeKeysTest.shortcut_copy_paste || true
-      - name: List
-        run: ls -l ~/Desktop
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v2
-        with:
-          name: Screenshots
-          path: ~/Desktop/*.png
+          make tests gtest_filter=AutoTypeKeysTest.shortcut_copy_paste
+      # - name: List
+      #   run: ls -l ~/Desktop
+      # - name: Upload screenshots
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: Screenshots
+      #     path: ~/Desktop/*.png
 
   # windows:
   #   runs-on: ${{ matrix.os }}
