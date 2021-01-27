@@ -42,18 +42,18 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      # - name: Build test-keys-app
-      #   run: nmake build-test-keys-app
-      # - name: Test
-      #   # AutoTypeKeysTest.key_press_menu doesn't pass in CI on Windows too
-      #   run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu
+      - name: Build test-keys-app
+        run: nmake build-test-keys-app
+      - name: Test
+        # AutoTypeKeysTest.key_press_menu doesn't pass in CI on Windows too
+        run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu
       - name: Install cppcheck
         run: choco install --trace cppcheck
-      # - name: Check violations
-      #   # this should be: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
-      #   run: |
-      #     $env:Path += ";C:\Program Files\Cppcheck"
-      #     nmake check
+      - name: Check violations
+        # this should be: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
+        run: |
+          $env:Path += ";C:\Program Files\Cppcheck"
+          nmake check
 
   # ubuntu:
   #   runs-on: ${{ matrix.os }}
