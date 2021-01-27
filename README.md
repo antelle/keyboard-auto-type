@@ -322,7 +322,7 @@ You will need:
 - [cppcheck](http://cppcheck.sourceforge.net/)
 - [node.js](https://nodejs.org/)
 
-On linux, install `xorg-dev` package.
+On linux, install `xorg-dev` and `libxtst-dev` packages.
 
 `Makefile` is provided as a convenience measure to launch `cmake` commands. There's nothing important there, however using it is easier than typing commands. If you're familiar with CMake, you can build without `make` if you prefer.
 
