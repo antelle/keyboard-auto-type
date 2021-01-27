@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-latest] # macos-10.15, macos-11.0
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,10 +20,9 @@ jobs:
       - name: Build test-keys-app
         run: make build-test-keys-app
       - name: Test
-        # AutoTypeKeysTest.key_press_menu
-        #   doesn't pass in CI because it needs accessibility access
+        # AutoTypeKeysTest.key_press_menu doesn't pass because it needs accessibility access
         run: make tests gtest_filter=-AutoTypeKeysTest.key_press_menu
-      - name: Link clang-tidy
+      - name: Symlink clang-tidy
         run: ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
       - name: Install cppcheck
         run: brew install cppcheck
@@ -43,15 +42,22 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build test-keys-app
-        run: make build-test-keys-app
+        run: nmake build-test-keys-app
       - name: Test
-        run: nmake tests
+        # AutoTypeKeysTest.key_press_menu doesn't pass in CI on Windows too
+        run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu
+      - name: Install LLVM
+        run: choco install llvm
+      - name: Install cppcheck
+        run: choco install cppcheck
+      - name: Check violations
+        run: nmkake check
 
   # ubuntu:
   #   runs-on: ${{ matrix.os }}
   #   strategy:
   #     matrix:
-  #       os: [ubuntu-latest]
+  #       os: [ubuntu-latest] # ubuntu-20.04, ubuntu-18.04, ubuntu-16.04
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
