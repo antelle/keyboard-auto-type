@@ -51,7 +51,7 @@ jobs:
         run: choco install cppcheck
       - name: Add cppcheck to PATH
         # run: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
-        run: set PATH=%PATH%;"C:\Program Files\Cppcheck"
+        run: $env:Path += ";C:\Program Files\Cppcheck"
       - name: cppcheck
         run: cppcheck
       # - name: Check violations
