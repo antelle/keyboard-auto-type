@@ -20,7 +20,7 @@ jobs:
       - name: Test
         # run: make ci
         run:
-          make build-test-keys-app
+          # make build-test-keys-app
           make tests gtest_filter=AutoTypeKeysTest.key_press_menu:AutoTypeKeysTest.shortcut_copy_paste
           ls ~/Desktop
 
