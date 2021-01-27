@@ -92,8 +92,9 @@ class AutoTypeKeysTest : public testing::Test {
     void open_edit_menu() {
         kbd::AutoType typer;
 #if __APPLE__
-        // highlight the "Apple" menu
-        typer.key_press(kbd::KeyCode::F2, kbd::Modifier::Ctrl);
+        // highlight the "Help" menu
+        // typer.key_press(kbd::KeyCode::F2, kbd::Modifier::Ctrl);
+        typer.key_press(kbd::KeyCode::Slash, kbd::Modifier::Command | kbd::Modifier::Shift);
         wait_millis(1000);
         // take a screenshot (revert me!)
         typer.key_press(kbd::KeyCode::D3, kbd::Modifier::Command | kbd::Modifier::Shift);
@@ -102,8 +103,9 @@ class AutoTypeKeysTest : public testing::Test {
         typer.key_press(kbd::KeyCode::RightArrow);
         typer.key_press(kbd::KeyCode::RightArrow);
         typer.key_press(kbd::KeyCode::RightArrow);
+        typer.key_press(kbd::KeyCode::RightArrow);
         // open the menu
-        typer.key_press(kbd::KeyCode::DownArrow);
+        // typer.key_press(kbd::KeyCode::DownArrow);
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         // highlight the first menu ("File")
         typer.key_press(kbd::KeyCode::Alt);
