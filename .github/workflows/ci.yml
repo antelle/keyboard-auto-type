@@ -18,9 +18,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install dependencies
-        run:
-            brew install llvm
-            ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
+        run: |
+          brew install llvm
+          ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
+          brew install cppcheck
       - name: Check
         run: make check
       - name: Test
