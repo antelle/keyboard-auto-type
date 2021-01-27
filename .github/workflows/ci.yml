@@ -79,6 +79,10 @@ jobs:
           CXX: g++-10
       - name: Install check dependencies
         run: sudo apt-get install -y clang-tidy cppcheck
+      - name: Cppcheck
+        run: |
+          cppcheck --version
+          cppcheck
       - name: Check violations
         run: make check
         env:
