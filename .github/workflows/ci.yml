@@ -22,7 +22,8 @@ jobs:
         run:
           # make build-test-keys-app
           make tests gtest_filter=AutoTypeKeysTest.key_press_menu:AutoTypeKeysTest.shortcut_copy_paste || true
-          ls -l ~/Desktop
+      - name: List
+        run: ls -l ~/Desktop
 
   # windows:
   #   runs-on: ${{ matrix.os }}
