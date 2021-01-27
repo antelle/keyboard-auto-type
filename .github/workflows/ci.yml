@@ -73,3 +73,6 @@ jobs:
         run: make build-test-keys-app
       - name: Test
         run: make tests
+        env:
+          CC: gcc-10
+          CXX: g++-10
