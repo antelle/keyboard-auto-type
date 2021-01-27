@@ -8,11 +8,7 @@ on:
 jobs:
 
   # macos:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [macos-latest]
-  #       # os: [macos-10.15, macos-11.0]
+  #   runs-on: macos-latest
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -31,10 +27,7 @@ jobs:
   #       run: make check
 
   # windows:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [windows-latest]
+  #   runs-on: windows-latest
   #   steps:
   #     - name: Enable Developer Command Prompt
   #       uses: ilammy/msvc-dev-cmd@v1
@@ -56,11 +49,7 @@ jobs:
   #         nmake check
 
   ubuntu:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
-        # os: [ubuntu-20.04, ubuntu-18.04, ubuntu-16.04]
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -73,16 +62,12 @@ jobs:
         run: sudo apt-get install -y libxtst-dev
       - name: Build
         # Not sure how to make tests work in this setup
-        run: make build-tests-except
+        run: make tests-except
         env:
           CC: gcc-10
           CXX: g++-10
       - name: Install check dependencies
         run: sudo apt-get install -y clang-tidy cppcheck
-      - name: Cppcheck
-        run: |
-          cppcheck --version
-          cppcheck
       - name: Check violations
         run: make check
         env:
