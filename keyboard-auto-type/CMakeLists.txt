@@ -107,7 +107,7 @@ if(KEYBOARD_AUTO_TYPE_WITH_STATIC_ANALYSIS)
     else()
         set(CPPCHECK_PROJECT_NAME "${CMAKE_BINARY_DIR}/compile_commands.json")
     endif()
-    add_custom_target(cppcheck COMMAND cppcheck --language=c++ --std=c++17 --enable=all --inline-suppr --error-exitcode=2 --project=${CPPCHECK_PROJECT_NAME} --suppress=unusedFunction ${SOURCES})
+    add_custom_target(cppcheck COMMAND cppcheck --language=c++ --enable=all --inline-suppr --error-exitcode=2 --project=${CPPCHECK_PROJECT_NAME} --suppress=unusedFunction ${SOURCES})
 endif()
 
 if(KEYBOARD_AUTO_TYPE_WITH_CODE_COVERAGE)
