@@ -69,23 +69,12 @@ jobs:
       - name: Configure Xvfb
         # https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
         run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      # - name: Install dependencies
-      #   run: sudo apt-get install -y libxtst-dev
-      - name: Build test-keys-app
-        run: make build-test-keys-app
-      - name: Run the test app
-        run: make run-test-keys-app
-      - name: Screenshot
-        run: |
-          sleep 3
-          sudo apt-get install -y scrot
-          scrot desktop.png
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Screenshot
-          path: desktop.png
-      # - name: Test
-      #   run: make tests
-      #   env:
-      #     CC: gcc-10
-      #     CXX: g++-10
+      - name: Install dependencies
+        run: sudo apt-get install -y libxtst-dev
+      - name: Build
+        run: make build-tests-except
+        env:
+          CC: gcc-10
+          CXX: g++-10
+      - name: Check
+        run: make check
