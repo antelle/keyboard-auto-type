@@ -53,7 +53,9 @@ jobs:
         # run: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
         run: $env:Path += ";C:\Program Files\Cppcheck"
       - name: cppcheck
-        run: cppcheck
+        run: |
+          $env:Path += ";C:\Program Files\Cppcheck"
+          cppcheck
       # - name: Check violations
       #   run: nmake check
 
