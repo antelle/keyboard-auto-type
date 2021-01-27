@@ -374,17 +374,20 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
 
     // select all
     typer.shortcut(kbd::KeyCode::A);
-        wait_millis(1000);
+    wait_millis(500);
         // take a screenshot (Revert me!)
         typer.key_press(kbd::KeyCode::D3, kbd::Modifier::Command | kbd::Modifier::Shift);
-        wait_millis(1000);
     typer.shortcut(kbd::KeyCode::C);
+    wait_millis(500);
     // "[hello]"
 
     // paste at the end
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.text(U" ");
     typer.shortcut(kbd::KeyCode::V);
+        // take a screenshot (Revert me!)
+        typer.key_press(kbd::KeyCode::D3, kbd::Modifier::Command | kbd::Modifier::Shift);
+    wait_millis(500);
     typer.text(U" ");
         wait_millis(1000);
         // take a screenshot (Revert me!)
@@ -400,6 +403,11 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
         typer.key_press(kbd::KeyCode::LeftArrow, kbd::Modifier::Shift);
     }
     typer.shortcut(kbd::KeyCode::X);
+    wait_millis(500);
+        wait_millis(1000);
+        // take a screenshot (Revert me!)
+        typer.key_press(kbd::KeyCode::D3, kbd::Modifier::Command | kbd::Modifier::Shift);
+        wait_millis(1000);
     // "hello [hell]o "
 
     // paste at the end
@@ -407,6 +415,11 @@ TEST_F(AutoTypeKeysTest, shortcut_copy_paste) {
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.key_press(kbd::KeyCode::RightArrow);
     typer.shortcut(kbd::KeyCode::V);
+    wait_millis(500);
+        wait_millis(1000);
+        // take a screenshot (Revert me!)
+        typer.key_press(kbd::KeyCode::D3, kbd::Modifier::Command | kbd::Modifier::Shift);
+        wait_millis(1000);
     // "hello o hell"
 }
 
