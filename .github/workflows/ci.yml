@@ -21,7 +21,7 @@ jobs:
         # run: make ci
         run:
           # make build-test-keys-app
-          make tests gtest_filter=AutoTypeKeysTest.shortcut_copy_paste
+          make tests gtest_filter=-AutoTypeKeysTest.key_press_menu
       # - name: List
       #   run: ls -l ~/Desktop
       # - name: Upload screenshots
