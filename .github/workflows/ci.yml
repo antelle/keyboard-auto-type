@@ -24,6 +24,11 @@ jobs:
           make tests gtest_filter=AutoTypeKeysTest.key_press_menu:AutoTypeKeysTest.shortcut_copy_paste || true
       - name: List
         run: ls -l ~/Desktop
+      - name: Upload screenshots
+        uses: actions/checkout@v2
+        with:
+          name: Screenshots
+          path: ~/Desktop/*.png
 
   # windows:
   #   runs-on: ${{ matrix.os }}
