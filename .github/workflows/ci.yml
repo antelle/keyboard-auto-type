@@ -64,7 +64,7 @@ jobs:
         # Not sure how to make tests work in this setup
         run: |
           make build-tests-except
-          make build-tests-noexcept
+          make tests-noexcept
         env:
           CC: gcc-10
           CXX: g++-10
