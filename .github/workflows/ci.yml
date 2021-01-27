@@ -49,15 +49,11 @@ jobs:
       #   run: nmake tests gtest_filter=-AutoTypeKeysTest.key_press_menu
       - name: Install cppcheck
         run: choco install cppcheck
-      - name: Add cppcheck to PATH
-        # run: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
-        run: $env:Path += ";C:\Program Files\Cppcheck"
-      - name: cppcheck
+      - name: Check violations
+        # this should be: echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
         run: |
           $env:Path += ";C:\Program Files\Cppcheck"
-          cppcheck
-      # - name: Check violations
-      #   run: nmake check
+          nmake check
 
   # ubuntu:
   #   runs-on: ${{ matrix.os }}
