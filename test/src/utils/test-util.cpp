@@ -16,6 +16,8 @@ void open_test_app() {
 bool is_test_app_active() {
     kbd::AutoType typer;
     auto active_window = typer.active_window({.get_window_title = true});
+    std::cout << "AW:app=" << active_window.app_name << std::endl;
+    std::cout << "AW:win=" << active_window.title << std::endl;
     return active_window.title == "Test keys app";
 }
 
