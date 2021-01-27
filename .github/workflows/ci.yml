@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - ci
   pull_request:
 
 jobs:
@@ -18,35 +18,39 @@ jobs:
         with:
           fetch-depth: 0
       - name: Test
-        run: make ci
+        # run: make ci
+        run:
+          make build-test-keys-app
+          make tests gtest_filter=AutoTypeKeysTest.key_press_menu:AutoTypeKeysTest.shortcut_copy_paste
+          ls ~/Desktop
 
-  windows:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
-    steps:
-      - name: Enable Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Test
-        run: nmake ci
+  # windows:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [windows-latest]
+  #   steps:
+  #     - name: Enable Developer Command Prompt
+  #       uses: ilammy/msvc-dev-cmd@v1
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Test
+  #       run: nmake ci
 
-  ubuntu:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Configure Xvfb
-        # https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
-        run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      - name: Test
-        run: make ci
+  # ubuntu:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Configure Xvfb
+  #       # https://www.electronjs.org/docs/tutorial/testing-on-headless-ci
+  #       run: Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  #     - name: Test
+  #       run: make ci

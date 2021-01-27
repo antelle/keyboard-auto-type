@@ -94,6 +94,8 @@ class AutoTypeKeysTest : public testing::Test {
 #if __APPLE__
         // highlight the "Apple" menu
         typer.key_press(kbd::KeyCode::F2, kbd::Modifier::Ctrl);
+        // take a screenshot (revert me!)
+        typer.key_press(kbd::KeyCode::D3, kbd::Modifier::Command | kbd::Modifier::Shift);
         // go to "Edit" menu
         typer.key_press(kbd::KeyCode::RightArrow);
         typer.key_press(kbd::KeyCode::RightArrow);
