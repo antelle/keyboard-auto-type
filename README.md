@@ -44,8 +44,7 @@ The library is ready and tests are passing, so basic stuff should work. Not test
 | [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
 | [Getting browser URL](#getting-browser-url)               | :eight_pointed_black_star: | :eight_pointed_black_star: | :x:                |
-| [Switching to an app](#switching-to-an-app-or-a-window)   | :white_check_mark:         | :x:                        | :x:                |
-| [Switching to a window](#switching-to-an-app-or-a-window) | :x:                        | :white_check_mark:         | :white_check_mark: |
+| [Switching to a window](#switching-to-a-window)           | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark: |
 | [Virtual desktops (spaces)](#virtual-desktops-spaces)     | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark: |
 
 ### Sending key codes
@@ -84,7 +83,7 @@ The methos above also returns the URL if the active window is a browser. Current
 - Windows: Chrome, Firefox, Edge, Internet Explorer, other Chromium-based browsers
 - macOS: Chrome, Safari
 
-### Switching to an app or a window
+### Switching to a window
 
 There's a method `show_window` that activates the window using the window information obtained using `active_window`, you will find more in [Window management](#window-management). On Windows this will bring up the specific window, while on macOS it will activate the app and show its topmost window.
 

@@ -10,6 +10,10 @@
 
 namespace keyboard_auto_type {
 
+int x11_error_handler([[maybe_unused]] Display *display, [[maybe_unused]] XErrorEvent *event) {
+    return 0;
+}
+
 struct X11WindowProp {
     void *value = nullptr;
     unsigned long nitems = 0;      // NOLINT (google-runtime-int)

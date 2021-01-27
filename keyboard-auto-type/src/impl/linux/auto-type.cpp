@@ -429,15 +429,20 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
 pid_t AutoType::active_pid() {
     auto *display = impl_->display();
     if (!display) {
-        return {};
+        return 0;
     }
 
+    auto prev_error_handler = XSetErrorHandler(x11_error_handler);
+
+    pid_t pid = 0;
     Window window = x11_get_active_window(display);
-    if (!window) {
-        return {};
+    if (window) {
+        pid = static_cast<pid_t>(x11_window_prop_ulong(display, window, "_NET_WM_PID"));
     }
 
-    return static_cast<pid_t>(x11_window_prop_ulong(display, window, "_NET_WM_PID"));
+    XSetErrorHandler(prev_error_handler);
+
+    return pid;
 }
 
 AppWindow AutoType::active_window(ActiveWindowArgs args) {
@@ -446,8 +451,11 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
         return {};
     }
 
+    auto prev_error_handler = XSetErrorHandler(x11_error_handler);
+
     Window window = x11_get_active_window(display);
     if (!window) {
+        XSetErrorHandler(prev_error_handler);
         return {};
     }
 
@@ -463,6 +471,8 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
         }
     }
 
+    XSetErrorHandler(prev_error_handler);
+
     return result;
 }
 
@@ -475,8 +485,11 @@ bool AutoType::show_window(const AppWindow &window) {
         return false;
     }
 
+    auto prev_error_handler = XSetErrorHandler(x11_error_handler);
+
     XWindowAttributes window_attr{};
     if (!XGetWindowAttributes(display, window.window_id, &window_attr)) {
+        XSetErrorHandler(prev_error_handler);
         return false;
     }
     auto root = window_attr.root;
@@ -485,6 +498,7 @@ bool AutoType::show_window(const AppWindow &window) {
     auto current_desktop = x11_window_prop_ulong(display, root, "_NET_CURRENT_DESKTOP");
     if (window_desktop != current_desktop) {
         if (!x11_send_client_message(display, root, root, "_NET_CURRENT_DESKTOP", window_desktop)) {
+            XSetErrorHandler(prev_error_handler);
             return false;
         }
     }
@@ -492,6 +506,7 @@ bool AutoType::show_window(const AppWindow &window) {
     constexpr auto WINDOW_MESSAGE_FROM_WINDOW_PAGER = 2;
     if (!x11_send_client_message(display, window.window_id, root, "_NET_ACTIVE_WINDOW",
                                  WINDOW_MESSAGE_FROM_WINDOW_PAGER)) {
+        XSetErrorHandler(prev_error_handler);
         return false;
     }
 
@@ -501,6 +516,8 @@ bool AutoType::show_window(const AppWindow &window) {
     XSetInputFocus(display, window.window_id, RevertToParent, CurrentTime);
 
     XSync(display, False);
+
+    XSetErrorHandler(prev_error_handler);
 
     return true;
 }
