@@ -90,9 +90,8 @@ function buildSymbolMap(contents) {
         if (!match) {
             throw new Error(`Bad line :${lineNumber}: ${line}`);
         }
-        const [, symbol, keySymStr, comment] = match;
+        const [ , , keySymStr, comment] = match;
         const keySym = parseInt(keySymStr, 16);
-        // console.log(symbol, keyCode, comment);
         if (comment) {
             const codePointMatch = comment.match(/U\+([0-9A-Fa-f]+)/);
             if (codePointMatch) {
