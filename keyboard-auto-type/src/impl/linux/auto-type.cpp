@@ -331,7 +331,7 @@ class AutoType::AutoTypeImpl {
     }
 
     bool is_valid_key_sym(KeySym key_sym) {
-        // this can be better checked with XKeysymToString but the memory sanitizer says
+        // this can be better checked with XKeysymToString but the leak detector says
         // it still leaks if it's called with valid Unocide code points not defined as KeySym
         // see https://bugs.freedesktop.org/show_bug.cgi?id=7100
         return key_sym > 0 && key_sym <= MAX_KEYSYM;
