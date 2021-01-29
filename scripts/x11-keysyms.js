@@ -4,7 +4,7 @@ const path = require('path');
 
 const CACHE_PATH = 'build/keysymdef.h';
 const HEADER_URL = 'https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/raw/master/include/X11/keysymdef.h';
-const FILE_PATH = path.join(__dirname, '../keyboard-auto-type/src/impl/linux/x11-keysym-map.cpp');
+const FILE_PATH = path.join(__dirname, '../keyboard-auto-type/src/linux/x11-keysym-map.cpp');
 
 (async function main() {
     try {

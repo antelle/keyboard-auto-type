@@ -13,34 +13,34 @@ set(SOURCES
 
 if (APPLE)
     set(PLATFORM_SOURCES
-        "src/impl/darwin/auto-release.h"
-        "src/impl/darwin/carbon-helpers.h"
-        "src/impl/darwin/key-map.h"
-        "src/impl/darwin/native-methods.h"
-        "src/impl/darwin/auto-type.cpp"
-        "src/impl/darwin/carbon-helpers.cpp"
-        "src/impl/darwin/key-map.cpp"
-        "src/impl/darwin/native-methods.mm"
+        "src/darwin/auto-release.h"
+        "src/darwin/carbon-helpers.h"
+        "src/darwin/key-map.h"
+        "src/darwin/native-methods.h"
+        "src/darwin/auto-type.cpp"
+        "src/darwin/carbon-helpers.cpp"
+        "src/darwin/key-map.cpp"
+        "src/darwin/native-methods.mm"
     )
     source_group("darwin" FILES ${PLATFORM_SOURCES})
 elseif(WIN32)
     set(PLATFORM_SOURCES
-        "src/impl/win32/key-map.h"
-        "src/impl/win32/winapi-tools.h"
-        "src/impl/win32/auto-type.cpp"
-        "src/impl/win32/key-map.cpp"
-        "src/impl/win32/winapi-tools.cpp"
+        "src/win32/key-map.h"
+        "src/win32/winapi-tools.h"
+        "src/win32/auto-type.cpp"
+        "src/win32/key-map.cpp"
+        "src/win32/winapi-tools.cpp"
     )
     source_group("win32" FILES ${PLATFORM_SOURCES})
 else()
     set(PLATFORM_SOURCES
-        "src/impl/linux/key-map.h"
-        "src/impl/linux/x11-helpers.h"
-        "src/impl/linux/x11-keysym-map.h"
-        "src/impl/linux/auto-type.cpp"
-        "src/impl/linux/key-map.cpp"
-        "src/impl/linux/x11-helpers.cpp"
-        "src/impl/linux/x11-keysym-map.cpp"
+        "src/linux/key-map.h"
+        "src/linux/x11-helpers.h"
+        "src/linux/x11-keysym-map.h"
+        "src/linux/auto-type.cpp"
+        "src/linux/key-map.cpp"
+        "src/linux/x11-helpers.cpp"
+        "src/linux/x11-keysym-map.cpp"
     )
 endif()
 
