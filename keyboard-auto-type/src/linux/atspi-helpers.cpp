@@ -3,7 +3,6 @@
 #include <atspi/atspi.h>
 
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 namespace keyboard_auto_type {

@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <string_view>
 
 namespace keyboard_auto_type {
