@@ -6,7 +6,6 @@ Cross-platform library for simulating keyboard input events.
 
 ![Tests](https://github.com/antelle/keyboard-auto-type/workflows/Tests/badge.svg) 
 ![Lint](https://github.com/antelle/keyboard-auto-type/workflows/Lint/badge.svg)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/antelle/keyboard-auto-type.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/antelle/keyboard-auto-type/context:cpp)
 
 ## Intro
 
