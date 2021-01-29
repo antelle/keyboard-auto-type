@@ -39,16 +39,16 @@ The library is ready and tests are passing, so basic stuff should work. Not test
 
 ## Features
 
-|                                                           | macOS                      | Windows                    | Linux              |
-|-----------------------------------------------------------|----------------------------|----------------------------|--------------------|
-| [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Layout-aware text entry](#layout-aware-text-entry)       | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark: |
-| [Getting browser URL](#getting-browser-url)               | :eight_pointed_black_star: | :eight_pointed_black_star: | :x:                |
-| [Switching to a window](#switching-to-a-window)           | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark: |
-| [Virtual desktops (spaces)](#virtual-desktops-spaces)     | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark: |
+|                                                           | macOS                      | Windows                    | Linux                      |
+|-----------------------------------------------------------|----------------------------|----------------------------|----------------------------|
+| [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
+| [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
+| [Layout-aware text entry](#layout-aware-text-entry)       | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
+| [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
+| [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
+| [Getting browser URL](#getting-browser-url)               | :eight_pointed_black_star: | :eight_pointed_black_star: | :eight_pointed_black_star: |
+| [Switching to a window](#switching-to-a-window)           | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark:         |
+| [Virtual desktops (spaces)](#virtual-desktops-spaces)     | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark:         |
 
 ### Sending key codes
 
@@ -85,6 +85,7 @@ Using `active_window` method you can get active app pid, name, and window title,
 The methos above also returns the URL if the active window is a browser. Currently supported:
 - Windows: Chrome, Firefox, Edge, Internet Explorer, other Chromium-based browsers
 - macOS: Chrome, Safari
+- Linux: Chrome, Firefox, some of other Chromium-based browsers
 
 ### Switching to a window
 
@@ -325,7 +326,10 @@ You will need:
 - [cppcheck](http://cppcheck.sourceforge.net/)
 - [node.js](https://nodejs.org/)
 
-On linux, install `xorg-dev` and `libxtst-dev` packages.
+On linux, install these packages:
+```sh
+apt-get install xorg-dev libxtst-dev libatspi2.0-dev
+```
 
 `Makefile` is provided as a convenience measure to launch `cmake` commands. There's nothing important there, however using it is easier than typing commands. If you're familiar with CMake, you can build without `make` if you prefer.
 

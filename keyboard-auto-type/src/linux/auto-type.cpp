@@ -12,6 +12,7 @@
 
 #undef None
 
+#include "atspi-helpers.h"
 #include "key-map.h"
 #include "keyboard-auto-type.h"
 #include "utils.h"
@@ -469,6 +470,10 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
         if (result.title.empty()) {
             result.title = x11_window_prop_string(display, window, "WM_NAME");
         }
+    }
+
+    if (args.get_browser_url) {
+        result.url = get_browser_url_using_atspi(result.pid);
     }
 
     XSetErrorHandler(prev_error_handler);

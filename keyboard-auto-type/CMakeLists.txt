@@ -34,9 +34,11 @@ elseif(WIN32)
     source_group("win32" FILES ${PLATFORM_SOURCES})
 else()
     set(PLATFORM_SOURCES
+        "src/linux/atspi-helpers.h"
         "src/linux/key-map.h"
         "src/linux/x11-helpers.h"
         "src/linux/x11-keysym-map.h"
+        "src/linux/atspi-helpers.cpp"
         "src/linux/auto-type.cpp"
         "src/linux/key-map.cpp"
         "src/linux/x11-helpers.cpp"
@@ -47,6 +49,10 @@ endif()
 list(APPEND SOURCES ${PLATFORM_SOURCES})
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
+
+if(KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE KEYBOARD_AUTO_TYPE_NO_EXCEPTIONS=1)
+endif()
 
 if(APPLE)
     target_compile_options(${PROJECT_NAME} PRIVATE "-fobjc-arc")
@@ -64,16 +70,29 @@ elseif(WIN32)
     )
 else()
     include(FindX11)
-    if(X11_FOUND)
-        include_directories(${X11_INCLUDE_DIR})
-        target_link_libraries(${PROJECT_NAME}
-            PRIVATE
-            ${X11_LIBRARIES}
-            Xtst
-        )
-    else()
+    if(!X11_FOUND)
         message(FATAL_ERROR "X11 is not found, please install xorg-dev")
     endif()
+
+    find_package(PkgConfig)
+
+    pkg_check_modules(ATSPI atspi-2 REQUIRED)
+    pkg_check_modules(GLIB glib-2.0 REQUIRED)
+    pkg_check_modules(GOBJECT gobject-2.0 REQUIRED)
+
+    include_directories(
+        ${X11_INCLUDE_DIR}
+        ${ATSPI_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        ${X11_LIBRARIES}
+        Xtst
+        ${ATSPI_LIBRARIES}
+        ${GLIB_LIBRARIES}
+        ${GOBJECT_LIBRARIES}
+    )
 endif()
 
 if(WIN32)
