@@ -388,7 +388,7 @@ nmake tests
 
 ## Bindings
 
-- [Node.js]: [node-keyboard-auto-type](https://github.com/antelle/node-keyboard-auto-type)
+- Node.js: [node-keyboard-auto-type](https://github.com/antelle/node-keyboard-auto-type)
 
 ## License
 
