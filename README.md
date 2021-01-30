@@ -19,7 +19,7 @@ Cross-platform library for simulating keyboard input events.
 [Key codes](#key-codes)  
 [Shortcuts](#shortcuts)  
 [Errors](#errors)  
-[Window management](#mindow-management)  
+[Window management](#window-management)  
 [Strings](#strings)  
 [Thread safety](#thread-safety)  
 [C++ standard](#c-standard)  
