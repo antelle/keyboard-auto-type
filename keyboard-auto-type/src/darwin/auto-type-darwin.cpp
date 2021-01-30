@@ -191,6 +191,13 @@ class AutoType::AutoTypeImpl {
         }
         return flags;
     }
+
+    static void handle_pending_events() {
+        while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true) == kCFRunLoopRunHandledSource) {
+            // handle all pending events
+            // otherwise native_frontmost_app doesn't return correct results
+        }
+    }
 };
 
 AutoType::AutoType() : impl_(std::make_unique<AutoType::AutoTypeImpl>()) {}
@@ -243,9 +250,13 @@ AutoType::os_key_codes_for_chars(std::u32string_view text) {
     return result;
 }
 
-pid_t AutoType::active_pid() { return native_frontmost_app_pid(); }
+pid_t AutoType::active_pid() {
+    impl_->handle_pending_events();
+    return native_frontmost_app_pid();
+}
 
 AppWindow AutoType::active_window(ActiveWindowArgs args) {
+    impl_->handle_pending_events();
     auto app = native_frontmost_app();
     if (!app.pid) {
         return {};
@@ -306,6 +317,7 @@ bool AutoType::show_window(const AppWindow &window) {
     if (!window.pid) {
         return false;
     }
+    impl_->handle_pending_events();
     return native_show_app(window.pid);
 }
 

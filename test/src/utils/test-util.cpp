@@ -1,8 +1,10 @@
 #include "test-util.h"
 
+#include <chrono>
+#include <thread>
+
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
-#include "platform-util.h"
 
 namespace kbd = keyboard_auto_type;
 
@@ -40,5 +42,7 @@ void save_text_and_close_test_app() {
         FAIL() << "Active app is not a test app, failed to save";
     }
 }
+
+void wait_millis(long ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
 
 } // namespace keyboard_auto_type_test

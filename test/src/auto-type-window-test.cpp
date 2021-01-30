@@ -4,7 +4,6 @@
 
 #include "gtest/gtest.h"
 #include "keyboard-auto-type.h"
-#include "utils/platform-util.h"
 #include "utils/test-util.h"
 
 namespace kbd = keyboard_auto_type;
