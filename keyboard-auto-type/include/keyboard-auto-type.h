@@ -119,6 +119,7 @@ class AutoType {
     bool auto_unpress_modifiers_ = true;
     std::chrono::milliseconds unpress_modifiers_total_wait_time_ =
         DEFAULT_UNPRESS_MODIFIERS_TOTAL_WAIT_TIME;
+    bool check_pressed_modifiers_ = true;
 
   public:
     AutoType();
@@ -141,6 +142,7 @@ class AutoType {
     Modifier get_pressed_modifiers();
     void set_auto_unpress_modifiers(bool auto_unpress_modifiers);
     void set_unpress_modifiers_total_wait_time(std::chrono::milliseconds time);
+    void set_check_pressed_modifiers(bool check_pressed_modifiers);
 
     AutoTypeResult key_move(Direction direction, KeyCode code, Modifier modifier = Modifier::None);
     AutoTypeResult key_move(Direction direction, Modifier modifier);

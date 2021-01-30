@@ -26,9 +26,12 @@ AutoTypeResult AutoType::text(std::u32string_view str) {
         return AutoTypeResult::Ok;
     }
 
-    auto result = ensure_modifier_not_pressed();
-    if (result != AutoTypeResult::Ok) {
-        return result;
+    auto result = AutoTypeResult::Ok;
+    if (check_pressed_modifiers_) {
+        result = ensure_modifier_not_pressed();
+        if (result != AutoTypeResult::Ok) {
+            return result;
+        }
     }
 
     auto native_keys = os_key_codes_for_chars(str);
@@ -181,6 +184,10 @@ void AutoType::set_auto_unpress_modifiers(bool auto_unpress_modifiers) {
 
 void AutoType::set_unpress_modifiers_total_wait_time(std::chrono::milliseconds time) {
     unpress_modifiers_total_wait_time_ = time;
+}
+
+void AutoType::set_check_pressed_modifiers(bool check_pressed_modifiers) {
+    check_pressed_modifiers_ = check_pressed_modifiers;
 }
 
 AutoTypeResult AutoType::key_move(Direction direction, KeyCode code, Modifier modifier) {
