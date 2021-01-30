@@ -7,27 +7,6 @@ Cross-platform library for simulating keyboard input events.
 ![Tests](https://github.com/antelle/keyboard-auto-type/workflows/Tests/badge.svg) 
 ![Lint](https://github.com/antelle/keyboard-auto-type/workflows/Lint/badge.svg)
 
-## Table of contents
-
-[Intro](#intro)  
-[Status](#status)  
-[Features](#features)  
-[Installation](#installation)  
-[Usage](#usage)  
-[Low-level API](#low-level-api)  
-[Modifiers](#modifiers)  
-[Key codes](#key-codes)  
-[Shortcuts](#shortcuts)  
-[Errors](#errors)  
-[Window management](#window-management)  
-[Strings](#strings)  
-[Thread safety](#thread-safety)  
-[C++ standard](#c-standard)  
-[Development](#development)  
-[Tests](#tests)  
-[Bindings](#bindings)  
-[License](#license)  
-
 ## Intro
 
 This library allows you to send keystrokes to different applications as if they were typed by the user. It provides both simple and low-level API consistent across platforms. It can be useful in password managers, automation, testing software, and everywhere else where you need to simulate user input.
@@ -53,6 +32,26 @@ typer.shortcut(keyboard_auto_type::KeyCode::A);
 ```
 
 See more in [Usage](#usage) section.
+
+## Table of contents
+
+[Status](#status)  
+[Features](#features)  
+[Installation](#installation)  
+[Usage](#usage)  
+[Low-level API](#low-level-api)  
+[Modifiers](#modifiers)  
+[Key codes](#key-codes)  
+[Shortcuts](#shortcuts)  
+[Errors](#errors)  
+[Window management](#window-management)  
+[Strings](#strings)  
+[Thread safety](#thread-safety)  
+[C++ standard](#c-standard)  
+[Development](#development)  
+[Tests](#tests)  
+[Bindings](#bindings)  
+[License](#license)  
 
 ## Status
 
