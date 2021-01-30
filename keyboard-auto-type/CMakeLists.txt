@@ -17,7 +17,7 @@ if (APPLE)
         "src/darwin/carbon-helpers.h"
         "src/darwin/key-map.h"
         "src/darwin/native-methods.h"
-        "src/darwin/auto-type.cpp"
+        "src/darwin/auto-type-darwin.cpp"
         "src/darwin/carbon-helpers.cpp"
         "src/darwin/key-map.cpp"
         "src/darwin/native-methods.mm"
@@ -27,7 +27,7 @@ elseif(WIN32)
     set(PLATFORM_SOURCES
         "src/win32/key-map.h"
         "src/win32/winapi-tools.h"
-        "src/win32/auto-type.cpp"
+        "src/win32/auto-type-win32.cpp"
         "src/win32/key-map.cpp"
         "src/win32/winapi-tools.cpp"
     )
@@ -39,7 +39,7 @@ else()
         "src/linux/x11-helpers.h"
         "src/linux/x11-keysym-map.h"
         "src/linux/atspi-helpers.cpp"
-        "src/linux/auto-type.cpp"
+        "src/linux/auto-type-linux.cpp"
         "src/linux/key-map.cpp"
         "src/linux/x11-helpers.cpp"
         "src/linux/x11-keysym-map.cpp"
