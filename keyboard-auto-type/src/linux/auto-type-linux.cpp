@@ -45,7 +45,7 @@ static constexpr auto KEY_MAPPING_PROPAGATION_DELAY = std::chrono::milliseconds(
 
 static constexpr auto MAX_KEYSYM = 0x0110FFFFU;
 
-static constexpr uint8_t EMPTY_KEY_CODE_FOR_DEBUGGING = 0xcc;
+// static constexpr uint8_t EMPTY_KEY_CODE_FOR_DEBUGGING = 0xcc;
 
 constexpr std::array BROWSER_APP_NAMES{
     "Firefox",
@@ -60,7 +60,7 @@ class AutoType::AutoTypeImpl {
     std::optional<bool> is_supported_;
     std::optional<uint8_t> active_keyboard_group_; // aka "layout" or "input language"
     std::unordered_map<KeySym, KeyCodeWithMask> keyboard_layout_ = {};
-    uint8_t empty_key_code_ = EMPTY_KEY_CODE_FOR_DEBUGGING;
+    uint8_t empty_key_code_ = 0; // EMPTY_KEY_CODE_FOR_DEBUGGING;
     KeySym empty_key_code_key_sym_ = 0;
     bool in_batch_text_entry_ = false;
 
