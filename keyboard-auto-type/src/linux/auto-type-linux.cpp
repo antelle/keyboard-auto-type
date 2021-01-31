@@ -47,6 +47,13 @@ static constexpr auto MAX_KEYSYM = 0x0110FFFFU;
 
 static constexpr uint8_t EMPTY_KEY_CODE_FOR_DEBUGGING = 0xcc;
 
+constexpr std::array BROWSER_APP_NAMES{
+    "Firefox",
+    "Google-chrome",
+    "Chromium",
+    "Opera",
+};
+
 class AutoType::AutoTypeImpl {
   private:
     Display *display_ = nullptr;
@@ -472,7 +479,10 @@ AppWindow AutoType::active_window(ActiveWindowArgs args) {
     }
 
     if (args.get_browser_url) {
-        result.url = get_browser_url_using_atspi(result.pid);
+        if (std::find(BROWSER_APP_NAMES.begin(), BROWSER_APP_NAMES.end(), result.app_name) !=
+            BROWSER_APP_NAMES.end()) {
+            result.url = get_browser_url_using_atspi(result.pid);
+        }
     }
 
     XSetErrorHandler(prev_error_handler);
