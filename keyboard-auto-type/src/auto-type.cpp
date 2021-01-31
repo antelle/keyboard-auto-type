@@ -225,6 +225,17 @@ AutoTypeResult AutoType::key_move(Direction direction, Modifier modifier) {
 AutoTypeTextTransaction::AutoTypeTextTransaction(std::function<void()> end_callback)
     : end_callback_(std::move(end_callback)) {}
 
+AutoTypeTextTransaction::AutoTypeTextTransaction(AutoTypeTextTransaction &&tx) noexcept
+    : end_callback_(std::move(tx.end_callback_)) {
+    tx.end_callback_ = nullptr;
+}
+
+AutoTypeTextTransaction &AutoTypeTextTransaction::operator=(AutoTypeTextTransaction &&tx) noexcept {
+    end_callback_ = std::move(tx.end_callback_);
+    tx.end_callback_ = nullptr;
+    return *this;
+}
+
 AutoTypeTextTransaction::~AutoTypeTextTransaction() { done(); }
 
 void AutoTypeTextTransaction::done() noexcept {

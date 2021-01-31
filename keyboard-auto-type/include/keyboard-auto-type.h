@@ -101,8 +101,8 @@ class AutoTypeTextTransaction {
     ~AutoTypeTextTransaction();
     AutoTypeTextTransaction(const AutoTypeTextTransaction &) = delete;
     AutoTypeTextTransaction &operator=(const AutoTypeTextTransaction &) = delete;
-    AutoTypeTextTransaction(AutoTypeTextTransaction &&) = delete;
-    AutoTypeTextTransaction &operator=(AutoTypeTextTransaction &&) = delete;
+    AutoTypeTextTransaction(AutoTypeTextTransaction &&tx) noexcept;
+    AutoTypeTextTransaction &operator=(AutoTypeTextTransaction &&tx) noexcept;
 
     void done() noexcept;
 };
