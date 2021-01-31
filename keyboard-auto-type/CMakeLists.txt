@@ -77,18 +77,20 @@ else()
     find_package(PkgConfig)
 
     pkg_check_modules(ATSPI atspi-2 REQUIRED)
+    pkg_check_modules(XTST xtst REQUIRED)
     pkg_check_modules(GLIB glib-2.0 REQUIRED)
     pkg_check_modules(GOBJECT gobject-2.0 REQUIRED)
 
     include_directories(
         ${X11_INCLUDE_DIR}
+        ${XTST_INCLUDE_DIRS}
         ${ATSPI_INCLUDE_DIRS}
     )
 
     target_link_libraries(${PROJECT_NAME}
         PRIVATE
         ${X11_LIBRARIES}
-        Xtst
+        ${XTST_LIBRARIES}
         ${ATSPI_LIBRARIES}
         ${GLIB_LIBRARIES}
         ${GOBJECT_LIBRARIES}
