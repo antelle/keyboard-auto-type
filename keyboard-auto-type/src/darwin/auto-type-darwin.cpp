@@ -15,7 +15,7 @@
 namespace keyboard_auto_type {
 
 constexpr auto KEY_PRESS_TOTAL_WAIT_TIME_MS = 10'000;
-constexpr auto KEY_PRESS_LOOP_WAIT_TIME_MS = 10;
+constexpr auto KEY_PRESS_LOOP_WAIT_TIME_MS = 1;
 
 constexpr std::array BROWSER_APP_BUNDLE_IDS{
     "com.google.Chrome",
