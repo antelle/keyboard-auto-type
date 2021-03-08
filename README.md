@@ -55,7 +55,7 @@ See more in [Usage](#usage) section.
 
 ## Status
 
-The library is ready and tests are passing, so basic stuff should work. It's been recently added to [KeeWeb](https://github.com/keeweb/keeweb) as a new auto-type engine.
+The library is ready and tests are passing, so basic stuff should work. It's been recently added to [KeeWeb](https://github.com/keeweb/keeweb) as a new auto-type engine, the author is carefully monitoring all issues, the expectation is that it will become mature soon.
 
 ## Features
 
