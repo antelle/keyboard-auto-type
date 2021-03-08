@@ -94,7 +94,7 @@ Note the <kbd>Shift</kbd> key pressed only once and correct key codes.
 
 ### Emoji and CJK characters
 
-You can pass all range of Unicode characters to `text` method, it accepts both `std::u32string` and `std::wstring`, whichever your prefer. To type characters with high code points, sucj as emoji, it's recommended to use cross-platform 32-bit characters (`std::u32string`). See more in [Strings](#strings).
+You can pass all range of Unicode characters to `text` method, it accepts both `std::u32string` and `std::wstring`, whichever your prefer. To type characters with high code points, such as emoji, it's recommended to use cross-platform 32-bit characters (`std::u32string`). See more in [Strings](#strings).
 
 ### Getting window information
 
