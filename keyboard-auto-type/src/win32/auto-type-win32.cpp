@@ -64,6 +64,11 @@ class AutoType::AutoTypeImpl {
             return std::nullopt;
         }
 
+        if (shift_state && shift_state != 1) {
+            // we properly send only shift now, other modifiers can cause issues
+            return std::nullopt;
+        }
+
         KeyCodeWithModifiers res{};
         res.code = vk;
 

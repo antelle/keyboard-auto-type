@@ -1,5 +1,8 @@
 Release notes
 -------------
+##### v0.2.3 (2021-03-10)
+`-` fixed typing extended characters on Windows
+
 ##### v0.2.2 (2021-02-03)
 `+` macos auto-type speed improved
 
