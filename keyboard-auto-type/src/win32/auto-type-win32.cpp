@@ -56,7 +56,7 @@ class AutoType::AutoTypeImpl {
             return std::nullopt;
         }
         if (character == '\n') {
-            return KeyCodeWithModifiers{VK_RETURN};
+            return KeyCodeWithModifiers{VK_RETURN, Modifier::None};
         }
         auto scan_code_ex = VkKeyScanEx(static_cast<WCHAR>(character), layout);
 
