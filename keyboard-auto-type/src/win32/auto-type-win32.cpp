@@ -55,6 +55,9 @@ class AutoType::AutoTypeImpl {
         if (character > WCHAR_MAX) {
             return std::nullopt;
         }
+        if (character == '\n') {
+            return KeyCodeWithModifiers{VK_RETURN};
+        }
         auto scan_code_ex = VkKeyScanEx(static_cast<WCHAR>(character), layout);
 
         auto vk = LOBYTE(scan_code_ex);
