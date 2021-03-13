@@ -1,5 +1,8 @@
 Release notes
 -------------
+##### v0.2.4 (2021-03-13)
+`-` fixed auto-type on Linux with pressed CapsLock or NumLock
+
 ##### v0.2.3 (2021-03-10)
 `-` fixed typing extended characters on Windows
 
