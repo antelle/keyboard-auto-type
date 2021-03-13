@@ -22,7 +22,7 @@ jobs:
         run: make build-test-keys-app
       - name: Test
         # AutoTypeKeysTest.key_press_menu doesn't pass because it needs accessibility access
-        run: make tests gtest_filter=-AutoTypeKeysTest.key_press_menu
+        run: make tests gtest_filter=-AutoTypeKeysTest.key_press_menu:AutoTypeKeysTest.shortcut_copy_paste
 
   windows:
     runs-on: windows-latest
