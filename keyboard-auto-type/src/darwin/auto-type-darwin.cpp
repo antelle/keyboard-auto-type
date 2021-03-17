@@ -1,5 +1,6 @@
 #include <Carbon/Carbon.h>
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <thread>
@@ -25,13 +26,6 @@ constexpr std::array BROWSER_APP_BUNDLE_IDS{
     "com.apple.SafariTechnologyPreview",
 };
 
-constexpr std::array KEY_CHECK_CODES{
-    std::make_pair(kVK_RightCommand, kVK_Command),
-    std::make_pair(kVK_RightShift, kVK_Shift),
-    std::make_pair(kVK_RightOption, kVK_Option),
-    std::make_pair(kVK_RightControl, kVK_Control),
-};
-
 constexpr std::array EVENT_FLAGS_MODIFIERS{
     std::make_pair(static_cast<uint64_t>(NX_COMMANDMASK), Modifier::Command),
     std::make_pair(static_cast<uint64_t>(NX_DEVICERCMDKEYMASK), Modifier::RightCommand),
@@ -49,6 +43,27 @@ constexpr std::array EVENT_FLAGS_MODIFIERS{
     std::make_pair(static_cast<uint64_t>(NX_DEVICELCTLKEYMASK), Modifier::LeftControl),
     std::make_pair(static_cast<uint64_t>(NX_DEVICERCTLKEYMASK), Modifier::RightControl),
 };
+
+constexpr std::array KEY_CODES_AFFECTING_EVENT_FLAGS{
+    std::make_pair(kVK_Command, static_cast<uint64_t>(NX_DEVICELCMDKEYMASK)),
+    std::make_pair(kVK_Control, static_cast<uint64_t>(NX_DEVICELCTLKEYMASK)),
+    std::make_pair(kVK_Function, static_cast<uint64_t>(NX_SECONDARYFNMASK)),
+    std::make_pair(kVK_Option, static_cast<uint64_t>(NX_DEVICELALTKEYMASK)),
+    std::make_pair(kVK_Shift, static_cast<uint64_t>(NX_DEVICELSHIFTKEYMASK)),
+    std::make_pair(kVK_RightCommand, static_cast<uint64_t>(NX_DEVICERCMDKEYMASK)),
+    std::make_pair(kVK_RightControl, static_cast<uint64_t>(NX_DEVICERCTLKEYMASK)),
+    std::make_pair(kVK_RightOption, static_cast<uint64_t>(NX_DEVICERALTKEYMASK)),
+    std::make_pair(kVK_RightShift, static_cast<uint64_t>(NX_DEVICERSHIFTKEYMASK)),
+    std::make_pair(kVK_CapsLock, static_cast<uint64_t>(NX_ALPHASHIFTMASK)),
+};
+
+constexpr auto KEY_CODES_AFFECTING_EVENT_FLAGS_MIN =
+    std::min_element(KEY_CODES_AFFECTING_EVENT_FLAGS.begin(), KEY_CODES_AFFECTING_EVENT_FLAGS.end(),
+                     [](auto lhs, auto rhs) { return lhs.first < rhs.first; }) -> first;
+
+constexpr auto KEY_CODES_AFFECTING_EVENT_FLAGS_MAX =
+    std::max_element(KEY_CODES_AFFECTING_EVENT_FLAGS.begin(), KEY_CODES_AFFECTING_EVENT_FLAGS.end(),
+                     [](auto lhs, auto rhs) { return lhs.first < rhs.first; }) -> first;
 
 constexpr std::array SPECIAL_CHARACTERS_TO_KEYCODES{
     std::make_pair(U'\n', kVK_Return),
@@ -77,20 +92,33 @@ class AutoType::AutoTypeImpl {
         if (flags) {
             CGEventSetFlags(event, flags);
         }
+
+        auto expect_event_flags_change = code >= KEY_CODES_AFFECTING_EVENT_FLAGS_MIN &&
+                                         code <= KEY_CODES_AFFECTING_EVENT_FLAGS_MAX;
+        auto event_flags_change_counter =
+            expect_event_flags_change ? CGEventSourceCounterForEventType(
+                                            kCGEventSourceStateHIDSystemState, kCGEventFlagsChanged)
+                                      : 0;
+
         CGEventPost(kCGHIDEventTap, event);
 
         auto start_time = std::chrono::system_clock::now();
-        auto key_check_code = code;
-        for (auto [original_code, check_code] : KEY_CHECK_CODES) {
-            if (original_code == code) {
-                key_check_code = check_code;
-            }
-        }
         while (true) {
-            auto key_state =
-                CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key_check_code);
-            if (key_state == down) {
-                break;
+            if (expect_event_flags_change) {
+                // Modifier keys state is not always reflected in the event source,
+                // CGEventSourceKeyState, CGEventSourceFlagsState, etc...
+                // sometimes return the old value when the mouse is moved during typing.
+                // For these events we'll just wait for the flag change event.
+                auto counter_now = CGEventSourceCounterForEventType(
+                    kCGEventSourceStateHIDSystemState, kCGEventFlagsChanged);
+                if (counter_now > event_flags_change_counter) {
+                    break;
+                }
+            } else {
+                auto key_state = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, code);
+                if (key_state == down) {
+                    break;
+                }
             }
             auto elapsed = std::chrono::system_clock::now() - start_time;
             auto wait_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);

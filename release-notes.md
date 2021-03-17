@@ -1,5 +1,8 @@
 Release notes
 -------------
+##### v0.2.5 (2021-03-17)
+`-` fixed macOS freeze when mouse is moved during auto-type
+
 ##### v0.2.4 (2021-03-13)
 `-` fixed auto-type on Linux with pressed CapsLock or NumLock
 
