@@ -59,16 +59,16 @@ The library is ready and tests are passing, so basic stuff should work. It's bee
 
 ## Features
 
-|                                                           | macOS                      | Windows                    | Linux                      |
-|-----------------------------------------------------------|----------------------------|----------------------------|----------------------------|
-| [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
-| [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
-| [Layout-aware text entry](#layout-aware-text-entry)       | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
-| [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
-| [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         |
-| [Getting browser URL](#getting-browser-url)               | :eight_pointed_black_star: | :eight_pointed_black_star: | :eight_pointed_black_star: |
-| [Switching to a window](#switching-to-a-window)           | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark:         |
-| [Virtual desktops (spaces)](#virtual-desktops-spaces)     | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark:         |
+|                                                           | macOS                      | Windows                    | Linux: Xorg                | Linux: Wayland |
+|-----------------------------------------------------------|----------------------------|----------------------------|----------------------------|----------------|
+| [Sending key codes](#sending-key-codes)                   | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         | :x:            |
+| [Typing text](#typing-text)                               | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         | :x:            |
+| [Layout-aware text entry](#layout-aware-text-entry)       | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         | :x:            |
+| [Emoji and CJK characters](#emoji-and-cjk-characters)     | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         | :x:            |
+| [Getting window information](#getting-window-information) | :white_check_mark:         | :white_check_mark:         | :white_check_mark:         | :x:            |
+| [Getting browser URL](#getting-browser-url)               | :eight_pointed_black_star: | :eight_pointed_black_star: | :eight_pointed_black_star: | :x:            |
+| [Switching to a window](#switching-to-a-window)           | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark:         | :x:            |
+| [Virtual desktops (spaces)](#virtual-desktops-spaces)     | :eight_pointed_black_star: | :white_check_mark:         | :white_check_mark:         | :x:            |
 
 ### Sending key codes
 
