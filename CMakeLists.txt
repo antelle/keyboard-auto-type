@@ -39,10 +39,6 @@ if(KEYBOARD_AUTO_TYPE_WITH_TESTS)
     add_subdirectory(test)
 endif()
 
-if(KEYBOARD_AUTO_TYPE_WITH_X11_PRINT_LAYOUT)
-    add_subdirectory(x11-print-layout)
-endif()
-
 if(KEYBOARD_AUTO_TYPE_WITH_CLANG_FORMAT)
     file(GLOB_RECURSE CLANG_FORMAT_FILES
         ${PROJECT_SOURCE_DIR}/example/*.h
@@ -53,8 +49,6 @@ if(KEYBOARD_AUTO_TYPE_WITH_CLANG_FORMAT)
         ${PROJECT_SOURCE_DIR}/test/*.h
         ${PROJECT_SOURCE_DIR}/test/*.cpp
         ${PROJECT_SOURCE_DIR}/test/*.mm
-        ${PROJECT_SOURCE_DIR}/x11-print-layout/*.h
-        ${PROJECT_SOURCE_DIR}/x11-print-layout/*.cpp
     )
     add_custom_target(clang-format COMMAND clang-format -i --verbose ${CLANG_FORMAT_FILES})
 endif()

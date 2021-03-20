@@ -72,11 +72,6 @@ tests: tests-except tests-noexcept
 x11-keysyms:
 	node scripts/x11-keysyms
 
-run-x11-print-layout:
-	cmake -B build -DKEYBOARD_AUTO_TYPE_WITH_X11_PRINT_LAYOUT=1 .
-	cmake --build build -j4
-	build/x11-print-layout/x11-print-layout > tmp/layout.txt
-
 build-test-keys-app:
 	cd test-keys-app && npm ci
 
