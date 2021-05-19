@@ -1,5 +1,8 @@
 Release notes
 -------------
+##### v0.2.6 (2021-03-19)
+`-` fixed a compilation error on linux
+
 ##### v0.2.5 (2021-03-17)
 `-` fixed macOS freeze when mouse is moved during auto-type
 
