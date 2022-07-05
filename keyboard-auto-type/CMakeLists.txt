@@ -11,6 +11,10 @@ set(SOURCES
     "src/utils.cpp"
 )
 
+if(WIN32)
+    add_compile_definitions(UNICODE _UNICODE)
+endif()
+
 if (APPLE)
     set(PLATFORM_SOURCES
         "src/darwin/auto-release.h"
